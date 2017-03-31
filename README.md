@@ -2,9 +2,8 @@
 
 *Utility package for subsetting, partitioning, and resampling
 Machine Learning datasets. Aside from providing common
-functionality, this library also defines a set of common
-interfaces and functions, that can (and should) be extended to
-work with custom user-defined data structures.*
+functionality, this library also allows for first class support
+of custom user-defined data structures.*
 
 | **Package Status** | **Package Evaluator** | **Build Status**  |
 |:------------------:|:---------------------:|:-----------------:|
@@ -12,14 +11,19 @@ work with custom user-defined data structures.*
 
 ## Introduction
 
-While the sole focus of the whole package are the data access
-pattern. These include data-partitioning, -subsampling, and
--iteration. The main design principle behind the access pattern
-is based on the assumption that the data a user is working with
-is likely of some very user-specific custom type. That said,
-there was also a lot of attention put into first class support
-for those types that are most commonly employed to represent the
-data of interest, such as ``Array``.
+Typical Machine Learning experiments require a lot of rather
+mundane but error prone data handling glue-code. One particularly
+interesting category of data handling functionality are what we
+call *data access pattern*. These include data-splitting,
+-subsampling, -iteration, and k-fold partitioning.
+
+Data Access Pattern are the sole focus of this package. The main
+design principle it follows, is first class support of
+user-defined data source. This is based on the assumption that
+the data a user is working with, is likely of some very
+user-specific custom type. That said, we also put a lot of
+attention into first class support for the most commonly used
+data container, such as ``Array``.
 
 ## Example
 

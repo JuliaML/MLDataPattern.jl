@@ -3,15 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-MLDataPattern.jl's documentation!
+MLDataPattern.jl's documentation
 =====================================
 
 This package represents a community effort to provide a native
-Julia implementation for common data access pattern in Machine
-Learning. This includes widely used access pattern for shuffling,
-partitioning, and resampling data sets of various types. More
+and generic `Julia <http://julialang.org>`_ implementation for
+common data access pattern in Machine Learning. This includes
+widely used access pattern for shuffling, partitioning, and
+resampling data sets of various types and origin. More
 importantly, the package was designed around the core premise of
-allowing any user-defined type to serve as custom data sources
+allowing any user-defined type to serve as a custom data source
 and/or access pattern in a first class manner.
 
 MLDataPattern is a part of the `JuliaML
@@ -51,6 +52,28 @@ how this package approaches the task conceptually.
    introduction/motivation
    introduction/design
 
+Using MLDataPattern.jl
+---------------------
+
+The main design principle behind this package is based on the
+assumption that the data source a user is working with, is likely
+of some user-specific custom type. That said, there was also a
+lot of attention put into first class support for those types
+that are most commonly employed to represent the data of
+interest, such as ``Array``.
+
+The first topic we will cover is about **data containers**. These
+represent a large subgroup of data sources, that all know how
+many observations they contain as well as how to access specific
+observation(s). As such they are the most flexible kind of data
+sources and will thus be at the heart of most of the subsequent
+sections. To start off, we will discuss what makes some type a
+data container and what that term entails.
+
+.. toctree::
+   :maxdepth: 3
+
+   documentation/container
 
 Indices and tables
 ==================
