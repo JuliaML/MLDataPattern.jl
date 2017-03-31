@@ -38,6 +38,25 @@ function nobs(data; obsdim = default_obsdim(data))::Int
     nobs(data, nobsdim)
 end
 
+"""
+    getobs(data, [idx], [obsdim])
+
+Return the observation(s) in `data` that correspond to the given
+index/indices in `idx`. Note that `idx` can be of type `Int` or
+`AbstractVector`.
+
+The returned observation(s) should be in the form intended to be
+passed as-is to some learning algorithm. There is no strict
+requirement that dictates what form or type that is. We do,
+however, expect it to be consistent for `idx` being an integer,
+as well as `idx` being an abstract vector, respectively.
+
+If it makes sense for the type of `data`, `obsdim` can be used to
+specify which dimension of `data` denotes the observations. It
+can be specified in a typestable manner as a positional argument
+(see `?LearnBase.ObsDim`), or more conveniently as a smart
+keyword argument.
+"""
 function getobs(data, idx; obsdim = default_obsdim(data))
     nobsdim = obs_dim(obsdim)
     # make sure we don't bounce between fallback methods
@@ -56,6 +75,22 @@ getobs(A::AbstractSparseArray, ::ObsDimension=default_obsdim(A)) = A
 getobs(A::SubArray, ::ObsDimension=default_obsdim(A)) = copy(A)
 getobs(A::AbstractArray, ::ObsDimension=default_obsdim(A)) = collect(A)
 
+"""
+    getobs!(buffer, data, [idx], [obsdim]) -> buffer
+
+Write the observation(s) from `data` that correspond to the given
+index/indices in `idx` into `buffer`. Note that `idx` can be of
+type `Int` or `AbstractVector`.
+
+Unless explicitly implemented for `data` it defaults to returning
+`getobs(data, idx, obsdim)` in which case `buffer` is ignored.
+
+If it makes sense for the type of `data`, `obsdim` can be used to
+specify which dimension of `data` denotes the observations. It
+can be specified in a typestable manner as a positional argument
+(see `?LearnBase.ObsDim`), or more conveniently as a smart
+keyword argument.
+"""
 getobs!(buffer, A::AbstractSparseArray, idx, obsdim) = getobs(A, idx, obsdim)
 getobs!(buffer, A::AbstractSparseArray) = getobs(A)
 
