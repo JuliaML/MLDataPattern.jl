@@ -21,11 +21,13 @@ export
     DataSubset,
     datasubset,
 
-    shuffleobs
+    shuffleobs,
+    splitobs
 
 include("container.jl")
 include("datasubset.jl")
 include("randobs.jl")
 include("shuffleobs.jl")
+include("splitobs.jl")
 
 end # module

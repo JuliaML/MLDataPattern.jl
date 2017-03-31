@@ -53,6 +53,7 @@ tests = [
     "tst_datasubset.jl"
     "tst_randobs.jl"
     "tst_shuffleobs.jl"
+    "tst_splitobs.jl"
 ]
 
 for t in tests
