@@ -16,13 +16,16 @@ export
     getobs,
     getobs!,
 
+    randobs,
+
     DataSubset,
     datasubset,
 
-    randobs
+    shuffleobs
 
 include("container.jl")
 include("datasubset.jl")
 include("randobs.jl")
+include("shuffleobs.jl")
 
 end # module
