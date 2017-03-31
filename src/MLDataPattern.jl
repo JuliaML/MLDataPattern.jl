@@ -10,6 +10,8 @@ import LearnBase: nobs, getobs, getobs!, gettarget, gettargets, targets, datasub
 
 export
 
+    ObsDim,
+
     nobs,
     getobs,
     getobs!,

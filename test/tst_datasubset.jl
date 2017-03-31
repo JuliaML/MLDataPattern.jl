@@ -273,7 +273,7 @@ println("<HEARTBEAT>")
 end
 
 @testset "getobs!" begin
-    @test @inferred(getobs!(nothing, datasubset(y, 1))) == "setosa"
+    @test_throws MethodError getobs!(nothing, datasubset(y, 1))
 
     @testset "DataSubset" begin
         xbuf1 = zeros(4,8)

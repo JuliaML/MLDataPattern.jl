@@ -1,4 +1,8 @@
-getobs(data) = data
+getobs(data; obsdim = default_obsdim(data)) =
+    getobs(data, obs_dim(obsdim))
+
+getobs(data, obsdim::Union{ObsDimension,Tuple}) =
+    getobs(data, 1:nobs(data,obsdim))
 
 getobs!(buffer, data) = getobs(data)
 getobs!(buffer, data, idx, obsdim) = getobs(data, idx, obsdim)
@@ -47,10 +51,10 @@ end
 nobs{DIM}(A::AbstractArray, ::ObsDim.Constant{DIM})::Int = size(A, DIM)
 nobs{T,N}(A::AbstractArray{T,N}, ::ObsDim.Last)::Int = size(A, N)
 
-getobs(A::Array) = A
-getobs(A::AbstractSparseArray) = A
-getobs(A::SubArray) = copy(A)
-getobs(A::AbstractArray) = collect(A)
+getobs(A::Array, ::ObsDimension=default_obsdim(A)) = A
+getobs(A::AbstractSparseArray, ::ObsDimension=default_obsdim(A)) = A
+getobs(A::SubArray, ::ObsDimension=default_obsdim(A)) = copy(A)
+getobs(A::AbstractArray, ::ObsDimension=default_obsdim(A)) = collect(A)
 
 getobs!(buffer, A::AbstractSparseArray, idx, obsdim) = getobs(A, idx, obsdim)
 getobs!(buffer, A::AbstractSparseArray) = getobs(A)
@@ -124,7 +128,15 @@ function nobs(tup::Tuple, obsdims::Tuple)::Int
     length(tup) == 0 ? 0 : nobs(tup[1], obsdims[1])
 end
 
-getobs(tup::Tuple) = map(getobs, tup)
+function getobs(tup::Tuple, obsdim::Tuple)
+    _check_nobs(tup)
+    map(getobs, tup, obsdim)
+end
+
+function getobs(tup::Tuple, obsdim::ObsDimension)
+    _check_nobs(tup, obsdim)
+    map(data -> getobs(data, obsdim), tup)
+end
 
 function getobs(tup::Tuple, indices)
     _check_nobs(tup)

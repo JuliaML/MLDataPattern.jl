@@ -216,6 +216,11 @@ nobs(subset::DataSubset) = length(subset)
 getobs(subset::DataSubset) =
     getobs(subset.data, subset.indices, subset.obsdim)
 
+function getobs(subset::DataSubset, obsdim::ObsDimension)
+    @assert obsdim === subset.obsdim
+    getobs(subset)
+end
+
 getobs(subset::DataSubset, idx) =
     getobs(subset.data, _view(subset.indices, idx), subset.obsdim)
 

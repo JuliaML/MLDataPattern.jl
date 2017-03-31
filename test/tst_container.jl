@@ -78,12 +78,6 @@ end
 
 @testset "getobs" begin
     @testset "Array and Subarray" begin
-        # interpreted as idx
-        @test_throws Exception getobs(X, ObsDim.Undefined())
-        @test_throws Exception getobs(X, ObsDim.Constant(1))
-        # obsdim not defined without some idx
-        @test_throws MethodError getobs(X, obsdim = ObsDim.Undefined())
-        @test_throws MethodError getobs(X, obsdim = ObsDim.Constant(1))
         # access outside nobs bounds
         @test_throws BoundsError getobs(X, -1)
         @test_throws BoundsError getobs(X, 0)
@@ -96,6 +90,10 @@ end
         @test typeof(@inferred(getobs(yv))) <: Array
         @test all(getobs(Xv) .== X)
         @test all(getobs(yv) .== y)
+        @test getobs(X, ObsDim.Undefined()) === X
+        @test getobs(X, ObsDim.Constant(1)) === X
+        @test getobs(X, obsdim = ObsDim.Undefined()) === X
+        @test getobs(X, obsdim = ObsDim.Constant(1)) === X
         @test @inferred(getobs(X))   === X
         @test @inferred(getobs(XX))  === XX
         @test @inferred(getobs(XXX)) === XXX
@@ -158,13 +156,12 @@ end
     end
 
     @testset "Tuple" begin
-        # obsdim not defined without some idx
-        @test_throws MethodError getobs((), obsdim=2)
-        @test_throws MethodError getobs((X,yv), obsdim=2)
+        @test_throws DimensionMismatch getobs((X,yv), obsdim=2)
         # bounds checking correctly
         @test_throws BoundsError getobs((X,y), 151)
         # special case empty tuple
         @test_throws ErrorException @inferred(getobs((), 10, obsdim = 1))
+        @test @inferred(getobs((), obsdim=2)) === ()
         @test @inferred(getobs(())) === ()
         @test @inferred(getobs((), ObsDim.Last())) === ()
         @test @inferred(getobs((), 10)) === ()
@@ -173,7 +170,7 @@ end
         @test @inferred(getobs((X,yv))) == (X,y)
         @test @inferred(getobs((Xv,y))) == (X,y)
         @test @inferred(getobs((Xv,yv))) == (X,y)
-        @test @inferred(getobs((X',y))) == (X',y) # no-op. doesn't care about nobs
+        @test_throws DimensionMismatch @inferred(getobs((X',y))) == (X',y)
         @test @inferred(getobs((XX,X,y))) === (XX,X,y)
         @test @inferred(getobs((XXX,XX,X,y))) === (XXX,XX,X,y)
         tx, ty = getobs((Xv,yv))
@@ -213,7 +210,7 @@ end
             # compare if obs match in tuple
             x1, y1 = getobs((X1,Y1), i)
             @test all(x1' .== y1)
-            x1, y1, z1 = getobs((X1,Y1,sparse(X1), i))
+            x1, y1, z1 = getobs((X1,Y1,sparse(X1)), i)
             @test all(x1' .== y1)
             @test all(x1 .== z1)
         end
@@ -230,7 +227,7 @@ end
     end
 
     @testset "type without getobs support" begin
-        @test getobs(EmptyType()) === EmptyType()
+        @test_throws MethodError getobs(EmptyType())
         @test_throws MethodError getobs(EmptyType(), obsdim=1)
         # test that fallback bouncing doesn't cause stackoverflow
         @test_throws MethodError getobs(EmptyType(), 1, ObsDim.Last())
@@ -247,8 +244,8 @@ end
         @test_throws MethodError getobs(CustomType(), 4:40, obsdim=1)
         @test @inferred(getobs(CustomType(), 11)) === 11
         @test @inferred(getobs(CustomType(), 4:40)) == collect(4:40)
-        # No-op unless defined
-        @test @inferred(getobs(CustomType())) === CustomType()
+        # defaults to 1:nobs
+        @test @inferred(getobs(CustomType())) == collect(1:100)
         # No bounds checking here
         @test @inferred(getobs(CustomType(), 200)) === 200
         @test @inferred(getobs(CustomType(), [2,200,1])) == [2,200,1]
@@ -351,7 +348,7 @@ end
 
     @testset "type without getobs support" begin
         # buffer is ignored if getobs! is not defined
-        @test @inferred(getobs!(nothing, EmptyType())) === EmptyType()
+        @test_throws MethodError getobs!(nothing, EmptyType())
         @test_throws MethodError getobs!(nothing, EmptyType(), 1)
         @test_throws MethodError getobs!(nothing, EmptyType(), obsdim=1)
         @test_throws MethodError getobs!(nothing, EmptyType(), ObsDim.Last())
@@ -362,7 +359,7 @@ end
 
     @testset "custom type with getobs support" begin
         # No-op unless defined
-        @test @inferred(getobs!(nothing, CustomType())) === CustomType()
+        @test @inferred(getobs!(nothing, CustomType())) == collect(1:100)
         @test @inferred(getobs!(nothing, CustomType(), 11)) === 11
         @test @inferred(getobs!(nothing, CustomType(), 4:40)) == collect(4:40)
         # No bounds checking here
