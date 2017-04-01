@@ -71,9 +71,23 @@ sections. To start off, we will discuss what makes some type a
 data container and what that term entails.
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    documentation/container
+
+Once we understand what data containers are and how they can be
+interacted with, we can introduce more interesting behaviour on
+top of them. The most enabling of them all is the idea of a
+**data subset**. A data subset is in essence just a lazy
+representation of a specific sequence of observations from a data
+container, and itself again a data container. What that means and
+why that is useful will be discussed in detail in the following
+section.
+
+.. toctree::
+   :maxdepth: 2
+
+   documentation/datasubset
 
 Indices and tables
 ==================
