@@ -112,7 +112,7 @@ getobs(A::AbstractArray, idx, obsdim::ObsDim.Undefined) =
         :(getindex(A, $(fill(:(:),N-1)...), idx))
     else # obsdim <: ObsDim.Constant
         DIM = obsdim.parameters[1]
-        DIM > N && throw(DimensionMismatch("The given obsdim=$DIM is greater than the number of available dimensions N=$N"))
+        DIM > N && throw(DimensionMismatch("the given obsdim=$DIM is greater than the number of available dimensions N=$N"))
         :(getindex(A, $(fill(:(:),DIM-1)...), idx, $(fill(:(:),N-DIM)...)))
     end
 end
@@ -120,7 +120,7 @@ end
 # --------------------------------------------------------------------
 # Tuples
 
-_check_nobs_error() = throw(DimensionMismatch("all data variables must have the same number of observations"))
+_check_nobs_error() = throw(DimensionMismatch("all data container must have the same number of observations"))
 
 function _check_nobs(tup::Tuple)
     length(tup) == 0 && return
@@ -193,7 +193,7 @@ end
     end
 end
 
-_getobs_error() = throw(DimensionMismatch("The first argument (tuple with the buffers) has to have the same length as the second argument (tuple with the data arguments)"))
+_getobs_error() = throw(DimensionMismatch("the first argument (tuple with the buffers) must have the same length as the second argument (tuple with the data container)"))
 
 @generated function getobs!(buffer::Tuple, tup::Tuple)
     N = length(buffer.types)

@@ -70,7 +70,7 @@ splitobs(data; at = 0.7, obsdim = default_obsdim(data)) =
 
 # partition into 2 sets
 function splitobs(data, at::AbstractFloat, obsdim=default_obsdim(data))
-    0 < at < 1 || throw(ArgumentError("The parameter \"at\" must be in interval (0, 1)"))
+    0 < at < 1 || throw(ArgumentError("the parameter \"at\" must be in interval (0, 1)"))
     n = nobs(data, obsdim)
     n1 = clamp(round(Int, at*n), 1, n)
     datasubset(data, 1:n1, obsdim), datasubset(data, n1+1:n, obsdim)
@@ -81,7 +81,7 @@ _ispos(x) = x > 0
 # partition into length(at)+1 sets
 @generated function splitobs{N,T<:AbstractFloat}(data, at::NTuple{N,T}, obsdim=default_obsdim(data))
     quote
-        (all(map(_ispos, at)) && sum(at) < 1) || throw(ArgumentError("All elements in \"at\" must be positive and their sum must be smaller than 1"))
+        (all(map(_ispos, at)) && sum(at) < 1) || throw(ArgumentError("all elements in \"at\" must be positive and their sum must be smaller than 1"))
         n = nobs(data, obsdim)
         nleft = n
         lst = UnitRange{Int}[]
