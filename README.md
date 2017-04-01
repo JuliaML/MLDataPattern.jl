@@ -17,11 +17,11 @@ interesting category of data handling functionality are what we
 call **data access pattern**. These include data-splitting,
 -subsampling, -iteration, and k-fold partitioning.
 
-Data Access Pattern are the sole focus of this package. The
+Data Access Pattern are the sole focus of this package. It was
 designed around the requirment of providing first class support
-of user-defined data source. This is based on the assumption that
-the data a user is working with, is likely of some very
-user-specific custom type. That said, we also put a lot of
+for user-defined data sources. This is based on the assumption
+that the data source a user is working with, is likely of some
+very user-specific custom type. That said, we also put a lot of
 attention into first class support for the most commonly used
 data container, such as ``Array``.
 
@@ -58,7 +58,7 @@ for (train, (val_X, val_Y)) in kfolds((cv_X, cv_Y); k = 10)
 end
 ```
 
-In the above code snipped, the inner loop for `eachbatch` is the
+In the above code snippet, the inner loop for `eachbatch` is the
 only place where data other than indices is actually being
 copied.  That is because `cv_X`, `test_X`, `val_X`, etc. are all
 array views of type `SubArray` (the same applies to all the y's
@@ -90,7 +90,7 @@ following example shows how to get additional information on
 ## Installation
 
 This package is registered in `METADATA.jl` and can be installed
-as usual. Just start up Julia and type the following code-snipped
+as usual. Just start up Julia and type the following code-snippet
 into the REPL. It makes use of the native Julia package manger.
 
 ```julia
