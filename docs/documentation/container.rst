@@ -397,7 +397,7 @@ in-bounds for each data container individually.
 .. code-block:: jlcon
 
    julia> getobs((rand(3), rand(4)), 2)
-   ERROR: DimensionMismatch("all data variables must have the same number of observations")
+   ERROR: DimensionMismatch("all data container must have the same number of observations")
    [...]
 
 When grouping data containers in a ``Tuple``, it is also possible
