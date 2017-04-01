@@ -1,6 +1,6 @@
 .. _container:
 
-Working with Data Container
+Data Container
 =============================
 
 We have hinted in previous sections that we differentiate between
@@ -80,13 +80,13 @@ Required methods                         Brief description
 
 Aside from the required interface, there are a number of optional
 methods that can be implemented. The main motivation to provide
-these methods as well, is that they can allow for a significant
-boost in performance.
+these methods as well for a data container, is that they can
+allow for a significant boost in performance in some situations.
 
 =======================================  ===================================================================
 Optional methods                         Brief description
 =======================================  ===================================================================
-``getobs(data, [obsdim])``               Returns all observations contained ``data`` in native form
+``getobs(data, [obsdim])``               Returns all observations contained in ``data``
 ``getobs!(buf, data, [idx], [obsdim])``  Inplace version of ``getobs(data, idx, obsdim)`` using ``buf``
 ``gettargets(data, idx, [obsdim])``      Returns the target(s) for the observation(s) in ``data`` at ``idx``
 ``datasubset(data, idx, obsdim)``        Returns an object representing a lazy subset of ``data`` at ``idx``
@@ -106,10 +106,10 @@ Number of Observations
 
 Every data container must be able to report how many observations
 it contains and can provide. To that end it must implement the
-function :func:`nobs`. For some data containers the meaning of
-"observations" can be ambiguous and depend on a user convention.
-For such cases it is possible to specify an additional argument,
-that denotes the observation dimension.
+function :func:`nobs`. We will see that for some data containers
+the meaning of "observations" can be ambiguous and depend on a
+user convention. For such cases it is possible to specify an
+additional argument, that denotes the observation dimension.
 
 .. function:: nobs(data, [obsdim]) -> Int
 
@@ -135,6 +135,10 @@ that denotes the observation dimension.
 We hinted before that :func:`nobs` is already implemented for any
 subtype of ``AbstractArray``. This is true for arrays of
 arbitrary order, even higher order arrays (e.g. images).
+
+Let's start simple and take some random vector ``y`` as an
+example. In the case of a vector (i.e. an one-dimensional array),
+it is assumed that each element is an observation.
 
 .. code-block:: jlcon
 
@@ -180,8 +184,8 @@ explicitly specifying the ``obsdim``.
    julia> nobs(X, obsdim = 1)
    2
 
-Note how ``obsdim`` can either be provided using type-stable
-positional arguments from the namespace ``ObsDim``, or by using a
+Note how ``obsdim`` can either be provided using a type-stable
+positional argument from the namespace ``ObsDim``, or by using a
 more flexible and convenient keyword argument. We will discuss
 observation dimensions in more detail in a later section.
 
@@ -191,11 +195,14 @@ Query Observation(s)
 At some point in our machine learning pipeline, we need access to
 specific parts of the "actual data" in our data container. That
 is, we need the data in a form where an algorithm can
-*efficiently* process it. There is no interface requirement on
-how this "actual data" must look like. Every author behind some
-custom data container can make this decision him-/herself. To
-that end we provide a function called :func:`getobs`, which every
-data container must implement.
+*efficiently* process it. This package does not impose any
+requirement on how this "actual data" must look like. Every
+author behind some custom data container can make this decision
+him-/herself. In reality, it depends on what type the algorithm
+one is working with expects (``Array`` is in general a good
+choice). Providing a reasonable type is the responsibility of the
+data container. To that end, every data container must implement
+a method for the function :func:`getobs`.
 
 .. function:: getobs(data, [idx], [obsdim])
 
@@ -280,7 +287,6 @@ code worth pointing out:
   ``MyContainer`` that returns an ``Array`` as its data when
   the method ``getobs(::MyContainer, ...)`` is called.
 
-
 We mentioned before that the default assumption is that the last
 array dimension enumerates the observations. This can be
 overwritten by explicitly specifying the ``obsdim``. To visualize
@@ -319,12 +325,12 @@ this example.
     0.226582  0.933372  0.505208
     0.504629  0.522172  0.0997825
 
-   julia> getobs(X, 1, obsdim=2)
+   julia> getobs(X, 1, obsdim = 2)
    2×4 Array{Float64,2}:
     0.226582  0.0443222  0.380001  0.478053
     0.504629  0.722906   0.505277  0.179066
 
-   julia> getobs(X, 1, obsdim=1)
+   julia> getobs(X, 1, obsdim = 1)
    3×4 Array{Float64,2}:
     0.226582  0.0443222  0.380001  0.478053
     0.933372  0.812814   0.841177  0.44701
@@ -346,14 +352,80 @@ out two facts, that we have already established when introducing
   array, the individual observations have to be explicitly laid
   out along a single dimension.
 
-- Note how ``obsdim`` can either be provided using type-stable
-  positional arguments from the namespace ``ObsDim``, or by using
+- Note how ``obsdim`` can either be provided using a type-stable
+  positional argument from the namespace ``ObsDim``, or by using
   a more flexible and convenient keyword argument. We will
   discuss observation dimensions in more detail in a later
   section.
 
+It is also possible to link multiple different data containers
+together on an per-observation level. To do that, simply put all
+the relevant data container into a single ``Tuple``, before
+passing it to :func:`getobs` (or other functions that expect a
+data container). The return value will then be a ``Tuple`` of the
+same length, with the resulting data in the same tuple-order.
+
+.. code-block:: jlcon
+
+   julia> X = rand(2,4)
+   2×4 Array{Float64,2}:
+    0.226582  0.933372  0.505208   0.0443222
+    0.504629  0.522172  0.0997825  0.722906
+
+   julia> y = rand(4)
+   4-element Array{Float64,1}:
+    0.812814
+    0.245457
+    0.11202
+    0.000341996
+
+   julia> getobs((X,y), 2) # single observation at index 2
+   ([0.933372,0.522172],0.24545709827626805)
+
+   julia> getobs((X,y), [2,4]) # batch of 2 observations
+   ([0.933372 0.0443222; 0.522172 0.722906], [0.245457,0.000341996])
+
+It is worth pointing out, that the tuple elements (i.e. data
+container) need not be of the same type, nor of the same shape.
+You can observe this in the code above, where ``X`` is a
+``Matrix`` while ``y`` is a ``Vector``. Note, however, that all
+tuple elements must be data containers themselves. Furthermore,
+they all must contain the same exact number of observations. This
+is required, even if the requested observation-index would be
+in-bounds for each data container individually.
+
+.. code-block:: jlcon
+
+   julia> getobs((rand(3), rand(4)), 2)
+   ERROR: DimensionMismatch("all data variables must have the same number of observations")
+   [...]
+
+When grouping data containers in a ``Tuple``, it is also possible
+to specify multiple ``obsdim`` for each data container (if need
+be). Note that if ``obsdim`` is specified as a ``Tuple``, then it
+needs to have the same number of elements as the ``Tuple`` of
+data containers.
+
+.. code-block:: jlcon
+
+   julia> getobs((X,y), 2, obsdim = :last)
+   ([0.933372,0.522172],0.24545709827626805)
+
+   julia> getobs((X,y), 2, obsdim = (2,1))
+   ([0.933372,0.522172],0.24545709827626805)
+
+   julia> getobs((X,y), 2, ObsDim.Last())
+   ([0.933372,0.522172],0.24545709827626805)
+
+   julia> getobs((X,y), 2, (ObsDim.Last(),ObsDim.Last()))
+   ([0.933372,0.522172],0.24545709827626805)
+
+   julia> getobs((X',y), 2, (ObsDim.First(),ObsDim.Last())) # note the transpose
+   ([0.933372,0.522172],0.24545709827626805)
+
 Aside from the main signature for :func:`getobs`, it is also
-possible to invoke it without specifying any observation index.
+possible to call it without specifying any observation
+index/indices.
 
 .. code-block:: jlcon
 
@@ -400,9 +472,10 @@ case ``X === mysubset``).
 
 By default ``getobs(X, obsdim)`` will call ``getobs(data,
 1:nobs(data,obsdim), obsdim)`` for any type of ``data`` that does
-not provide a custom method for it. If your type has a more
-efficient (or conservative) way to return the complete data set,
-you need to implement this method yourself.
+not provide a custom method for it. If you are a package author
+and your type has a more efficient (or conservative) way to
+return the complete data set, you need to implement this method
+yourself.
 
 So far we have only discussed how to query observation(s) without
 any regard for preallocation of the underlying memory. To achieve
@@ -411,7 +484,7 @@ memory if at all possible for the given data. For that purpose we
 provide a mutating variant of :func:`getobs` called
 :func:`getobs!`.
 
-.. function:: getobs!(buffer, data, [idx], [obsdim]) -> buffer
+.. function:: getobs!(buffer, data, [idx], [obsdim])
 
    Write the observation(s) from `data` that correspond to the
    given index/indices in `idx` into `buffer`. Note that `idx`
@@ -425,7 +498,8 @@ provide a mutating variant of :func:`getobs` called
    This in turn can significantly improve the memory footprint of
    various data access pattern.
 
-   Defaults to returning ``getobs(data, idx, obsdim)`` in which
+   Unless specifically implemented for the type of `data`, it
+   defaults to returning ``getobs(data, idx, obsdim)``, in which
    case `buffer` is ignored.
 
    :param buffer: \
@@ -433,7 +507,7 @@ provide a mutating variant of :func:`getobs` called
         of `data` into. *Note:* The type and structure should be
         equivalent to the return value of the corresponding
         :func:`getobs` call, since this is how `buffer` is
-        preallocated by default.
+        preallocated by some higher-level functions.
 
    :param data: The object representing a data container.
 
@@ -510,6 +584,11 @@ convenience function :func:`randobs`.
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
+Just like for :func:`nobs` and :func:`getobs`, this package
+natively provides a :func:`randobs` implementation for any
+subtype of ``AbstractArray``. This is again true for arrays of
+arbitrary order.
+
 .. code-block:: jlcon
 
    julia> X = rand(2,4)
@@ -532,16 +611,56 @@ convenience function :func:`randobs`.
     0.0443222
     0.722906
 
+   julia> randobs(X', obsdim = 1) # note the transpose
+   2-element Array{Float64,1}:
+    0.226582
+    0.504629
+
+Similar to :func:`getobs`, you can again use a ``Tuple`` to link
+multiple data containers on a per-observation level.
+
+.. code-block:: jlcon
+
+   julia> X = rand(2,4)
+   2×4 Array{Float64,2}:
+    0.226582  0.933372  0.505208   0.0443222
+    0.504629  0.522172  0.0997825  0.722906
+
+   julia> y = rand(4)
+   4-element Array{Float64,1}:
+    0.812814
+    0.245457
+    0.11202
+    0.000341996
+
+   julia> randobs((X,y)) # single observation
+   ([0.933372,0.522172],0.24545709827626805)
+
+   julia> randobs((X,y), 2) # batch of 2 observations
+   ([0.0443222 0.505208; 0.722906 0.0997825], [0.000341996,0.11202])
+
+For :func:`randobs` it is very important to use tuples in this
+case (in contrast to :func:`getobs`, where it was optional). This
+is because here it is crucial that every involved data container
+samples the same observation index/indices. Otherwise the link
+would be broken and the resulting observations do not correspond
+to each other anymore.
+
+.. code-block:: jlcon
+
+   # WARNING: Wrong code! This is not equivalent to above
+   julia> randobs(X), randobs(y)
+   ([0.933372,0.522172],0.0003419958128361156)
 
 .. _obsdim:
 
 Observation Dimension
 ------------------------
 
-By now we have seen multiple examples for situations, for which
-there were no type-level convention for what exactly denotes an
-observation. This is primarily the case for the rather important
-family of data container types ``AbstractArray``.
+By now we have seen multiple examples for a data container, where
+there was no clear type-level convention for what exactly denotes
+an observation. This is primarily the case for the rather
+important family of data container, ``AbstractArray``.
 
 To see another concrete example, let us consider the following
 random matrix ``X``. This variable will serve as our toy feature
@@ -556,11 +675,11 @@ matrix.
 
 Now that we see ``X`` before us, think about the following
 questions: What is the number of features, and what is the number
-of observations? In our point of view, the correct answer is "it
-depends", because there are two schools of thought that both have
-their merits.
+of observations? It is the opinion of the package authors, that
+the correct answer is "it depends", because there are two schools
+of thought that both have their merits.
 
-1. The typical convention in Statistics, as well as many other
+1. The typical convention in Statistics, as well as many
    frameworks, would be that ``X`` has 2 observations with 4
    features each. This convention makes sense and is intuitive,
    because one could easily see this matrix as a data table with
@@ -588,7 +707,7 @@ either a keyword argument or a positional argument.
 
 The following two code-snippets show different ways to access the
 first observation of some example feature matrix ``X``. In the
-first snipped we assume that each row of ``X`` represents an
+first snippet we assume that each row of ``X`` represents an
 observation.
 
 .. code-block:: jlcon
@@ -661,12 +780,14 @@ end-user convenience. Note that in the REPL, the performance
 impact of using the keyword argument is negligible.
 
 All possible values for the positional API are contained in the
-namespace ``ObsDim``, which itself is exported by ``LearnBase``.
+namespace ``ObsDim``, which itself is provided by the package
+``LearnBase.jl``.
 
 .. class:: ObsDim.Undefined
 
-   Default value for most data sources. Denotes that the concept
-   of an observation dimension is not defined for the given data.
+   Default value for most data sources. It represents the fact
+   that the concept of an observation dimension is not defined
+   for the given data.
 
    Can usually be ommited.
 
