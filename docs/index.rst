@@ -8,17 +8,18 @@ MLDataPattern.jl's documentation
 
 This package represents a community effort to provide a native
 and generic `Julia <http://julialang.org>`_ implementation for
-common data access pattern in Machine Learning. This includes
-widely used access pattern for shuffling, partitioning, and
-resampling data sets of various types and origin. More
-importantly, the package was designed around the core premise of
-allowing any user-defined type to serve as a custom data source
-and/or access pattern in a first class manner.
+commonly used **data access pattern** in Machine Learning. As
+such, it is a part of the `JuliaML <https://github.com/JuliaML>`_
+ecosystem.
 
-MLDataPattern is a part of the `JuliaML
-<https://github.com/JuliaML>`_ ecosystem. In contrast to other
-data-centered packages, it focuses specifically on functionality
-utilized in a Machine Learning context.
+In contrast to other data-centered Julia packages, the focus of
+MLDataPattern is specifically on functionality utilized in a
+Machine Learning context. This includes *shuffling*,
+*partitioning*, and *resampling* data sets of various types and
+origin. More importantly, this package was designed around the
+core premise of allowing any user-defined type to serve as a
+custom data source and/or access pattern in a first class manner.
+
 
 Where to begin?
 ----------------
@@ -64,7 +65,7 @@ interest, such as ``Array``.
 
 The first topic we will cover is about **data containers**. These
 represent a large subgroup of data sources, that all know how
-many observations they contain as well as how to access specific
+many observations they contain, as well as how to access specific
 observation(s). As such they are the most flexible kind of data
 sources and will thus be at the heart of most of the subsequent
 sections. To start off, we will discuss what makes some type a

@@ -159,7 +159,7 @@ Design Overview
 
 This section will serve as a documentation of how and why
 specific parts of MLDataPattern was designed the way it is. As
-such it is *not* a user's guide, but instead a discussion is
+such it is *not* a user's guide, but instead a discussion
 intended to inform potential contributors and users of why things
 are the way they are currently.
 
@@ -181,7 +181,7 @@ discussion of this).
 Furthermore, we wanted to make sure that the decision to opt-in
 to our ecosystem had as little impact to the overall design of
 the user code as possible. This had the consequence of not being
-able to require a common super-type for data containers.
+able to impose a common super-type for data containers.
 Additionally, we could not rely on ``Base`` functions, such as
 ``size``, to be implemented for the data at hand. Worse, we could
 not be confident that (even if implemented) these methods would
@@ -255,8 +255,8 @@ So far we talked about data as if it were an universal truth that
 it can be split somewhere or subsetted somehow. This need not
 be true for all kinds of data we are interested in working with.
 
-This package differentiates between two kinds of data source that
-we will call **iteration-based** (represented as *Data
+This package differentiates between two kinds of data sources
+that we will call **iteration-based** (represented as *Data
 Iterator*), and **index-based** (represented as *Data Container*)
 respectively. None is the superset of the other, but a user type
 can be both. This also implies that none require a type to have
@@ -276,7 +276,7 @@ Data Iterator
     same type and of the same structure (e.g. batch size).
 
     There is no hard distinction between a data iterator that
-    provides the data itself or a data iterator that just
+    provides the data itself, or a data iterator that just
     iterates over some other data iterator/container in some
     manner. For example the data iterator :class:`RandomBatches`
     iterates over randomly sampled batches of the data container

@@ -14,12 +14,12 @@ of custom user-defined data structures.*
 Typical Machine Learning experiments require a lot of rather
 mundane but error prone data handling glue-code. One particularly
 interesting category of data handling functionality are what we
-call *data access pattern*. These include data-splitting,
+call **data access pattern**. These include data-splitting,
 -subsampling, -iteration, and k-fold partitioning.
 
-Data Access Pattern are the sole focus of this package. The main
-design principle it follows, is first class support of
-user-defined data source. This is based on the assumption that
+Data Access Pattern are the sole focus of this package. The
+designed around the requirment of providing first class support
+of user-defined data source. This is based on the assumption that
 the data a user is working with, is likely of some very
 user-specific custom type. That said, we also put a lot of
 attention into first class support for the most commonly used
