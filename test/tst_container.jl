@@ -92,7 +92,7 @@ end
         @test all(getobs(yv) .== y)
         @test getobs(X, ObsDim.Undefined()) === X
         @test getobs(X, ObsDim.Constant(1)) === X
-        @test getobs(X, obsdim = ObsDim.Undefined()) === X
+        @test_throws MethodError getobs(X, obsdim = ObsDim.Undefined())
         @test getobs(X, obsdim = ObsDim.Constant(1)) === X
         @test @inferred(getobs(X))   === X
         @test @inferred(getobs(XX))  === XX
@@ -161,7 +161,7 @@ end
         @test_throws BoundsError getobs((X,y), 151)
         # special case empty tuple
         @test_throws ErrorException @inferred(getobs((), 10, obsdim = 1))
-        @test @inferred(getobs((), obsdim=2)) === ()
+        @test getobs((), obsdim=2) === ()
         @test @inferred(getobs(())) === ()
         @test @inferred(getobs((), ObsDim.Last())) === ()
         @test @inferred(getobs((), 10)) === ()

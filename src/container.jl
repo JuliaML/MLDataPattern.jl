@@ -1,8 +1,14 @@
 getobs(data; obsdim = default_obsdim(data)) =
-    getobs(data, obs_dim(obsdim))
+    __getobs(data, obs_dim(obsdim))
 
-getobs(data, obsdim::Union{ObsDimension,Tuple}) =
-    getobs(data, 1:nobs(data,obsdim))
+# These "__" methods serve the sole purpose of avoiding ambiguities
+# when a user defines "getobs" for his/her type.
+# Basically if obsdim is undefined, we assume there is no
+# getobs(::MyType, ::ObsDimension) to care about.
+# All others are fed back into "getobs" dispatch
+@inline __getobs(data, obsdim::ObsDim.Undefined) = _getobs(data, obsdim)
+@inline __getobs(data, obsdim::ObsDimension) = getobs(data, obsdim)
+@inline __getobs(data::Tuple, obsdim::Tuple) = getobs(data, obsdim)
 
 getobs!(buffer, data) = getobs(data)
 getobs!(buffer, data, idx, obsdim) = getobs(data, idx, obsdim)
@@ -57,12 +63,22 @@ can be specified in a typestable manner as a positional argument
 (see `?LearnBase.ObsDim`), or more conveniently as a smart
 keyword argument.
 """
-function getobs(data, idx; obsdim = default_obsdim(data))
+getobs(data, arg, args...; kw...) = _getobs(data, arg, args...; kw...)
+getobs(data, arg) = _getobs(data, arg)
+
+# These "_" methods serve the sole purpose of avoiding ambiguities
+# when a user defines "getobs" for his/her type.
+# The problem would be getobs(::Any, ::Union{ObsDimension,Tuple}),
+# which would likely collide with getobs(::MyType, idx)
+@inline function _getobs(data, idx; obsdim = default_obsdim(data))
     nobsdim = obs_dim(obsdim)
     # make sure we don't bounce between fallback methods
     typeof(nobsdim) <: ObsDim.Undefined && throw(MethodError(getobs, (data,idx)))
     getobs(data, idx, nobsdim)
 end
+
+@inline _getobs(data, obsdim::Union{ObsDimension,Tuple}) =
+    getobs(data, 1:nobs(data,obsdim), obsdim)
 
 # --------------------------------------------------------------------
 # Arrays
