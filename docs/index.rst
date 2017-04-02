@@ -86,9 +86,14 @@ why that is useful will be discussed in detail in the following
 section.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    documentation/datasubset
+
+.. TODO Labeled Data Sources
+
+.. TODO Folds and Resampling Strategies
+
 
 Indices and tables
 ==================

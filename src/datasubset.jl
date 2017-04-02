@@ -17,7 +17,7 @@ drive or some remote location. In such a scenario one wants to
 load the required data only when needed.
 
 This type is usually not constructed manually, but instead
-instantiated by calling [`datsubset`](@ref),
+instantiated by calling [`datasubset`](@ref),
 [`shuffleobs`](@ref), or [`splitobs`](@ref)
 
 In case `data` is some `Tuple`, the constructor will be mapped
