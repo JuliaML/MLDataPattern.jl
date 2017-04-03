@@ -12,18 +12,18 @@ of custom user-defined data structures.*
 ## Introduction
 
 Typical Machine Learning experiments require a lot of rather
-mundane but error prone data handling glue-code. One particularly
+mundane but error prone data handling glue code. One particularly
 interesting category of data handling functionality are what we
-call **data access pattern**. These include data-splitting,
+call **data access pattern**. These include data subsetting,
 -subsampling, -iteration, and k-fold partitioning.
 
-Data Access Pattern are the sole focus of this package. It was
-designed around the requirment of providing first class support
-for user-defined data sources. This is based on the assumption
-that the data source a user is working with, is likely of some
-very user-specific custom type. That said, we also put a lot of
-attention into first class support for the most commonly used
-data container, such as ``Array``.
+Data Access Pattern are the sole focus of this package.
+MLDataPattern was designed around the requirment of providing
+first class support for user-defined data sources. This idea is
+based on the assumption that the data source a user is working
+with, is likely of some very user-specific custom type. That
+said, we also put a lot of attention into first class support for
+the most commonly used data container, such as ``Array``.
 
 ## Example
 
@@ -36,7 +36,7 @@ in one way or the other.
 ```julia
 # X is a matrix of floats
 # Y is a vector of strings
-X, Y = load_iris()
+X, Y = MLDataUtils.load_iris()
 
 # The iris dataset is ordered according to their labels,
 # which means that we should shuffle the dataset before
@@ -77,7 +77,7 @@ different use-cases.
 
 ## Documentation
 
-check out the [latest documentation](http://mldatapattern.readthedocs.io/en/latest/)
+check out the [latest documentation](http://mldatapatternjl.readthedocs.io/en/latest/)
 
 Additionally, you can make use of Julia's native docsystem. The
 following example shows how to get additional information on
