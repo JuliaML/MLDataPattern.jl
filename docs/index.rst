@@ -90,9 +90,37 @@ section.
 
    documentation/datasubset
 
+At this point we know what data container and data subsets are.
+In particular we discussed how we can split our data container
+into disjoint subsets. We have even seen how we can use tuples to
+link multiple data container together on a per-observation level.
+While we mentioned that this is particular useful for labeled
+data, we did not really elaborate on what that means. In order to
+change that, we will spend the next section solely on working
+with data container that have **targets**. This will put us into
+the realm of supervised learning. We will see how we can work
+with labeled data container and what special functionality is
+available for them.
+
 .. TODO Labeled Data Sources
 
-.. TODO Folds and Resampling Strategies
+Now that we have discussed all the basics, we can start to cover
+some of the more advanced topic. A particularly important aspect
+of modern Machine Learning is what is known as *model selection*.
+Most of the time, this boils down to choosing appropriate
+hyper-parameters for the model one is working with. To avoid bias
+in this selection process, it is quite common to employ some kind
+of **repartitioning strategy** on the training data. One of the
+most famous of these strategies is :math:`k`-folds cross
+validation. Of course the partitioning is just one part of such a
+model selection process, since we still have to compute and
+compare the performance somehow. However, it is an important step
+that is needed to make the most of the available data. So
+important in fact, that we will spend a whole section on it.
+
+.. toctree:: :maxdepth: 2
+
+   documentation/folds
 
 
 Indices and tables
