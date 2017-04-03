@@ -22,12 +22,17 @@ export
     datasubset,
 
     shuffleobs,
-    splitobs
+    splitobs,
+
+    FoldsView,
+    kfolds,
+    leaveout
 
 include("container.jl")
 include("datasubset.jl")
 include("randobs.jl")
 include("shuffleobs.jl")
 include("splitobs.jl")
+include("folds.jl")
 
 end # module
