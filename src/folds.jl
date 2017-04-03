@@ -224,7 +224,7 @@ for ((x_train, y_train), test) in kfolds((X, Y), k = 10)
 end
 ```
 
-By defaults the folds are created using static splits. Use
+By default the folds are created using static splits. Use
 [`shuffleobs`](@ref) to randomly assign observations to the
 folds.
 
