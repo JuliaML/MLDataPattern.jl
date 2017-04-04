@@ -5,18 +5,18 @@ Description
 ============
 
 Create a vector-like representation of `data` where each
-individual element is a tuple of two data subset; a training and
-a test split. The first element of each tuple corresponds to the
+individual element is a tuple of two data subsets; a training and
+a test fold. The first element of each tuple corresponds to the
 indices stored in the corresponding element of `train_indices`,
 while the second element of each tuple corresponds to
 `test_indices`.
 
 The purpose of `FoldsView` is to apply precomputed fold indices
 to some data set in a convenient manner. By itself, `FoldsView`
-is agnoistic to any particular resampling strategy (such as
+is agnostic to any particular resampling strategy (such as
 k-folds). Instead the fold assignment indices, `train_indices`
 and `test_indices`, need to be precomputed by such a strategy and
-then passed to `FoldsView` with a concrete `data` set. The
+then passed to `FoldsView` with a concrete `data` container. The
 resulting object can then be queried for its individual splits
 using `getindex`, or simply iterated over.
 
@@ -43,6 +43,20 @@ Arguments
     typestable manner as a positional argument (see
     `?LearnBase.ObsDim`), or more conveniently as a smart keyword
     argument.
+
+Details
+========
+
+For `FoldsView` to work on some data structure, the desired type
+`MyType` must implement the following interface:
+
+- `LearnBase.getobs(data::MyType, idx, [obsdim::ObsDimension])` :
+    Should return the observation(s) indexed by `idx`.
+    In what form is up to the user.
+    Note that `idx` can be of type `Int` or `AbstractVector`.
+
+- `LearnBase.nobs(data::MyType, [obsdim::ObsDimension])` :
+    Should return the total number of observations in `data`
 
 Author(s)
 ==========
@@ -143,7 +157,7 @@ function Base.getindex(iter::FoldsView, i::Int)
 end
 
 """
-    kfolds(n::Integer, [k = 5]) -> Vector
+    kfolds(n::Integer, [k = 5]) -> Tuple
 
 Compute the train/test indices for `k` folds for `n` observations
 and return them in the form of two vectors. A general rule of
@@ -197,7 +211,7 @@ function kfolds(n::Integer, k::Integer = 5)
 end
 
 """
-    kfolds(data, [k = 5], [obsdim]) -> Tuple
+    kfolds(data, [k = 5], [obsdim]) -> FoldsView
 
 Iterate over a data source in `k` roughly equally partitioned
 folds of `size ≈ nobs(data) / k` by using the type
@@ -253,7 +267,7 @@ kfolds(data, obsdim::Union{Tuple,ObsDimension}) =
     kfolds(data, 5, obsdim)
 
 """
-    leaveout(n::Integer, [size = 1]) -> Vector
+    leaveout(n::Integer, [size = 1]) -> Tuple
 
 Compute the train/test indices for `k ≈ n/size` folds for `n`
 observations and return them in the form of two vectors. Each
@@ -292,7 +306,7 @@ function leaveout(n::Integer, size::Integer = 1)
 end
 
 """
-    leaveout(data, [size = 1], [obsdim]) -> Tuple
+    leaveout(data, [size = 1], [obsdim]) -> FoldsView
 
 Create a [`FoldsView`](@ref) iterator by specifying the
 approximate `size` of each test-fold instead of `k` directly.

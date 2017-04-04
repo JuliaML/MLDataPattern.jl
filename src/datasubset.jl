@@ -63,29 +63,29 @@ Details
 For `DataSubset` to work on some data structure, the desired type
 `MyType` must implement the following interface:
 
-- `getobs(data::MyType, idx, [obsdim::ObsDimension])` :
+- `LearnBase.getobs(data::MyType, idx, [obsdim::ObsDimension])` :
     Should return the observation(s) indexed by `idx`.
     In what form is up to the user.
     Note that `idx` can be of type `Int` or `AbstractVector`.
 
-- `nobs(data::MyType, [obsdim::ObsDimension])` :
+- `LearnBase.nobs(data::MyType, [obsdim::ObsDimension])` :
     Should return the total number of observations in `data`
 
 The following methods can also be provided and are optional:
 
-- `getobs(data::MyType)` :
+- `LearnBase.getobs(data::MyType)` :
     By default this function is the identity function.
     If that is not the behaviour that you want for your type,
     you need to provide this method as well.
 
-- `datasubset(data::MyType, idx, obsdim::ObsDimension)` :
+- `LearnBase.datasubset(data::MyType, idx, obsdim::ObsDimension)` :
     If your custom type has its own kind of subset type, you can
     return it here. An example for such a case are `SubArray` for
     representing a subset of some `AbstractArray`.
     Note: If your type has no use for `obsdim` then dispatch on
     `::ObsDim.Undefined` in the signature.
 
-- `getobs!(buffer, data::MyType, [idx], [obsdim::ObsDimension])` :
+- `LearnBase.getobs!(buffer, data::MyType, [idx], [obsdim::ObsDimension])` :
     Inplace version of `getobs(data, idx, obsdim)`. If this method
     is provided for `MyType`, then `eachobs` and `eachbatch`
     (among others) can preallocate a buffer that is then reused
@@ -93,7 +93,7 @@ The following methods can also be provided and are optional:
     return value of `getobs(::MyType, ...)`, since this is how
     `buffer` is preallocated by default.
 
-- `gettargets(data::MyType, idx, [obsdim::ObsDimension])` :
+- `LearnBase.gettargets(data::MyType, idx, [obsdim::ObsDimension])` :
     If `MyType` has a special way to query targets without
     needing to invoke `getobs`, then you can provide your own
     logic here. This can be useful when the targets of your are
