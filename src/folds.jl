@@ -1,24 +1,22 @@
 """
-    FoldsView(data, train_indices, test_indices, [obsdim])
+    FoldsView(data, train_indices, val_indices, [obsdim])
 
 Description
 ============
 
 Create a vector-like representation of `data` where each
-individual element is a tuple of two data subsets; a training and
-a test fold. The first element of each tuple corresponds to the
-indices stored in the corresponding element of `train_indices`,
-while the second element of each tuple corresponds to
-`test_indices`.
+individual element is partitioning of `data` in the form of a
+tuple of two data subsets (a training- and a validation subset).
 
-The purpose of `FoldsView` is to apply precomputed fold indices
-to some data set in a convenient manner. By itself, `FoldsView`
-is agnostic to any particular resampling strategy (such as
-k-folds). Instead the fold assignment indices, `train_indices`
-and `test_indices`, need to be precomputed by such a strategy and
-then passed to `FoldsView` with a concrete `data` container. The
-resulting object can then be queried for its individual splits
-using `getindex`, or simply iterated over.
+The purpose of `FoldsView` is to apply a precomputed sequence of
+subset assignment indices to some data container in a convenient
+manner. By itself, `FoldsView` is agnostic to any particular
+repartitioning strategy (such as k-folds). Instead, the
+assignments, `train_indices` and `val_indices`, need to be
+precomputed by such a strategy and then passed to `FoldsView`
+with a concrete `data` container. The resulting object can then
+be queried for its individual folds using `getindex`, or simply
+iterated over.
 
 Arguments
 ==========
@@ -28,14 +26,15 @@ Arguments
     [`nobs`](@ref) (see Details for more information).
 
 - **`train_indices`** : Vector of integer vectors containing the
-    indices-vectors of each *training* fold. This means that each
-    element of this vector is a vector of observation-indices.
-    The length of this vector must match `test_indices`.
+    sequence of training assignments. This means that each
+    element is a vector of indices that describe each *training*
+    subset. The length of this vector must match `val_indices`.
 
-- **`test_indices`** :  Vector of integer vectors containing the
-    indices-vectors of each *test* fold. This means that each
-    element of this vector is a vector of observation-indices.
-    The length of this vector must match `train_indices`.
+- **`val_indices`** : Vector of integer vectors containing the
+    sequence of validation assignments. This means that each
+    element is a vector of indices that describe each
+    *validation* subset. The length of this vector must match
+    `train_indices`.
 
 - **`obsdim`** : Optional. If it makes sense for the type of
     `data`, `obsdim` can be used to specify which dimension of
@@ -68,32 +67,33 @@ Examples
 =========
 
     # Load iris data for demonstration purposes
-    X, y = load_iris()
+    X, y = MLDataUtils.load_iris()
 
-    # Compute train- and test-fold indices using kfolds
-    train_idx, test_idx = kfolds(nobs(X), 10)
+    # Compute train- and validation-partition indices using kfolds
+    train_idx, val_idx = kfolds(nobs(X), 10)
 
-    # These two vectors contain the indices vector for each fold
+    # These two vectors contain the indices vector for each partitioning
     @assert typeof(train_idx) <: Vector{Vector{Int64}}
-    @assert typeof(test_idx)  <: Vector{UnitRange{Int64}}
-    @assert length(train_idx) == length(test_idx) == 10
+    @assert typeof(val_idx)   <: Vector{UnitRange{Int64}}
+    @assert length(train_idx) == length(val_idx) == 10
 
-    # Using KFolds in an unsupervised setting
-    for (train_X, test_X) in FoldsView(X, train_idx, test_idx)
+    # Using the repartitioning as an oterator
+    for (train_X, val_X) in FoldsView(X, train_idx, val_idx)
         @assert size(train_X) == (4, 135)
-        @assert size(test_X) == (4, 15)
+        @assert size(val_X) == (4, 15)
     end
 
     # Calling kfolds with the dataset will create
-    # the FoldsView for you automatically
-    for (train_X, test_X) in kfolds(X, 10)
+    # the FoldsView for you automatically.
+    # Thus this code is equivalent to above
+    for (train_X, val_X) in kfolds(X, 10)
         @assert size(train_X) == (4, 135)
-        @assert size(test_X) == (4, 15)
+        @assert size(val_X) == (4, 15)
     end
 
     # leavout is a shortcut for setting k = nobs(X)
-    for (train_X, test_X) in leaveout(X)
-        @assert size(test_X) == (4, 1)
+    for (train_X, val_X) in leaveout(X)
+        @assert size(val_X) == (4, 1)
     end
 
 see also
@@ -105,34 +105,34 @@ see also
 immutable FoldsView{T,D,O,A1<:AbstractArray,A2<:AbstractArray} <: AbstractArray{T,1}
     data::D
     train_indices::A1
-    test_indices::A2
+    val_indices::A2
     obsdim::O
 
     function (::Type{FoldsView{T,D,O,A1,A2}}){T,D,O,A1<:AbstractArray,A2<:AbstractArray}(
-            data::D, train_indices::A1, test_indices::A2, obsdim::O)
+            data::D, train_indices::A1, val_indices::A2, obsdim::O)
         n = nobs(data, obsdim)
         (eltype(train_indices) <: AbstractArray{Int}) || throw(ArgumentError("The parameter \"train_indices\" must be an array of integer arrays"))
-        (eltype(test_indices)  <: AbstractArray{Int}) || throw(ArgumentError("The parameter \"test_indices\" must be an array of integer arrays"))
-        2 <= length(train_indices) <= n || throw(ArgumentError("The amount of train- and test-indices must be within 2:$n respectively"))
-        length(train_indices) == length(test_indices) || throw(DimensionMismatch("The amount of train- and test-indices must match"))
-        new{T,D,O,A1,A2}(data, train_indices, test_indices, obsdim)
+        (eltype(val_indices)  <: AbstractArray{Int}) || throw(ArgumentError("The parameter \"val_indices\" must be an array of integer arrays"))
+        2 <= length(train_indices) <= n || throw(ArgumentError("The amount of train- and validation-indices must be within 2:$n respectively"))
+        length(train_indices) == length(val_indices) || throw(DimensionMismatch("The amount of train- and validation-indices must match"))
+        new{T,D,O,A1,A2}(data, train_indices, val_indices, obsdim)
     end
 end
 
-function FoldsView{D,O,A1<:AbstractArray,A2<:AbstractArray}(data::D, train_indices::A1, test_indices::A2, obsdim::O)
+function FoldsView{D,O,A1<:AbstractArray,A2<:AbstractArray}(data::D, train_indices::A1, val_indices::A2, obsdim::O)
     n = nobs(data, obsdim)
     # TODO: Move this back into the inner constructor after the
     #       "T = typeof(...)" line below is removed
     (1 <= minimum(minimum.(train_indices)) && maximum(maximum.(train_indices)) <= n) || throw(DimensionMismatch("All training indices must be within 1:$n"))
-    (1 <= minimum(minimum.(test_indices))  && maximum(maximum.(test_indices))  <= n) || throw(DimensionMismatch("All test indices must be within 1:$n"))
+    (1 <= minimum(minimum.(val_indices))  && maximum(maximum.(val_indices))  <= n) || throw(DimensionMismatch("All validation indices must be within 1:$n"))
     # FIXME: In 0.6 it should be possible to compute just the return
     #        type without executing the function
-    T = typeof((datasubset(data, train_indices[1], obsdim), datasubset(data, test_indices[1], obsdim)))
-    FoldsView{T,D,O,A1,A2}(data, train_indices, test_indices, obsdim)
+    T = typeof((datasubset(data, train_indices[1], obsdim), datasubset(data, val_indices[1], obsdim)))
+    FoldsView{T,D,O,A1,A2}(data, train_indices, val_indices, obsdim)
 end
 
-FoldsView(data, train_indices::AbstractArray, test_indices::AbstractArray; obsdim = default_obsdim(data)) =
-    FoldsView(data, train_indices, test_indices, obs_dim(obsdim))
+FoldsView(data, train_indices::AbstractArray, val_indices::AbstractArray; obsdim = default_obsdim(data)) =
+    FoldsView(data, train_indices, val_indices, obs_dim(obsdim))
 
 # compare if both FoldsViews describe the same folds of the same data
 # we don't care how the indices are stored, just that they match
@@ -140,7 +140,7 @@ FoldsView(data, train_indices::AbstractArray, test_indices::AbstractArray; obsdi
 function Base.:(==)(fv1::FoldsView,fv2::FoldsView)
     fv1.data == fv2.data &&
         all(all(i1==i2 for (i1,i2) in zip(I1,I2)) for (I1,I2) in zip(fv1.train_indices,fv2.train_indices)) &&
-        all(all(i1==i2 for (i1,i2) in zip(I1,I2)) for (I1,I2) in zip(fv1.test_indices,fv2.test_indices)) &&
+        all(all(i1==i2 for (i1,i2) in zip(I1,I2)) for (I1,I2) in zip(fv1.val_indices,fv2.val_indices)) &&
         fv1.obsdim == fv2.obsdim
 end
 
@@ -153,41 +153,47 @@ Base.size(iter::FoldsView) = (length(iter.train_indices),)
 
 function Base.getindex(iter::FoldsView, i::Int)
     (datasubset(iter.data, iter.train_indices[i], iter.obsdim),
-     datasubset(iter.data, iter.test_indices[i], iter.obsdim))
+     datasubset(iter.data, iter.val_indices[i], iter.obsdim))
 end
 
 """
     kfolds(n::Integer, [k = 5]) -> Tuple
 
-Compute the train/test indices for `k` folds for `n` observations
-and return them in the form of two vectors. A general rule of
-thumb is to use either `k = 5` or `k = 10`.
-
-*Note*: The sizes of the folds may differ by up to 1 observation
-depending on if the total number of observations is dividable by `k`.
+Compute the train/validation assignments for `k` repartitions of
+`n` observations, and return them in the form of two vectors. The
+first vector contains the index-vectors for the training subsets,
+and the second vector the index-vectors for the validation subsets
+respectively. A general rule of thumb is to use either `k = 5` or
+`k = 10`. The following code snipped generates the indices
+assignments for `k = 5`
 
 ```julia
-julia> train_idx, test_idx = kfolds(10, 4);
+julia> train_idx, val_idx = kfolds(10, 5);
+```
 
+Each observation is assigned to the validation subset once (and
+only once). Thus, a union over all validation index-vectors
+reproduces the full range `1:n`. Note that there is no random
+assignment of observations to subsets, which means that adjacent
+observations are likely to be part of the same validation subset.
+
+```julia
 julia> train_idx
-4-element Array{Array{Int64,1},1}:
- [4,5,6,7,8,9,10]
- [1,2,3,7,8,9,10]
+5-element Array{Array{Int64,1},1}:
+ [3,4,5,6,7,8,9,10]
+ [1,2,5,6,7,8,9,10]
+ [1,2,3,4,7,8,9,10]
  [1,2,3,4,5,6,9,10]
  [1,2,3,4,5,6,7,8]
 
-julia> test_idx
-4-element Array{UnitRange{Int64},1}:
- 1:3
- 4:6
+julia> val_idx
+5-element Array{UnitRange{Int64},1}:
+ 1:2
+ 3:4
+ 5:6
  7:8
  9:10
 ```
-
-Each observation is assigned to the test indices once (and only
-once). Note that there is no random assignment of observations to
-folds, which means that adjacent observations are likely to be
-part of the same fold.
 """
 function kfolds(n::Integer, k::Integer = 5)
     2 <= k <= n || throw(ArgumentError("n must be positive and k must to be within 2:$(max(2,n))"))
@@ -202,38 +208,44 @@ function kfolds(n::Integer, k::Integer = 5)
     end
     # Compute start offset for each fold
     offsets = cumsum(sizes) .- sizes .+ 1
-    # Compute the test indices using the offsets and sizes
-    test_indices = map((o,s)->(o:o+s-1), offsets, sizes)
-    # The train indices are then the indicies not in test
-    train_indices = map(idx->setdiff(1:n,idx), test_indices)
+    # Compute the validation indices using the offsets and sizes
+    val_indices = map((o,s)->(o:o+s-1), offsets, sizes)
+    # The train indices are then the indicies not in validation
+    train_indices = map(idx->setdiff(1:n,idx), val_indices)
     # We return a tuple of arrays
-    train_indices, test_indices
+    train_indices, val_indices
 end
 
 """
     kfolds(data, [k = 5], [obsdim]) -> FoldsView
 
-Iterate over a data source in `k` roughly equally partitioned
-folds of `size ≈ nobs(data) / k` by using the type
-[`FoldsView`](@ref).
+Repartition a `data` container `k` times using a `k` folds
+strategy and return the sequence of folds as a lazy
+[`FoldsView`](@ref). The resulting `FoldsView` can then be
+indexed into or iterated over. Either way, only data subsets are
+created. That means that no actual data is copied until
+[`getobs`](@ref) is invoked.
 
-The `data` will be split into different training and test
-portions in `k` different and unique ways, each time using a
-different fold as the testset. In the case that the size of the
-dataset is not dividable by the specified `k`, the remaining
-observations will be evenly distributed among the folds.
+Conceptually, a k-folds repartitioning strategy divides the given
+`data` into `k` roughly equal-sized parts. Each part will serve
+as validation set once, while the remaining parts are used for
+training. This results in `k` different partitions of `data`.
+
+In the case that the size of the dataset is not dividable by the
+specified `k`, the remaining observations will be evenly
+distributed among the folds.
 
 ```julia
-for (x_train, x_test) in kfolds(X, k = 10)
+for (x_train, x_val) in kfolds(X, k = 10)
     # code called 10 times
-    # nobs(x_test) may differ up to ±1 over iterations
+    # nobs(x_val) may differ up to ±1 over iterations
 end
 ```
 
 Multiple variables are supported (e.g. for labeled data)
 
 ```julia
-for ((x_train, y_train), test) in kfolds((X, Y), k = 10)
+for ((x_train, y_train), val) in kfolds((X, Y), k = 10)
     # ...
 end
 ```
@@ -243,7 +255,7 @@ By default the folds are created using static splits. Use
 folds.
 
 ```julia
-for (x_train, x_test) in kfolds(shuffleobs(X), k = 10)
+for (x_train, x_val) in kfolds(shuffleobs(X), k = 10)
     # ...
 end
 ```
@@ -253,8 +265,8 @@ a related function.
 """
 function kfolds(data, k::Integer, obsdim)
     n = nobs(data, obsdim)
-    train_indices, test_indices = kfolds(n, k)
-    FoldsView(data, train_indices, test_indices, obsdim)
+    train_indices, val_indices = kfolds(n, k)
+    FoldsView(data, train_indices, val_indices, obsdim)
 end
 
 kfolds(data, k::Integer; obsdim = default_obsdim(data)) =
@@ -269,14 +281,25 @@ kfolds(data, obsdim::Union{Tuple,ObsDimension}) =
 """
     leaveout(n::Integer, [size = 1]) -> Tuple
 
-Compute the train/test indices for `k ≈ n/size` folds for `n`
-observations and return them in the form of two vectors. Each
-test fold will have either `size` or `size+1` observations
-assigned to it.
+Compute the train/validation assignments for `k ≈ n/size`
+repartitions of `n` observations, and return them in the form of
+two vectors. The first vector contains the index-vectors for the
+training subsets, and the second vector the index-vectors for the
+validation subsets respectively. Each validation subset will have
+either `size` or `size+1` observations assigned to it. The
+following code snipped generates the index-vectors for `size = 2`.
 
 ```julia
-julia> train_idx, test_idx = leaveout(10, 2);
+julia> train_idx, val_idx = leaveout(10, 2);
+```
 
+Each observation is assigned to the validation subset once (and
+only once). Thus, a union over all validation index-vectors
+reproduces the full range `1:n`. Note that there is no random
+assignment of observations to subsets, which means that adjacent
+observations are likely to be part of the same validation subset.
+
+```julia
 julia> train_idx
 5-element Array{Array{Int64,1},1}:
  [3,4,5,6,7,8,9,10]
@@ -285,7 +308,7 @@ julia> train_idx
  [1,2,3,4,5,6,9,10]
  [1,2,3,4,5,6,7,8]
 
-julia> test_idx
+julia> val_idx
 5-element Array{UnitRange{Int64},1}:
  1:2
  3:4
@@ -293,11 +316,6 @@ julia> test_idx
  7:8
  9:10
 ```
-
-Each observation is assigned to the test indices once (and only
-once). Note that there is no random assignment of observations to
-folds, which means that adjacent observations are likely to be
-part of the same fold.
 """
 function leaveout(n::Integer, size::Integer = 1)
     1 <= size <= floor(n/2) || throw(ArgumentError("size must to be within 1:$(floor(Int,n/2))"))
@@ -309,14 +327,14 @@ end
     leaveout(data, [size = 1], [obsdim]) -> FoldsView
 
 Create a [`FoldsView`](@ref) iterator by specifying the
-approximate `size` of each test-fold instead of `k` directly.
-Default is `size = 1`, which results in a "leave-one-out"
-paritioning.
+approximate `size` of each validation subset, instead of `k`
+directly. Default is `size = 1`, which results in a
+"leave-one-out" paritioning.
 
 ```julia
-for (train, test) in leaveout(X, size = 2)
+for (train, val) in leaveout(X, size = 2)
     # if nobs(X) is dividable by 2,
-    # then nobs(test) will be 2 for each iteraton,
+    # then nobs(val) will be 2 for each iteraton,
     # otherwise it may be 3 for the first few iterations.
 end
 ```
@@ -326,8 +344,8 @@ related function.
 """
 function leaveout(data, size, obsdim)
     n = nobs(data, obsdim)
-    train_indices, test_indices = leaveout(n, size)
-    FoldsView(data, train_indices, test_indices, obsdim)
+    train_indices, val_indices = leaveout(n, size)
+    FoldsView(data, train_indices, val_indices, obsdim)
 end
 
 leaveout(data, size::Integer; obsdim = default_obsdim(data)) =

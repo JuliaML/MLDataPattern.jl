@@ -72,12 +72,12 @@ println("<HEARTBEAT>")
         for fv in (@inferred(FoldsView(var, f1, f2)),
                    @inferred(FoldsView(var, f1, f2, ObsDim.Last())),
                    FoldsView(var, f1, f2, obsdim=:last))
-            @test sum(length.(fv.test_indices)) == nobs(var)
+            @test sum(length.(fv.val_indices)) == nobs(var)
             @test fv.data === var
             @test length(fv.train_indices) === 5
-            @test length(fv.test_indices)  === 5
+            @test length(fv.val_indices)  === 5
             @test fv.train_indices === f1
-            @test fv.test_indices  === f2
+            @test fv.val_indices  === f2
             for ((tr, te), i1, i2) in zip(fv, f1, f2)
                 @test tr == datasubset(var, i1)
                 @test te == datasubset(var, i2)
@@ -88,9 +88,9 @@ println("<HEARTBEAT>")
         fv = @inferred(FoldsView(var, f1, f2))
         @test fv.data === var
         @test length(fv.train_indices) === 10
-        @test length(fv.test_indices)  === 10
+        @test length(fv.val_indices)  === 10
         @test fv.train_indices === f1
-        @test fv.test_indices  === f2
+        @test fv.val_indices  === f2
         for ((tr, te), i1, i2) in zip(fv, f1, f2)
             @test tr == datasubset(var, i1)
             @test te == datasubset(var, i2)
@@ -98,11 +98,11 @@ println("<HEARTBEAT>")
 
         f1, f2 = kfolds(nobs(var), 20)
         fv = @inferred(FoldsView(var, f1, f2))
-        cumobs = length(fv.test_indices[1])
-        for i = 2:length(fv.test_indices)
-            cumobs += length(fv.test_indices[i])
-            @test 7 <= length(fv.test_indices[i]) <= length(fv.test_indices[1]) <= 8
-            @test 1 <= minimum(fv.test_indices[i-1]) < minimum(fv.test_indices[i]) < nobs(var)
+        cumobs = length(fv.val_indices[1])
+        for i = 2:length(fv.val_indices)
+            cumobs += length(fv.val_indices[i])
+            @test 7 <= length(fv.val_indices[i]) <= length(fv.val_indices[1]) <= 8
+            @test 1 <= minimum(fv.val_indices[i-1]) < minimum(fv.val_indices[i]) < nobs(var)
         end
         @test cumobs == nobs(var)
 
@@ -232,9 +232,9 @@ println("<HEARTBEAT>")
                    @inferred(kfolds(var,5,ObsDim.Last())),
                    kfolds(var,k=5,obsdim=:last))
             @test typeof(kf) <: FoldsView
-            @test length(kf.train_indices) == length(kf.test_indices) == 5
+            @test length(kf.train_indices) == length(kf.val_indices) == 5
             @test kf.data === var
-            @test sum(length.(kf.test_indices)) == nobs(var)
+            @test sum(length.(kf.val_indices)) == nobs(var)
         end
     end
     println("<HEARTBEAT>")
@@ -270,22 +270,22 @@ println("<HEARTBEAT>")
                    @inferred(leaveout(var,1,ObsDim.Last())),
                    leaveout(var,size=1,obsdim=:last))
             @test typeof(kf) <: FoldsView
-            @test length(kf.train_indices) == length(kf.test_indices) == 150
+            @test length(kf.train_indices) == length(kf.val_indices) == 150
             @test kf.data === var
-            @test sum(length.(kf.test_indices)) == nobs(var)
+            @test sum(length.(kf.val_indices)) == nobs(var)
         end
         for kf in (@inferred(leaveout(var,30)),
                    @inferred(leaveout(var,30,ObsDim.Last())),
                    leaveout(var,size=30,obsdim=:last))
             @test typeof(kf) <: FoldsView
-            @test length(kf.train_indices) == length(kf.test_indices) == 5
+            @test length(kf.train_indices) == length(kf.val_indices) == 5
             @test kf.data === var
-            @test sum(length.(kf.test_indices)) == nobs(var)
+            @test sum(length.(kf.val_indices)) == nobs(var)
         end
     end
     println("<HEARTBEAT>")
     for v1 in (X, Xv), v2 in (y, yv)
-        @test length(leaveout((v1, v2)).test_indices) == 150
+        @test length(leaveout((v1, v2)).val_indices) == 150
         kf = leaveout((v1, v2), size = 10)
         @test typeof(kf) <: FoldsView
         for ((train_x, train_y), (test_x, test_y)) in kf
