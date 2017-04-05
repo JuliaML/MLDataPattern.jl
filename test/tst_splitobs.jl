@@ -2,6 +2,20 @@
 @test_throws DimensionMismatch splitobs((X, rand(149)), obsdim=:last)
 
 @testset "typestability" begin
+    @testset "Int" begin
+        @test_throws ArgumentError splitobs(10, 0.)
+        @test_throws ArgumentError splitobs(10, 1.)
+        @test_throws ArgumentError splitobs(10, (0.2,0.0))
+        @test_throws ArgumentError splitobs(10, (0.2,0.8))
+        @test_throws MethodError splitobs(10, 0.5, ObsDim.Undefined())
+        @test typeof(@inferred(splitobs(10))) <: NTuple{2}
+        @test eltype(@inferred(splitobs(10))) <: UnitRange
+        @test typeof(@inferred(splitobs(10, 0.5))) <: NTuple{2}
+        @test typeof(@inferred(splitobs(10, (0.5,0.2)))) <: NTuple{3}
+        @test eltype(@inferred(splitobs(10, 0.5))) <: UnitRange
+        @test eltype(@inferred(splitobs(10, (0.5,0.2)))) <: UnitRange
+        @test_throws ErrorException @inferred(splitobs(10, at=0.5))
+    end
     for var in vars
         @test_throws ArgumentError splitobs(var, 0.)
         @test_throws ArgumentError splitobs(var, 1.)
@@ -36,10 +50,31 @@
     end
 end
 
+@testset "Int" begin
+    @test splitobs(10) == (1:7,8:10)
+    @test splitobs(10, 0.5) == (1:5,6:10)
+    @test splitobs(10, (0.5,0.3)) == (1:5,6:8,9:10)
+    @test splitobs(150) == splitobs(150, 0.7)
+    @test splitobs(150, at=0.5) == splitobs(150, 0.5)
+    @test splitobs(150, at=(0.5,0.2)) == splitobs(150, (0.5,0.2))
+    @test nobs.(splitobs(150)) == (105,45)
+    @test nobs.(splitobs(150, at=(.2,.3))) == (30,45,75)
+    @test nobs.(splitobs(150, at=(.1,.2,.3))) == (15,30,45,60)
+    # tests if all obs are still present and none duplicated
+    @test sum(sum.(getobs.(splitobs(150)))) == 11325
+    @test sum(sum.(splitobs(150,at=.1))) == 11325
+    @test sum(sum.(splitobs(150,at=(.2,.1)))) == 11325
+    @test sum(sum.(splitobs(150,at=(.1,.4,.2)))) == 11325
+    @test sum.(splitobs(150)) == (5565, 5760)
+end
+
+println("<HEARTBEAT>")
+
 @testset "Array, SparseArray, and SubArray" begin
     for var in (Xs, ys, vars...)
         @test splitobs(var) == splitobs(var, 0.7, ObsDim.Last())
         @test splitobs(var, at=0.5) == splitobs(var, 0.5, ObsDim.Last())
+        @test splitobs(var, at=(0.5,0.2)) == splitobs(var, (0.5,0.2), ObsDim.Last())
         @test splitobs(var, obsdim=1) == splitobs(var, 0.7, ObsDim.First())
         @test nobs.(splitobs(var)) == (105,45)
         @test nobs.(splitobs(var, at=(.2,.3))) == (30,45,75)

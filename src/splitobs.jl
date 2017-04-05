@@ -1,4 +1,37 @@
 """
+    splitobs(n::Int, [at = 0.7]) -> Tuple
+
+TODO
+"""
+splitobs(n::Int; at = 0.7) = splitobs(n, at)
+
+# partition into 2 sets
+function splitobs(n::Int, at::AbstractFloat)
+    0 < at < 1 || throw(ArgumentError("the parameter \"at\" must be in interval (0, 1)"))
+    n1 = clamp(round(Int, at*n), 1, n)
+    (1:n1, n1+1:n)
+end
+
+# has to be outside the generated function
+_ispos(x) = x > 0
+# partition into length(at)+1 sets
+# we use @generated because we compute "N+1"
+@generated function splitobs{N}(n::Int, at::NTuple{N,AbstractFloat})
+    quote
+        (all(map(_ispos, at)) && sum(at) < 1) || throw(ArgumentError("all elements in \"at\" must be positive and their sum must be smaller than 1"))
+        nleft = n
+        lst = UnitRange{Int}[]
+        for (i, sz) in enumerate(at)
+            ni = clamp(round(Int, sz*n), 0, nleft)
+            push!(lst, n-nleft+1:n-nleft+ni)
+            nleft -= ni
+        end
+        push!(lst, n-nleft+1:n)
+        $(Expr(:tuple, (:(lst[$i]) for i in 1:N+1)...))
+    end
+end
+
+"""
     splitobs(data, [at = 0.7], [obsdim])
 
 Split the `data` into multiple subsets proportional to the
@@ -70,27 +103,13 @@ splitobs(data; at = 0.7, obsdim = default_obsdim(data)) =
 
 # partition into 2 sets
 function splitobs(data, at::AbstractFloat, obsdim=default_obsdim(data))
-    0 < at < 1 || throw(ArgumentError("the parameter \"at\" must be in interval (0, 1)"))
     n = nobs(data, obsdim)
-    n1 = clamp(round(Int, at*n), 1, n)
-    datasubset(data, 1:n1, obsdim), datasubset(data, n1+1:n, obsdim)
+    idx1, idx2 = splitobs(n, at)
+    datasubset(data, idx1, obsdim), datasubset(data, idx2, obsdim)
 end
 
-# has to be outside the generated function
-_ispos(x) = x > 0
 # partition into length(at)+1 sets
-@generated function splitobs{N,T<:AbstractFloat}(data, at::NTuple{N,T}, obsdim=default_obsdim(data))
-    quote
-        (all(map(_ispos, at)) && sum(at) < 1) || throw(ArgumentError("all elements in \"at\" must be positive and their sum must be smaller than 1"))
-        n = nobs(data, obsdim)
-        nleft = n
-        lst = UnitRange{Int}[]
-        for (i,sz) in enumerate(at)
-            ni = clamp(round(Int, sz*n), 0, nleft)
-            push!(lst, n-nleft+1:n-nleft+ni)
-            nleft -= ni
-        end
-        push!(lst, n-nleft+1:n)
-        $(Expr(:tuple, (:(datasubset(data, lst[$i], obsdim)) for i in 1:N+1)...))
-    end
+function splitobs{N,T<:AbstractFloat}(data, at::NTuple{N,T}, obsdim=default_obsdim(data))
+    n = nobs(data, obsdim)
+    map(idx->datasubset(data, idx, obsdim), splitobs(n, at))
 end
