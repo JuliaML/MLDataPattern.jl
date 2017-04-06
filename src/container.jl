@@ -1,5 +1,5 @@
 getobs(data; obsdim = default_obsdim(data)) =
-    __getobs(data, obs_dim(obsdim))
+    __getobs(data, convert(LearnBase.ObsDimension,obsdim))
 
 # These "__" methods serve the sole purpose of avoiding ambiguities
 # when a user defines "getobs" for his/her type.
@@ -13,7 +13,7 @@ getobs(data; obsdim = default_obsdim(data)) =
 getobs!(buffer, data) = getobs(data)
 getobs!(buffer, data, idx, obsdim) = getobs(data, idx, obsdim)
 getobs!(buffer, data, idx; obsdim = default_obsdim(data)) =
-    getobs!(buffer, data, idx, obs_dim(obsdim))
+    getobs!(buffer, data, idx, convert(LearnBase.ObsDimension,obsdim))
 # NOTE: default to not use buffer since copy! may not be defined
 # getobs!(buffer, data) = copy!(buffer, getobs(data))
 # getobs!(buffer, data, idx, obsdim) = copy!(buffer, getobs(data, idx, obsdim))
@@ -38,7 +38,7 @@ dimension denotes the observations, if that concept makes sense for
 the type of `data`. See `?LearnBase.ObsDim` for more information.
 """
 function nobs(data; obsdim = default_obsdim(data))::Int
-    nobsdim = obs_dim(obsdim)
+    nobsdim = convert(LearnBase.ObsDimension,obsdim)
     # make sure we don't bounce between fallback methods
     typeof(nobsdim) <: ObsDim.Undefined && throw(MethodError(nobs, (data,)))
     nobs(data, nobsdim)
@@ -71,7 +71,7 @@ getobs(data, arg) = _getobs(data, arg)
 # The problem would be getobs(::Any, ::Union{ObsDimension,Tuple}),
 # which would likely collide with getobs(::MyType, idx)
 @inline function _getobs(data, idx; obsdim = default_obsdim(data))
-    nobsdim = obs_dim(obsdim)
+    nobsdim = convert(LearnBase.ObsDimension,obsdim)
     # make sure we don't bounce between fallback methods
     typeof(nobsdim) <: ObsDim.Undefined && throw(MethodError(getobs, (data,idx)))
     getobs(data, idx, nobsdim)

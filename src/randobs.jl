@@ -14,10 +14,10 @@ For this function to work, the type of `data` must implement
 [`nobs`](@ref) and [`getobs`](@ref).
 """
 randobs(data; obsdim = default_obsdim(data)) =
-    randobs(data, obs_dim(obsdim))
+    randobs(data, convert(LearnBase.ObsDimension,obsdim))
 
 randobs(data, n; obsdim = default_obsdim(data)) =
-    randobs(data, n, obs_dim(obsdim))
+    randobs(data, n, convert(LearnBase.ObsDimension,obsdim))
 
 randobs(data, obsdim::Union{Tuple,ObsDimension}) =
     getobs(data, rand(1:nobs(data, obsdim)), obsdim)

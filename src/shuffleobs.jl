@@ -28,7 +28,7 @@ For this function to work, the type of `data` must implement
 for more information.
 """
 shuffleobs(data; obsdim = default_obsdim(data)) =
-    shuffleobs(data, obs_dim(obsdim))
+    shuffleobs(data, convert(LearnBase.ObsDimension,obsdim))
 
 function shuffleobs(data, obsdim)
     datasubset(data, shuffle(1:nobs(data, obsdim)), obsdim)

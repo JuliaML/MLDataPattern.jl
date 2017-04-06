@@ -284,10 +284,10 @@ datasubset(data, indices, obsdim) =
 for fun in (:DataSubset, :datasubset)
     @eval begin
         ($fun)(data, indices; obsdim = default_obsdim(data)) =
-            ($fun)(data, indices, obs_dim(obsdim))
+            ($fun)(data, indices, convert(LearnBase.ObsDimension,obsdim))
 
         function ($fun)(data; obsdim = default_obsdim(data))
-            nobsdim = obs_dim(obsdim)
+            nobsdim = convert(LearnBase.ObsDimension,obsdim)
             ($fun)(data, 1:nobs(data, nobsdim), nobsdim)
         end
 

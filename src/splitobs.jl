@@ -99,7 +99,7 @@ train, test = splitobs((X,y), 0.7, ObsDim.First())
 see [`DataSubset`](@ref) for more information.
 """
 splitobs(data; at = 0.7, obsdim = default_obsdim(data)) =
-    splitobs(data, at, obs_dim(obsdim))
+    splitobs(data, at, convert(LearnBase.ObsDimension,obsdim))
 
 # partition into 2 sets
 function splitobs(data, at::AbstractFloat, obsdim=default_obsdim(data))

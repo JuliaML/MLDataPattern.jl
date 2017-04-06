@@ -132,7 +132,7 @@ function FoldsView{D,O,A1<:AbstractArray,A2<:AbstractArray}(data::D, train_indic
 end
 
 FoldsView(data, train_indices::AbstractArray, val_indices::AbstractArray; obsdim = default_obsdim(data)) =
-    FoldsView(data, train_indices, val_indices, obs_dim(obsdim))
+    FoldsView(data, train_indices, val_indices, convert(LearnBase.ObsDimension,obsdim))
 
 # compare if both FoldsViews describe the same folds of the same data
 # we don't care how the indices are stored, just that they match
@@ -270,10 +270,10 @@ function kfolds(data, k::Integer, obsdim)
 end
 
 kfolds(data, k::Integer; obsdim = default_obsdim(data)) =
-    kfolds(data, k, obs_dim(obsdim))
+    kfolds(data, k, convert(LearnBase.ObsDimension,obsdim))
 
 kfolds(data; k = 5, obsdim = default_obsdim(data)) =
-    kfolds(data, k, obs_dim(obsdim))
+    kfolds(data, k, convert(LearnBase.ObsDimension,obsdim))
 
 kfolds(data, obsdim::Union{Tuple,ObsDimension}) =
     kfolds(data, 5, obsdim)
@@ -349,10 +349,10 @@ function leaveout(data, size, obsdim)
 end
 
 leaveout(data, size::Integer; obsdim = default_obsdim(data)) =
-    leaveout(data, size, obs_dim(obsdim))
+    leaveout(data, size, convert(LearnBase.ObsDimension,obsdim))
 
 leaveout(data; size = 1, obsdim = default_obsdim(data)) =
-    leaveout(data, size, obs_dim(obsdim))
+    leaveout(data, size, convert(LearnBase.ObsDimension,obsdim))
 
 leaveout(data, obsdim::Union{Tuple,ObsDimension}) =
     leaveout(data, 1, obsdim)

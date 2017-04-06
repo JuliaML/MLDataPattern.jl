@@ -5,7 +5,7 @@ using LearnBase
 using MLLabelUtils
 using Compat
 
-using LearnBase: ObsDimension, obs_dim
+using LearnBase: ObsDimension
 import LearnBase: nobs, getobs, getobs!, gettarget, gettargets, targets, datasubset, default_obsdim
 
 export
