@@ -857,12 +857,11 @@ into a training-, (validation-,) and test-set, are often
 performed offline or sometimes even predefined by a third party
 (e.g. the initial authors of a benchmark data set). That said, it
 is useful to efficiently and conveniently be able to split a
-given data set into differently sized subsets.
-
-For that purpose, this package provides a function called
-:func:`splitobs`. As the name subtly hints, this function does
-not shuffle the content, but instead performs a static split at
-the relative position specified in ``at``.
+given data set into differently sized subsets. For that purpose,
+this package provides a function called :func:`splitobs`. As the
+name subtly hints, this function does not shuffle the content,
+but instead performs a static split at the relative position
+specified in ``at``.
 
 .. function:: splitobs(data, [at = 0.7], [obsdim]) -> Tuple
 
@@ -872,9 +871,10 @@ the relative position specified in ``at``.
    the rest.
 
    Note that this function will perform the splits statically and
-   thus not perform any randomization.  If you want to perform a
-   random assignment of observations to subset, use the function
-   in combination with :func:`shuffleobs`.
+   thus not perform any shuffling or sampling. If you want to
+   perform a random assignment of observations to the subsets,
+   you can use the function in combination with
+   :func:`shuffleobs`.
 
    :param data: The object representing a data container.
 
@@ -907,9 +907,13 @@ We can split this data container into two subsets by calling
 is specified as a floating point number, then the return-value
 will be a ``Tuple`` with two elements (i.e. subsets), in which
 the first subset contains the fraction of observations specified
-by ``at`` and the second subset contains the rest. In the
-following code the first subset ``train`` will contain the first
-60% of the observations and the second subset ``test`` the rest.
+by ``at`` and the second subset contains the rest.
+
+In the following code the first subset ``train`` will contain the
+first 60% of the observations and the second subset ``test`` the
+rest. Note how we can provide the split point ``at`` as either a
+type-stable positional argument, or as a more descriptive keyword
+argument.
 
 .. code-block:: jlcon
 
@@ -925,12 +929,10 @@ following code the first subset ``train`` will contain the first
     0.11202      0.380001  0.841177
     0.000341996  0.505277  0.326561
 
-Note that we can provide the split point ``at`` as either a
-type-stable positional argument, or as a more descriptive keyword
-argument. Furthermore, it is worth to again point out that
-:func:`splitobs` works for any type that implements the data
-container interface (see :ref:`datatable` to make the following
-code work).
+It is worth pointing out explicitly, that :func:`splitobs` works
+for any type that implements the data container interface. The
+following code shows a concrete example using a ``DataTable``
+(see :ref:`datatable` to make the following code work).
 
 .. code-block:: jlcon
 
@@ -985,8 +987,9 @@ argument. See :ref:`obsdim` for more information.
 It is also possible to call :func:`splitobs` with multiple data
 container wrapped in a ``Tuple``, which all must have the same
 number of total observations. This will link the data containers
-together on a per-observation basis and is especially useful for
-labeled data.
+together on a per-observation basis. Consider the following
+example feature-matrix ``X`` and the corresponding target vector
+``y``. Note how both data container have 8 observations.
 
 .. code-block:: jlcon
 
@@ -1006,7 +1009,22 @@ labeled data.
     0.677372
     0.746407
 
-   julia> train, test = splitobs((X, y), at = 0.6); # train and test are both a Tuple
+We can pass both data containers to :func:`splitobs` using a
+tuple to group them together. The result of calling the function
+will still be a tuple just like in the examples we have seen so
+far.
+
+.. code-block:: jlcon
+
+   julia> train, test = splitobs((X, y), at = 0.6);
+
+Unlike previous examples, however, both ``train`` and ``test``
+will themselves be tuples as well. Their elements and order will
+correspond to the elements of the given data container tuple
+passed to :func:`splitobs` (here ``(X, Y)``). We can see this
+explicitly by splatting their elements into variables.
+
+.. code-block:: jlcon
 
    julia> (x_train,y_train), (x_test,y_test) = splitobs((X, y), at = 0.6); # same but splat
 
@@ -1034,13 +1052,13 @@ labeled data.
     0.677372
     0.746407
 
-As we can see, the function performs a static split and not a
-random assignment. This may not always be what we really want.
-For that purpose, this package provides a function called
-:func:`shuffleobs`, which we introduced in an earlier section.
-Using :func:`shuffleobs` in combination with :func:`splitobs`
-will result in a random assignment of observations to the data
-partitions.
+As we can see in all previous examples, the function performs a
+static split and not a random assignment. This may not always be
+what we really want. For that purpose, this package provides a
+function called :func:`shuffleobs`, which we introduced in an
+earlier section. Using :func:`shuffleobs` in combination with
+:func:`splitobs` will result in a random assignment of
+observations to the data partitions.
 
 .. code-block:: jlcon
 
@@ -1056,12 +1074,13 @@ partitions.
     0.0443222  0.380001  0.505208
     0.722906   0.505277  0.0997825
 
-So far we have only seen how to partition one or more data
+So far we have only considered how to partition one or more data
 container into exactly two disjoint data subsets. The function
-:func:`splitobs` allows for an arbitrary amount of partitions
-however. To create :math:`N` partitions, you simply need to
-specify a tuple of :math:`N-1` fractions. The sum of all
-fractions must be in the interval (0,1).
+:func:`splitobs` allows to partition into an arbitrary amount of
+subsets, however. To partition the given data into :math:`N`
+subsets, you simply need to specify a tuple of :math:`N-1`
+fractions. The sum of all fractions must be in the interval
+(0,1).
 
 .. function:: splitobs(data, at, [obsdim]) -> NTuple
 
@@ -1089,10 +1108,10 @@ fractions must be in the interval (0,1).
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
-Creating more than two data partitions is particularly convenient
+Creating more than two data subsets is particularly convenient
 for creating an additional validation set. In the following
-example ``train`` will have the first 50% of the observations,
-``val`` will have next 40%, and ``test`` the last 10%
+example ``train`` will contain the first 50% of the observations,
+``val`` will have the next 40%, and ``test`` the last 10%.
 
 .. code-block:: jlcon
 
@@ -1117,3 +1136,10 @@ example ``train`` will have the first 50% of the observations,
    2×1 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}:
     0.841177
     0.326561
+
+While the ability to partitioning a data set this way is very
+useful, a fixed validation set is rarely the best approach for
+estimating a model's performance on the held-out test set. In the
+next section we will introduce various repartition strategies,
+including :math:`k`-folds. These usually allow for a more
+effective use of the training data.
