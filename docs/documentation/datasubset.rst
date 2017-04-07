@@ -863,6 +863,43 @@ name subtly hints, this function does not shuffle the content,
 but instead performs a static split at the relative position
 specified in ``at``.
 
+To begin with, :func:`splitobs` provides a method to pre-compute
+a partition that is applicable to any data set of some fixed
+size.
+
+.. function:: splitobs(n, [at = 0.7]) -> Tuple
+
+   Compute the indices for two disjoint subsets and return them
+   as a tuple of two ranges. The first range will span the first
+   `at` fraction of possible indices, while the second range will
+   cover the rest. These indices are applicable to any data
+   container of size `n`.
+
+   :param Integer n: Total number of observations to compute the
+                     partition indices for.
+
+   :param AbstractFloat at: \
+        Optional. The fraction of observations that should be in
+        the first subset. Must be in the interval (0,1). Can be
+        specified as positional or keyword argument. Defaults to
+        0.7 (i.e. 70% of the observations in the first subset).
+
+The following code snippet will pre-compute the subset indices for
+a training- and a test portion of some data set that has 100
+observations in it. The training indices will cover 70% of the
+observations, while the test indices will cover the other 30%
+
+.. code-block:: jlcon
+
+   julia> train_idx, test_idx = splitobs(100, at = 0.7)
+   (1:70,71:100)
+
+These pre-computed indices could then be used to create the
+subsets of some data container manually. Naturally, most of the
+time it would be much more convenient to just specify the data
+and have the function do all the work. To then end we provide a
+more convenient method for :func:`splitobs` as well.
+
 .. function:: splitobs(data, [at = 0.7], [obsdim]) -> Tuple
 
    Split the given `data` into two disjoint subsets and returns
