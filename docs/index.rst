@@ -108,15 +108,17 @@ Now that we have discussed all the basics, we can start to cover
 some of the more advanced topic. A particularly important aspect
 of modern Machine Learning is what is known as *model selection*.
 Most of the time, this boils down to choosing appropriate
-hyper-parameters for the model one is working with. To avoid bias
-in this selection process, it is quite common to employ some kind
-of **repartitioning strategy** on the training data. One of the
-most famous of these strategies is :math:`k`-folds cross
-validation. Of course the partitioning is just one part of such a
-model selection process, since we still have to compute and
-compare the performance somehow. However, it is an important step
-that is needed to make the most of the available data. So
-important in fact, that we will spend a whole section on it.
+hyper-parameters for the model one is working with. To avoid
+subtle problems in this selection process, and to reduce variance
+of the performance estimates, it is quite common to employ some
+kind of **repartitioning strategy** on the training data. One of
+the most famous of these strategies is used by :math:`k`-folds
+cross validation. Of course the partitioning itself is just one
+part of such a model selection process, since we still have to
+compute and compare the performance somehow. However, it is an
+important step that is needed to make the most of the available
+data. So important in fact, that we will spend a whole section on
+it.
 
 .. toctree:: :maxdepth: 2
 

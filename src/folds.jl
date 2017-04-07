@@ -5,8 +5,8 @@ Description
 ============
 
 Create a vector-like representation of `data` where each
-individual element is partitioning of `data` in the form of a
-tuple of two data subsets (a training- and a validation subset).
+individual element is partition of `data` in the form of a tuple
+of two data subsets (a training- and a validation subset).
 
 The purpose of `FoldsView` is to apply a precomputed sequence of
 subset assignment indices to some data container in a convenient
@@ -233,7 +233,7 @@ training. This results in `k` different partitions of `data`.
 
 In the case that the size of the dataset is not dividable by the
 specified `k`, the remaining observations will be evenly
-distributed among the folds.
+distributed among the parts.
 
 ```julia
 for (x_train, x_val) in kfolds(X, k = 10)
@@ -326,10 +326,15 @@ end
 """
     leaveout(data, [size = 1], [obsdim]) -> FoldsView
 
-Create a [`FoldsView`](@ref) iterator by specifying the
-approximate `size` of each validation subset, instead of `k`
-directly. Default is `size = 1`, which results in a
-"leave-one-out" paritioning.
+Repartition a `data` container using a k-fold strategy, where `k`
+is chosen in such a way, that each validation subset of the
+resulting folds contains roughly `size` observations. Defaults to
+`size = 1`, which is also known as "leave-one-out" partitioning.
+
+The resulting sequence of folds is returned as a lazy
+[`FoldsView`](@ref), which can be index into or iterated over.
+Either way, only data subsets are created. That means no actual
+data is copied until [`getobs`](@ref) is invoked.
 
 ```julia
 for (train, val) in leaveout(X, size = 2)

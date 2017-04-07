@@ -7,34 +7,35 @@ Most non-trivial machine learning experiments require some form
 of model tweaking *prior* to training. A particularly common
 scenario is when the model (or algorithm) has hyper parameters
 that need to be specified manually. The process of searching for
-suitable hyper parameters is just one part of what we call *model
+suitable hyper parameters is sub-task of what we call *model
 selection*.
 
 If model selection is part of the experiment, then it is quite
 likely that a simple train/test split will not be effective
-enough to achieve results that are representative for new or
-unseen data. The reason for this is subtle, but very important.
-If the hyper parameters are chosen based on how well the model
-performs on the test set, then information about the test set is
-actively fed back into the model. This is because the test set is
-used several times *and* decisions are made based on what was
-observed. In other words: the test set participates in an aspect
-of the training process, namely the model selection.
+enough to achieve results that are representative for new, unseen
+data. The reason for this is subtle, but very important. If the
+hyper parameters are chosen based on how well the corresponding
+model performs on the test set, then information about the test
+set is actively fed back into the model. This is because the test
+set is used several times *and* decisions are made based on what
+was observed. In other words: the test set participates in an
+aspect of the training process, namely the model selection.
 Consequently, the results on the test set become less
 representative for the expected results on new, unseen data. To
 avoid causing this kind of manual overfitting, one should instead
 somehow make use of the training set for such a model selection
-process, while leaving the test set out of it completely. Luckily
-this can be done quite effectively using a repartitioning
-strategy, such as a :math:`k`-folds, and using the various
-partitions to perform cross-validation.
+process, while leaving the test set out of it completely.
+Luckily, this can be done quite effectively using by a
+repartitioning strategy, such as a :math:`k`-folds, to perform
+cross-validation.
 
-We will start by discussing the terminology we use, and - more
-importantly - how the various terms are used in the context of
-this package. The rest of this document will then focus on how
-these concepts exposed to the user. We will start by introducing
-some low-level helper methods for computing the required
-assignments sequences. We will then use those assignments to
+We will start by discussing the terminology that is used
+throughout this document. More importantly, we will define how
+the various terms are interpreted in the context of this package.
+The rest of this document will then focus on how these concepts
+are implemented and exposed to the user. There we will start by
+introducing some low-level helper methods for computing the
+required assignments. We will then use those assignments to
 motivate a type called :class:`FoldsView`, which can be
 configured to represent almost any kind of repartitioning
 strategy for a given data container. After discussing those
@@ -55,14 +56,14 @@ it important that we share the same wording.
 - When we have multiple disjoint subsets of the same data
   container (or tuple of data containers), we call the grouping
   of those subsets a **partition**. That is, a partition is a
-  particular configuration of assigning the observations from
-  some data container to multiple disjoined subsets. In contrast
-  to the formal definition in mathematics, we do allow the same
+  particular outcome of assigning the observations from some data
+  container to multiple disjoined subsets. In contrast to the
+  formal definition in mathematics, we do allow the same
   observation to occur multiple times in the *same* subset.
 
   For instance the function :func:`splitobs` creates a single
   partition in the form of a tuple. More concretely, the
-  following code snipped creates a partition with two subsets
+  following code snippet creates a partition with two subsets
   from a given toy data-vector that has 5 observations.
 
   .. code-block:: jlcon
@@ -85,8 +86,9 @@ it important that we share the same wording.
   An example for performing a really simply repartitioning
   strategy would be to create a sequences of random
   train/validation partitions of some given data. The following
-  code snippet computes 3 partitions/folds for such a strategy on
-  a random toy data-vector ``y`` that has 5 observations in it.
+  code snippet computes 3 partitions (which are also often
+  referred to as *folds*) for such a strategy on a random toy
+  data-vector ``y`` that has 5 observations in it.
 
   .. code-block:: jlcon
 
@@ -114,8 +116,8 @@ it important that we share the same wording.
   To give a concrete example of such assignment sequences,
   consider the result of calling ``kfolds(6, 3)`` (see code
   below). It will compute the training assignments ``train_idx``
-  and the validation assignments ``val_idx`` for a 3-fold
-  repartitioning strategy that is applicable to any data
+  and the corresponding validation assignments ``val_idx`` for a
+  3-fold repartitioning strategy that is applicable to any data
   container that has 6 observations in it.
 
   .. code-block:: jlcon
@@ -168,7 +170,7 @@ motivate the problem. This package implements a number of
 functions that provide the necessary functionality in a more
 intuitive and convenient manner.
 
-Computing K-Fold Indices
+Computing K-Folds Indices
 --------------------------
 
 A particularly popular validation scheme for model selection is
@@ -246,9 +248,9 @@ validation assignments for 10 observations and 4 folds.
     9:10
 
 As we can see, there is no actual data set involved yet. We just
-computed assignment indices that are applicable to *any* data set
-that has exactly 10 observations in it. The important thing to
-note here is that while the indices in ``train_idx`` overlap, the
+computed assignments that are applicable to *any* data set that
+has exactly 10 observations in it. The important thing to note
+here is that while the indices in ``train_idx`` overlap, the
 indices in ``val_idx`` do not, and further, all 10
 observation-indices are part of one (and only one) element of
 ``val_idx``.
@@ -300,8 +302,8 @@ Invoking :func:`leaveout` with an integer as first parameter will
 compute the sequence of assignments for a :math:`k`-folds
 repartitioning strategy. For example, the following code will
 assign the indices of 10 observations to as many partitions as it
-takes such that every validation partition contains approximately
-2 observations.
+takes such that every validation subset contains approximately 2
+observations.
 
 .. code-block:: jlcon
 
@@ -328,14 +330,16 @@ simply computed assignments that are applicable to *any* data set
 that has exactly 10 observations in it. Note that for the above
 example the result is equivalent to calling ``kfolds(10, 5)``.
 
+.. _foldsview:
+
 The FoldsView Type
 -----------------------
 
 So far we focused on just computing the sequence of assignments
 for various repartition strategies, without any regard to an
 actual data set. Instead, we just specified the total number of
-observations. Naturally that is only one part of the puzzle.
-After all what we really care about is the repartitioning of an
+observations. Naturally that is only one part of the puzzle. What
+we really care about after all, is the repartitioning of an
 actual data set. To that end we provide a type called
 :class:`FoldsView`, which associates a *data container* with a
 given sequence of assignments.
@@ -343,7 +347,10 @@ given sequence of assignments.
 .. class:: FoldsView <: AbstractVector
 
    A vector-like representation of applying a repartitioning
-   strategy to a specific data container.
+   strategy to a specific data container. It is used to associate
+   a data container with appropriate assignments, and will act as
+   a lazy view, that allows the data to be treated as a sequence
+   of folds. As such it does not copy any data.
 
    :class:`FoldsView` is a subtype of ``AbstractArray`` and
    as such supports the appropriate interface. Each individual
@@ -382,11 +389,11 @@ given sequence of assignments.
       applicable.
 
 The purpose of :class:`FoldsView` is to apply a precomputed
-sequence of assignment indices to some data container in a
-convenient manner. By itself, :class:`FoldsView` is agnostic to
-any particular repartitioning- or resampling strategy. Instead
-the assignments, ``train_indices`` and ``val_indices``, need to
-be precomputed by such a strategy and then passed to
+sequence of assignments to some data container in a convenient
+manner. By itself, :class:`FoldsView` is agnostic to any
+particular repartitioning- or resampling strategy. Instead, the
+assignments, ``train_indices`` and ``val_indices``, need to be
+precomputed by such a strategy and then passed to
 :func:`FoldsView` with a concrete data container. The resulting
 object can then be queried for its individual folds using
 ``getindex``, or alternatively, simply iterated over.
@@ -406,13 +413,13 @@ object can then be queried for its individual folds using
 
    :param AbstractVector train_indices: \
         Vector of integer vectors. It denotes the sequence of
-        training assignments. I.e. the indices of the training
-        subsets
+        training assignments (i.e. the indices of the training
+        subsets).
 
    :param AbstractVector val_indices: \
         Vector of integer vectors. It denotes the sequence of
-        validation assignments. I.e. the indices of the
-        validation subsets
+        validation assignments (i.e. the indices of the
+        validation subsets)
 
    :param obsdim: \
         Optional. If it makes sense for the type of `data`, then
@@ -424,9 +431,10 @@ object can then be queried for its individual folds using
 
 To get a better feeling of how exactly :class:`FoldsView` works,
 let us consider the following toy data container ``X``. We will
-generate it in such a way, that it is easy to see where each
-observation ends up in our partitioning strategy. To keep it
-simple let's say it has 10 observations with 2 features each.
+generate this data in such a way, that it is easy to see where
+each observation ends up after applying our partitioning
+strategy. To keep it simple let's say it has 10 observations with
+2 features each.
 
 .. code-block:: jlcon
 
@@ -436,11 +444,11 @@ simple let's say it has 10 observations with 2 features each.
     11.0  12.0  13.0  14.0  15.0  16.0  17.0  18.0  19.0  20.0
 
 First we need to compute appropriate assignments that are
-applicable to our data set. Ideally these assignments should
-follow some repartitioning strategy. For this example we will use
-:func:`kfolds`, which we introduced in a previous section. In
-particular we will compute the sequence of assignments for a
-5-fold repartitioning.
+applicable to our data container ``X``. Ideally these assignments
+should follow some repartitioning strategy. For this example we
+will use :func:`kfolds`, which we introduced in a previous
+section. In particular we will compute the sequence of
+assignments for a 5-fold repartitioning.
 
 .. code-block:: jlcon
 
@@ -464,9 +472,9 @@ particular we will compute the sequence of assignments for a
 
 Now that we have appropriate assignments, we can use
 :class:`FoldsView` to apply those to our data container ``X``.
-Note that since the type is designed as a "view", it won't
-actually copy any data from ``X``, instead each "fold" will
-be a ``SubArray`` into ``X``.
+Note that since :class:`FoldsView` is designed to act as a
+"view", it won't actually copy any data from ``X``, instead each
+"fold" will be a tuple of two ``SubArray`` into ``X``.
 
 .. code-block:: jlcon
 
@@ -478,14 +486,14 @@ be a ``SubArray`` into ``X``.
     ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [7.0  8.0; 17.0 18.0])
     ([1.0 2.0 … 7.0  8.0; 11.0 12.0 … 17.0 18.0], [9.0 10.0; 19.0 20.0])
 
-   julia> train_2, val_2 = folds[2]; # access second fold
+   julia> train, val = folds[2]; # access second fold
 
-   julia> train_2
+   julia> train
    2×8 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false}:
      1.0   2.0   5.0   6.0   7.0   8.0   9.0  10.0
     11.0  12.0  15.0  16.0  17.0  18.0  19.0  20.0
 
-   julia> val_2
+   julia> val
    2×2 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}:
      3.0   4.0
     13.0  14.0
@@ -513,9 +521,9 @@ the observations.
     ([1.0 11.0; 2.0 12.0; … ; 9.0 19.0; 10.0 20.0], [7.0 17.0; 8.0 18.0])
     ([1.0 11.0; 2.0 12.0; … ; 7.0 17.0; 8.0  18.0], [9.0 19.0; 10.0 20.0])
 
-   julia> train_2, val_2 = folds[2]; # access second fold
+   julia> train, val = folds[2]; # access second fold
 
-   julia> train_2
+   julia> train
    8×2 SubArray{Float64,2,Array{Float64,2},Tuple{Array{Int64,1},Colon},false}:
      1.0  11.0
      2.0  12.0
@@ -526,7 +534,7 @@ the observations.
      9.0  19.0
     10.0  20.0
 
-   julia> val_2
+   julia> val
    2×2 SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},Colon},false}:
     3.0  13.0
     4.0  14.0
@@ -551,7 +559,7 @@ passing it to :func:`FoldsView`.
 
    julia> folds = FoldsView((X, y), train_idx, val_idx); # note the tuple
 
-   julia> (train_x, train_y), (val_x, val_y) = folds[2]; # access second partitioning
+   julia> (train_x, train_y), (val_x, val_y) = folds[2]; # access second fold
 
    julia> val_x
    2×2 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}:
@@ -570,11 +578,12 @@ You can observe this in the code above, where ``X`` is a
 tuple elements must be data containers themselves. Furthermore,
 they all must contain the same exact number of observations.
 
-So far we showed how to access some specific fold using the
-``getindex`` syntax sugar (e.g. ``folds[2]``). Because
-:class:`FoldsView` is a subtype of ``AbstractVector``, it can
-also be iterated over. In fact, this is the main intention behind
-its design.
+While it is useful and convenient to be able to access some
+specific fold using the ``getindex`` syntax sugar (e.g.
+``folds[2]``), :class:`FoldsView` can also be iterated over (just
+like any other ``AbstractVector``). In fact, this is the main
+intention behind its design, because it allows you to
+conveniently loop over all folds.
 
 .. code-block:: julia
 
@@ -587,13 +596,245 @@ its design.
    [7.0 8.0; 17.0 18.0]
    [9.0 10.0; 19.0 20.0]
 
+So far we showed how to use the low-level API to perform a
+repartitioning strategy on some data container. This was a
+two-step process. First we had to compute the assignments, and
+then we had to apply those assignment to some data container
+using the type :class:`FoldsView`. In the rest of this document
+we will see how to do the same tasks in just one single step by
+using the high-level API.
+
 K-Folds for Data Container
 -----------------------------
 
-.. note:: The sizes of the folds may differ by up to 1
-   observation depending on if the total number of observations
-   is dividable by :math:`k`.
+Let us revisit the idea behind a :math:`k`-folds repartitioning
+strategy, which we introduced in the beginning of this document.
+Conceptually, :math:`k`-folds divides the given data container
+into :math:`k` roughly equal-sized parts. Each part will serve as
+validation set once, while the remaining parts are used for
+training at that stage. This results in :math:`k` different
+partitions of the same data.
+
+We have already seen how to compute the assignments of a
+:math:`k`-folds scheme manually, and how to apply those to a data
+container using the type :class:`FoldsView`. We can do both those
+steps in just one single swoop by passing the data container to
+:func:`kfolds` directly.
+
+.. function:: kfolds(data, [k = 5], [obsdim]) -> FoldsView
+
+   Repartition a `data` container `k` times using a `k`-folds
+   strategy and return the sequence of folds as a lazy
+   :class:`FoldsView`. The resulting :class:`FoldsView` can then
+   be indexed into or iterated over. Either way, only data
+   subsets are created. That means that no actual data is copied
+   until :func:`getobs` is invoked.
+
+   In the case that the number of observations in `data` is not
+   dividable by the specified `k`, the remaining observations
+   will be evenly distributed among the parts. Note that there is
+   no random assignment of observations to parts, which means
+   that adjacent observations are likely part of the same
+   validation subset.
+
+   :param data: The object representing a data container.
+
+   :param Integer k: \
+        Optional. The number of folds to compute. Can be
+        specified as positional argument or as keyword argument.
+        A general rule of thumb is to use either ``k = 5`` or ``k
+        = 10``. Must be within the range ``2:nobs(data)``.
+        Defaults to ``k = 5``.
+
+   :param obsdim: \
+        Optional. If it makes sense for the type of `data`, then
+        `obsdim` can be used to specify which dimension of `data`
+        denotes the observations. It can be specified in a
+        typestable manner as a positional argument, or as a more
+        convenient keyword parameter. See :ref:`obsdim` for more
+        information.
+
+To visualize what exactly :func:`kfolds` does, let us consider
+the following toy data container ``X``. We will generate this
+data in such a way, that makes it easy to see where each
+observation ends up after we apply the partitioning strategy to
+it. To keep it simple let’s say it has 10 observations with 2
+features each.
+
+.. code-block:: jlcon
+
+   julia> X = hcat(1.:10, 11.:20)' # generate toy data
+   2×10 Array{Float64,2}:
+     1.0   2.0   3.0   4.0   5.0   6.0   7.0   8.0   9.0  10.0
+    11.0  12.0  13.0  14.0  15.0  16.0  17.0  18.0  19.0  20.0
+
+Now that we have a data container to work with, we can pass it to
+the function :func:`kfolds` to create a view of the data that
+lets us treat it as a sequence of distinct partitions/folds.
+
+.. code-block:: jlcon
+
+   julia> folds = kfolds(X, k = 5) # output reformated for readability
+   5-element MLDataPattern.FoldsView{Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}},Array{Float64,2},LearnBase.ObsDim.Last,Array{Array{Int64,1},1},Array{UnitRange{Int64},1}}:
+    ([3.0 4.0 … 9.0 10.0; 13.0 14.0 … 19.0 20.0], [1.0  2.0; 11.0 12.0])
+    ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [3.0  4.0; 13.0 14.0])
+    ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [5.0  6.0; 15.0 16.0])
+    ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [7.0  8.0; 17.0 18.0])
+    ([1.0 2.0 … 7.0  8.0; 11.0 12.0 … 17.0 18.0], [9.0 10.0; 19.0 20.0])
+
+We can now query any individual fold using the typical indexing
+syntax. For instance, the following code snipped shows the
+training- and validation subset of the third fold.
+
+.. code-block:: jlcon
+
+   julia> train, val = folds[3]; # access third fold
+
+   julia> train
+   2×8 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false}:
+     1.0   2.0   3.0   4.0   7.0   8.0   9.0  10.0
+    11.0  12.0  13.0  14.0  17.0  18.0  19.0  20.0
+
+   julia> val
+   2×2 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}:
+     5.0   6.0
+    15.0  16.0
+
+Note how ``train`` and ``val`` are of type ``SubArray``, which
+means that their content isn't actually a copy from ``X``.
+Instead, they serve as a view into the original data container
+``X``. For more information about on that topic take a look at
+:ref:`subsets`.
+
+If instead of a view you would like to have the folds as actual
+``Array``, you can use :func:`getobs` on the :class:`FoldsView`.
+This will trigger :func:`getobs` on each subset and return the
+result as a ``Vector``.
+
+.. code-block:: jlcon
+
+   julia> getobs(folds) # output reformated for readability
+   5-element Array{Tuple{Array{Float64,2},Array{Float64,2}},1}:
+    ([3.0 4.0 … 9.0 10.0; 13.0 14.0 … 19.0 20.0], [1.0  2.0; 11.0 12.0])
+    ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [3.0  4.0; 13.0 14.0])
+    ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [5.0  6.0; 15.0 16.0])
+    ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [7.0  8.0; 17.0 18.0])
+    ([1.0 2.0 … 7.0  8.0; 11.0 12.0 … 17.0 18.0], [9.0 10.0; 19.0 20.0])
+
+   julia> fold_3 = getobs(folds, 3)
+   ([1.0 11.0; 2.0 12.0; … ; 9.0 19.0; 10.0 20.0], [5.0 15.0; 6.0 16.0])
+
+   julia> typeof(fold_3)
+   Tuple{Array{Float64,2},Array{Float64,2}}
+
+You can use the optional parameter ``obsdim`` to specify which
+dimension of data denotes the observations. It can be specified
+as positional argument (which is type-stable) or as a more
+convenient keyword argument. For instance, the following code
+shows how we could work with a transposed version of ``X``, where
+the first dimension enumerates the observations.
+
+.. code-block:: jlcon
+
+   julia> folds = kfolds(X', 5, ObsDim.First()); # equivalent to below, but typesable
+
+   julia> folds = kfolds(X', k = 5, obsdim = 1) # note the transpose
+   5-element MLDataPattern.FoldsView{Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Array{Int64,1},Colon},false},SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},Colon},false}},Array{Float64,2},LearnBase.ObsDim.Constant{1},Array{Array{Int64,1},1},Array{UnitRange{Int64},1}}:
+    ([3.0 13.0; 4.0 14.0; … ; 9.0 19.0; 10.0 20.0], [1.0 11.0; 2.0 12.0])
+    ([1.0 11.0; 2.0 12.0; … ; 9.0 19.0; 10.0 20.0], [3.0 13.0; 4.0 14.0])
+    ([1.0 11.0; 2.0 12.0; … ; 9.0 19.0; 10.0 20.0], [5.0 15.0; 6.0 16.0])
+    ([1.0 11.0; 2.0 12.0; … ; 9.0 19.0; 10.0 20.0], [7.0 17.0; 8.0 18.0])
+    ([1.0 11.0; 2.0 12.0; … ; 7.0 17.0;  8.0 18.0], [9.0 19.0; 10.0 20.0])
+
+It is also possible to call :func:`kfolds` with multiple data
+containers wrapped in a ``Tuple``. Note, however, that all data
+containers must have the same total number of observations. Using
+a tuple this way will link those data containers together on a
+per-observation basis.
+
+.. code-block:: jlcon
+
+   julia> y = collect(1.:10) # generate a toy target vector
+   10-element Array{Float64,1}:
+     1.0
+     2.0
+     3.0
+     ⋮
+     8.0
+     9.0
+    10.0
+
+   julia> folds = kfolds((X, y), k = 5); # note the tuple
+
+   julia> (train_x, train_y), (val_x, val_y) = folds[2]; # access second fold
+
+For more information and additional examples on what you can do
+with the result of :func:`kfolds`, take a look at
+:ref:`foldsview`.
 
 Leave-Out for Data Container
 --------------------------------
 
+Recall how we motivate leave-:math:`p`-out as a different way to
+think about :math:`k`-folds. Instead of specifying the number of
+folds :math:`k` directly, we specify how many observations of the
+given data container should be in each validation subset.
+
+Similar to :func:`kfolds`, we provide a method for
+:func:`leaveout` that allows it to be invoked with a data
+container. This method serves as a convenience layer that will
+return an appropriate :class:`FoldsView` of the given data for
+you.
+
+.. function:: leaveout(data, [size = 1], [obsdim]) -> FoldsView
+
+   Repartition a `data` container using a k-fold strategy, where
+   ``k`` is chosen in such a way, that each validation subset of
+   the computed folds contains roughly ``size`` observations. The
+   resulting sequence of folds is then returned as a lazy
+   :class:`FoldsView`, which can be index into or iterated over.
+   Either way, only data subsets are created. That means no
+   actual data is copied until :func:`getobs` is invoked.
+
+   :param data: The object representing a data container.
+
+   :param Integer size: \
+        Optional. The desired number of observations in each
+        validation subset. Can be specified as positional
+        argument or as keyword argument. Defaults to ``size =
+        1``, which results in a "leave-one-out" partitioning.
+
+   :param obsdim: \
+        Optional. If it makes sense for the type of `data`, then
+        `obsdim` can be used to specify which dimension of `data`
+        denotes the observations. It can be specified in a
+        typestable manner as a positional argument, or as a more
+        convenient keyword parameter. See :ref:`obsdim` for more
+        information.
+
+Let us again consider the toy feature-matrix ``X`` from before.
+We can pass it to the function :func:`leaveout` to create a view
+of the data. This "view" is represented as a :class:`FoldsView`
+which lets us treat it is as a sequence of distinct
+partitions/folds.
+
+.. code-block:: jlcon
+
+   julia> X = hcat(1.:10, 11.:20)' # generate toy data
+   2×10 Array{Float64,2}:
+     1.0   2.0   3.0   4.0   5.0   6.0   7.0   8.0   9.0  10.0
+    11.0  12.0  13.0  14.0  15.0  16.0  17.0  18.0  19.0  20.0
+
+   julia> folds = leaveout(X, size = 2) # output reformated for readability
+   5-element MLDataPattern.FoldsView{Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}},Array{Float64,2},LearnBase.ObsDim.Last,Array{Array{Int64,1},1},Array{UnitRange{Int64},1}}:
+    ([3.0 4.0 … 9.0 10.0; 13.0 14.0 … 19.0 20.0], [1.0  2.0; 11.0 12.0])
+    ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [3.0  4.0; 13.0 14.0])
+    ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [5.0  6.0; 15.0 16.0])
+    ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [7.0  8.0; 17.0 18.0])
+    ([1.0 2.0 … 7.0  8.0; 11.0 12.0 … 17.0 18.0], [9.0 10.0; 19.0 20.0])
+
+We can now query any individual fold using the typical indexing
+syntax. Additionally, the function :func:`leavout` supports all
+the signatures of :func:`kfolds`. For more information and
+additional examples on what you can do with the result of
+:func:`leaveout`, take a look at :ref:`foldsview`.

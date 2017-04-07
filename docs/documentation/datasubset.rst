@@ -1177,6 +1177,6 @@ example ``train`` will contain the first 50% of the observations,
 While the ability to partitioning a data set this way is very
 useful, a fixed validation set is rarely the best approach for
 estimating a model's performance on the held-out test set. In the
-next section we will introduce various repartition strategies,
-including :math:`k`-folds. These usually allow for a more
-effective use of the training data.
+:ref:`folds` we will introduce various alternative, including
+:math:`k`-folds. These usually allow for a more effective use of
+the training data.
