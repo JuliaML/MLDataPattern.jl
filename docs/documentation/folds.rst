@@ -344,7 +344,7 @@ actual data set. To that end we provide a type called
 :class:`FoldsView`, which associates a *data container* with a
 given sequence of assignments.
 
-.. class:: FoldsView <: AbstractVector
+.. class:: FoldsView <: DataView <: AbstractVector
 
    A vector-like representation of applying a repartitioning
    strategy to a specific data container. It is used to associate

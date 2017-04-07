@@ -120,10 +120,23 @@ important step that is needed to make the most of the available
 data. So important in fact, that we will spend a whole section on
 it.
 
-.. toctree:: :maxdepth: 2
+.. toctree::
+   :maxdepth: 2
 
    documentation/folds
 
+At some point during an machine learning experiment, chances are
+that we need to iterate over the observations of the training
+data in some manner. Typically it is either iterated one
+observation at a time, or in small equal-sized "chunks" called
+mini-batches. In the next section we will introduce a few types,
+which we call **data views**, that will allow us to perform such
+iteration-pattern conveniently for data containers.
+
+.. toctree::
+   :maxdepth: 2
+
+   documentation/dataview
 
 Indices and tables
 ==================

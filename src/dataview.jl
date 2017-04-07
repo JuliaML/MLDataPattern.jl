@@ -46,7 +46,7 @@ Arguments
 - **`obsdim`** : Optional. If it makes sense for the type of
     `data`, `obsdim` can be used to specify which dimension of
     `data` denotes the observations. It can be specified in a
-    typestable manner as a positional argument (see
+    type-stable manner as a positional argument (see
     `?LearnBase.ObsDim`), or more conveniently as a smart keyword
     argument.
 
@@ -68,7 +68,7 @@ Details
 ========
 
 For `ObsView` to work on some data structure, the type of the
-given variable `data` must implement the [`DataSubset`](@ref)
+given variable `data` must implement the data container
 interface. See `?DataSubset` for more info.
 
 Author(s)
@@ -124,7 +124,7 @@ end
 
 function ObsView{T<:DataView}(A::T, obsdim)
     @assert obsdim == A.obsdim
-    warn("Trying to nest a ", T, " into an ObsView, which is not supported. Returning ObsView(parent(_)) instead")
+    warn("Trying to nest a ", T.name, " into an ObsView, which is not supported. Returning ObsView(parent(_)) instead")
     ObsView(parent(A), obsdim)
 end
 
@@ -204,11 +204,11 @@ Description
 
 Create a view of the given `data` that represents it as a vector
 of batches. Each batch will contain an equal amount of
-observations in them. The number of batches and the batchsize
-which can be specified using (keyword) parameters `count` and
-`size`. In the case that the size of the dataset is not dividable
-by the specified (or inferred) `size`, the remaining observations
-will be ignored.
+observations in them. The number of batches and the batch-size
+can be specified using (keyword) parameters `count` and `size`.
+In the case that the size of the dataset is not dividable by the
+specified (or inferred) `size`, the remaining observations will
+be ignored with a warning.
 
 Note that any data access is delayed until `getindex` is called,
 and even `getindex` returns the result of [`datasubset`](@ref)
@@ -217,8 +217,8 @@ called.
 
 If used as an iterator, the object will iterate over the dataset
 once, effectively denoting an epoch. Each iteration will return a
-minibatch of constant [`nobs`](@ref), which effectively allows to
-iterator over [`data`](@ref) one batch at a time.
+mini-batch of constant [`nobs`](@ref), which effectively allows
+to iterator over [`data`](@ref) one batch at a time.
 
 Arguments
 ==========
@@ -230,12 +230,12 @@ Arguments
 - **`size`** : The batch-size of each batch. I.e. the number of
     observations that each batch must contain.
 
-- **`count`** : The number of batches that the iterator will return.
+- **`count`** : The number of batches that the view will contain.
 
 - **`obsdim`** : Optional. If it makes sense for the type of
     `data`, `obsdim` can be used to specify which dimension of
     `data` denotes the observations. It can be specified in a
-    typestable manner as a positional argument (see
+    type-stable manner as a positional argument (see
     `?LearnBase.ObsDim`), or more conveniently as a smart keyword
     argument.
 
@@ -256,8 +256,8 @@ methods are provided.
 Details
 ========
 
-For `BatchVIew` to work on some data structure, the type of the
-given variable `data` must implement the [`DataSubset`](@ref)
+For `BatchView` to work on some data structure, the type of the
+given variable `data` must implement the data container
 interface. See `?DataSubset` for more info.
 
 Author(s)
@@ -312,7 +312,7 @@ end
 see also
 =========
 
-[`batchview`](@ref), [`ObsView`](@ref), [`shuffleobs`](@ref),
+[`eachbatch`](@ref), [`ObsView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
 immutable BatchView{TElem,TData,O} <: AbstractBatchView{TElem,TData}
