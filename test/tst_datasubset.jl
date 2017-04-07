@@ -180,9 +180,9 @@ println("<HEARTBEAT>")
             @test @inferred(datasubset(Xv,i))  === view(Xv,:,i)
             @test @inferred(datasubset(XX,i))  === view(XX,:,:,i)
             @test @inferred(datasubset(XXX,i)) === view(XXX,:,:,:,i)
-            @test @inferred(datasubset(y,i))   === ((typeof(i) <: Int) ? y[i] : view(y,i))
-            @test @inferred(datasubset(yv,i))  === ((typeof(i) <: Int) ? y[i] : view(y,i))
-            @test @inferred(datasubset(yv,i))  === ((typeof(i) <: Int) ? yv[i] : view(yv,i))
+            @test @inferred(datasubset(y,i))   === view(y,i)
+            @test @inferred(datasubset(yv,i))  === view(y,i)
+            @test @inferred(datasubset(yv,i))  === view(yv,i)
             @test @inferred(datasubset(Y,i))   === view(Y,:,i)
         end
     end

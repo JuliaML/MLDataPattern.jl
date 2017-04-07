@@ -348,7 +348,7 @@ datasubset(A::AbstractSparseArray, idx, obsdim::ObsDimension) =
 @generated function datasubset{T,N}(A::AbstractArray{T,N}, idx, obsdim::ObsDimension)
     @assert N > 0
     if N == 1 && idx <: Integer
-        :(A[idx])
+        :(view(A, idx))
     elseif obsdim <: ObsDim.First
         :(view(A, idx, $(fill(:(:),N-1)...)))
     elseif obsdim <: ObsDim.Last || (obsdim <: ObsDim.Constant && obsdim.parameters[1] == N)
