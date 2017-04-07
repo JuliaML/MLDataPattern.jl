@@ -24,6 +24,12 @@ export
     shuffleobs,
     splitobs,
 
+    ObsView,
+    BatchView,
+    obsview,
+    batchview,
+    batchsize,
+
     FoldsView,
     kfolds,
     leaveout
@@ -33,6 +39,7 @@ include("datasubset.jl")
 include("randobs.jl")
 include("shuffleobs.jl")
 include("splitobs.jl")
+include("dataview.jl")
 include("folds.jl")
 
 end # module
