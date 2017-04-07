@@ -85,10 +85,12 @@ end
 
 nobs{DIM}(A::AbstractArray, ::ObsDim.Constant{DIM})::Int = size(A, DIM)
 nobs{T,N}(A::AbstractArray{T,N}, ::ObsDim.Last)::Int = size(A, N)
+nobs{T}(A::AbstractArray{T,0}, ::ObsDim.Last)::Int = 1
 
 getobs(A::Array, ::ObsDimension=default_obsdim(A)) = A
 getobs(A::AbstractSparseArray, ::ObsDimension=default_obsdim(A)) = A
 getobs(A::SubArray, ::ObsDimension=default_obsdim(A)) = copy(A)
+getobs{T}(A::SubArray{T,0}, ::ObsDimension=default_obsdim(A)) = A[1]
 getobs(A::AbstractArray, ::ObsDimension=default_obsdim(A)) = collect(A)
 
 """
@@ -119,9 +121,10 @@ getobs(A::AbstractArray, idx, obsdim::ObsDim.Undefined) =
     throw(MethodError(getobs, (A, idx, obsdim)))
 
 @generated function getobs{T,N}(A::AbstractArray{T,N}, idx, obsdim::ObsDimension)
-    @assert N > 0
-    if N == 1 && idx <: Integer
+    if N <= 1 && idx <: Integer
         :(A[idx])
+    elseif N == 0
+        throw(ArgumentError("attempting to index 0-dimensional array using indices of type $idx"))
     elseif obsdim <: ObsDim.First
         :(getindex(A, idx, $(fill(:(:),N-1)...)))
     elseif obsdim <: ObsDim.Last || (obsdim <: ObsDim.Constant && obsdim.parameters[1] == N)

@@ -18,6 +18,15 @@
         @test @inferred(nobs((), obsdim = 3)) === 0
     end
 
+    @testset "0-dim SubArray" begin
+        v = view([3], 1)
+        @test @inferred(nobs(v)) === 1
+        @test @inferred(getobs(v)) === 3
+        @test @inferred(getobs(v, 1)) === 3
+        @test_throws BoundsError getobs(v, 2)
+        @test_throws ArgumentError getobs(v, 2:3)
+    end
+
     @testset "SubArray" begin
         @test @inferred(nobs(view(X,:,:))) === 150
         @test @inferred(nobs(view(X,:,:))) === 150
