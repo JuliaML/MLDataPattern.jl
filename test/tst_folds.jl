@@ -46,6 +46,8 @@ println("<HEARTBEAT>")
 
 @testset "FoldsView constructor" begin
     @test FoldsView <: AbstractVector
+    @test FoldsView <: DataView
+    @test FoldsView{Tuple} <: DataView{Tuple}
 
     @testset "Illegal arguments" begin
         # fold indices out of bounds for the given data
@@ -142,6 +144,10 @@ println("<HEARTBEAT>")
     f1, f2 = kfolds(nobs(X))
     fv = FoldsView(X, f1, f2)
     @test typeof(@inferred(fv[1])) <: Tuple
+    @test typeof(@inferred(fv[2:3])) <: FoldsView
+    @test @inferred(getobs(fv,1)) == fv[1]
+    @test @inferred(getobs(fv[2:3])) == @inferred(getindex(getobs(fv), 2:3))
+    @test @inferred(getobs(fv[2:3])) == [fv[2], fv[3]]
     @test typeof(fv[1][1]) <: SubArray
     @test typeof(fv[1][2]) <: SubArray
     @test size(fv[1][1]) == (4,120)
@@ -307,29 +313,22 @@ end
 
 println("<HEARTBEAT>")
 
-#@testset "nest DataView" begin
-#    # FIXME: in 0.6 change back to (Xs,ys,vars...,tuples...)
-#    for var in (Xs, ys, Xv, yv, tuples[2])
-#        A = ObsView(var)
-#        kf = @inferred kfolds(A,10)
-#        @test length(kf) == 10
-#        for i = 1:10
-#            t1,t2 = kf[i]
-#            @test typeof(t1) <: ObsView
-#            @test typeof(t2) <: ObsView
-#            @test length(t1) == 135
-#            @test length(t2) == 15
-#        end
-#
-#        A = BatchView(var,15)
-#        kf = @inferred kfolds(A,10)
-#        @test length(kf) == 10
-#        for i = 1:10
-#            t1,t2 = kf[i]
-#            @test typeof(t1) <: BatchView
-#            @test typeof(t2) <: BatchView
-#            @test length(t1) == 9
-#            @test length(t2) == 1
-#        end
-#    end
-#end
+@testset "nest DataView" begin
+    # FIXME: in 0.6 change back to (Xs,ys,vars...,tuples...)
+    for var in (Xs, ys, Xv, yv, tuples[2])
+        A = ObsView(var)
+        kf = @inferred kfolds(A,10)
+        @test kf == kfolds(var,10)
+        @test typeof(kf) == typeof(kfolds(var,10))
+
+        A = BatchView(var,15)
+        kf = @inferred kfolds(A,10)
+        @test kf == kfolds(var,10)
+        @test typeof(kf) == typeof(kfolds(var,10))
+
+        A = BatchView(obsview(var),15)
+        kf = @inferred kfolds(A,10)
+        @test kf == kfolds(var,10)
+        @test typeof(kf) == typeof(kfolds(var,10))
+    end
+end

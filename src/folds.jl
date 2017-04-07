@@ -102,7 +102,7 @@ see also
 [`kfolds`](@ref), [`leaveout`](@ref), [`splitobs`](@ref),
 [`DataSubset`](@ref)
 """
-immutable FoldsView{T,D,O,A1<:AbstractArray,A2<:AbstractArray} <: AbstractArray{T,1}
+immutable FoldsView{T,D,O,A1<:AbstractArray,A2<:AbstractArray} <: DataView{T,D}
     data::D
     train_indices::A1
     val_indices::A2
@@ -134,6 +134,12 @@ end
 FoldsView(data, train_indices::AbstractArray, val_indices::AbstractArray; obsdim = default_obsdim(data)) =
     FoldsView(data, train_indices, val_indices, convert(LearnBase.ObsDimension,obsdim))
 
+function FoldsView{T<:DataView}(data::T, train_indices::AbstractArray, val_indices::AbstractArray, obsdim)
+    @assert obsdim == data.obsdim
+    warn("Trying to nest a ", T, " into an FoldsView, which is not supported. Returning FoldsView(parent(_)) instead")
+    FoldsView(parent(data), train_indices, val_indices, obsdim)
+end
+
 # compare if both FoldsViews describe the same folds of the same data
 # we don't care how the indices are stored, just that they match
 # in their order and values
@@ -145,16 +151,20 @@ function Base.:(==)(fv1::FoldsView,fv2::FoldsView)
 end
 
 nobs(iter::FoldsView) = nobs(iter.data, iter.obsdim)
-getobs(iter::FoldsView) = getobs.(collect(iter))
-getobs(iter::FoldsView, i) = getobs(iter[i])
-
-Base.size(iter::FoldsView) = (length(iter.train_indices),)
-@compat Compat.IndexStyle{T<:FoldsView}(::Type{T}) = IndexLinear()
+Base.parent(iter::FoldsView) = iter.data
+Base.length(iter::FoldsView) = length(iter.train_indices)
 
 function Base.getindex(iter::FoldsView, i::Int)
     (datasubset(iter.data, iter.train_indices[i], iter.obsdim),
      datasubset(iter.data, iter.val_indices[i], iter.obsdim))
 end
+
+function Base.getindex(iter::FoldsView, i::AbstractVector)
+    FoldsView(iter.data, iter.train_indices[i], iter.val_indices[i], iter.obsdim)
+end
+
+# compatibility with nested functions
+default_obsdim(iter::FoldsView) = iter.obsdim
 
 """
     kfolds(n::Integer, [k = 5]) -> Tuple
