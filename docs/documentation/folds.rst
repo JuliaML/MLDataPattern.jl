@@ -26,14 +26,31 @@ avoid causing this kind of manual overfitting, one should instead
 somehow make use of the training set for such a model selection
 process, while leaving the test set out of it completely. Luckily
 this can be done quite effectively using a repartitioning
-strategy, such as :math:`k`-folds, for cross-validation.
+strategy, such as a :math:`k`-folds, and using the various
+partitions to perform cross-validation.
+
+We will start by discussing the terminology we use, and - more
+importantly - how the various terms are used in the context of
+this package. The rest of this document will then focus on how
+these concepts exposed to the user. We will start by introducing
+some low-level helper methods for computing the required
+assignments sequences. We will then use those assignments to
+motivate a type called :class:`FoldsView`, which can be
+configured to represent almost any kind of repartitioning
+strategy for a given data container. After discussing those
+basics, we will introduce the high-level methods that serve as a
+convenience layer around :class:`FoldsView` and the low-level
+functionality.
+
+Terms and Definitions
+--------------------------
 
 Before we dive into the provided functionality, let us quickly
 discuss some terminology. A few of the involved terms are often
-used quite casually in conversations, and thus easy to mix up.
-Yes because parts of this document are concerned with low-level
-functionality, we deem it important that we share the same
-wording.
+used quite casually in conversations, and thus easy to mix up. In
+general that doesn't cause much confusion, but since parts of
+this document are concerned with low-level functionality, we deem
+it important that we share the same wording.
 
 - When we have multiple disjoint subsets of the same data
   container (or tuple of data containers), we call the grouping
@@ -43,22 +60,46 @@ wording.
   to the formal definition in mathematics, we do allow the same
   observation to occur multiple times in the *same* subset.
 
+  For instance the function :func:`splitobs` creates a single
+  partition in the form of a tuple. More concretely, the
+  following code snipped creates a partition with two subsets
+  from a given toy data-vector that has 5 observations.
+
+  .. code-block:: jlcon
+
+     julia> partition = splitobs([1,2,3,4,5], at = 0.6)
+     ([1,2,3],[4,5])
+
 - In the context of this package, a **repartitioning strategy**
   describes a particular "system" for reassigning the
   observations of a data container (or tuple of data containers)
   to a training subset and a validation subset *multiple times*.
-  In contrast to a simple train/validation split, the data isn't
-  just partitioned once, but in multiple different
+  So in contrast to a simple train/validation split, the data
+  isn't just partitioned once, but in multiple different
   configurations. In other words, the result of a repartitioning
-  strategy are multiple different train/validation splits of the
-  same data.
+  strategy are multiple different partitions of the same data. We
+  use the term "repartitioning strategy" instead of "resampling
+  strategy" to emphasize that the subsets of each partition are
+  disjoint.
 
-- We use the term "repartitioning strategy" instead of
-  "resampling strategy" to emphasize that the subsets of each
-  partition are disjoint.
+  An example for performing a really simply repartitioning
+  strategy would be to create a sequences of random
+  train/validation partitions of some given data. The following
+  code snippet computes 3 partitions/folds for such a strategy on
+  a random toy data-vector ``y`` that has 5 observations in it.
 
-- The result of a repartitioning strategy is described through a
-  sequences of *subset assignment indices*, or short
+  .. code-block:: jlcon
+
+     julia> y = rand(5);
+
+     julia> folds = [splitobs(shuffleobs(y), at = 0.6) for i in 1:3]
+     3-element Array{Tuple{SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false},SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false}},1}:
+      ([0.933372,0.522172,0.505208],[0.504629,0.226582])
+      ([0.226582,0.504629,0.505208],[0.522172,0.933372])
+      ([0.505208,0.504629,0.933372],[0.226582,0.522172])
+
+- The result of a repartitioning strategy can be described
+  through a sequences of *subset assignment indices*, or short
   **assignments**. An assignment (singular) describes a partition
   that is valid for any data container of size :math:`N`, by
   using indices from the set :math:`\{1,2,...,N\}`. For instance,
@@ -68,7 +109,31 @@ wording.
   Because of this, it is also fair to think about the result of a
   repartitioning strategy as two sequences, one for the *training
   assignments* and a corresponding sequence for the *validation
-  assignments*
+  assignments*.
+
+  To give a concrete example of such assignment sequences,
+  consider the result of calling ``kfolds(6, 3)`` (see code
+  below). It will compute the training assignments ``train_idx``
+  and the validation assignments ``val_idx`` for a 3-fold
+  repartitioning strategy that is applicable to any data
+  container that has 6 observations in it.
+
+  .. code-block:: jlcon
+
+     julia> train_idx, val_idx = kfolds(6, 3)
+     ([[3,4,5,6],[1,2,5,6],[1,2,3,4]], [[1,2],[3,4],[5,6]])
+
+     julia> train_idx # sequence of training assignments
+     3-element Array{Array{Int64,1},1}:
+      [3,4,5,6]
+      [1,2,5,6]
+      [1,2,3,4]
+
+     julia> val_idx # sequence of validation assignments
+     3-element Array{Array{Int64,1},1}:
+      [1,2]
+      [3,4]
+      [5,6]
 
 - The result of applying a sequence of assignments to some data
   container (or tuple of data containers) is a sequence of
@@ -77,16 +142,31 @@ wording.
   partition, however, the term "fold" implies that there exist
   more than one.
 
-The rest of this document will focus on how this package
-approaches the task of repartitioning. We will start by
-introducing some low-level helper methods for computing the
-required assignments sequences. We will then use those
-assignments to motivate a type called :class:`FoldsView`, which
-can be configured to represent almost any kind of repartitioning
-strategy for a given data container. After discussing these
-basics, we will introduce the high-level methods that serve as a
-convenience layer around :class:`FoldsView` and the low-level
-functionality.
+  For instance, let us consider manually applying the assignments
+  (which we have computed above) to some random toy data-vector
+  ``y`` of appropriate length 6.
+
+  .. code-block:: jlcon
+
+     julia> y = rand(6)
+     6-element Array{Float64,1}:
+      0.226582
+      0.504629
+      0.933372
+      0.522172
+      0.505208
+      0.0997825
+
+     julia> folds = map((t,v)->(view(y,t),view(y,v)), train_idx, val_idx)
+     3-element Array{Tuple{SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false},SubArray{Float64,1,Array{Float64,1},Tuple{UnitRange{Int64}},true}},1}:
+      ([0.933372,0.522172,0.505208,0.0997825],[0.226582,0.504629])
+      ([0.226582,0.504629,0.505208,0.0997825],[0.933372,0.522172])
+      ([0.226582,0.504629,0.933372,0.522172],[0.505208,0.0997825])
+
+Naturally, the above code snippets just serve as examples to
+motivate the problem. This package implements a number of
+functions that provide the necessary functionality in a more
+intuitive and convenient manner.
 
 Computing K-Fold Indices
 --------------------------
