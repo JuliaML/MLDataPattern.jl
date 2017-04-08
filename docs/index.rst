@@ -8,18 +8,18 @@ MLDataPattern.jl's documentation
 
 This package represents a community effort to provide a native
 and generic `Julia <http://julialang.org>`_ implementation for
-commonly used **data access pattern** (what is DAP?) in Machine Learning. As
-such, it is a part of the `JuliaML <https://github.com/JuliaML>`_
-ecosystem.
+commonly used **data access pattern** in Machine Learning. Most
+notably it provides a number of pattern for *shuffling*,
+*partitioning*, and *resampling* data sets of various types and
+origin. In fact, all implemented functionality was designed
+around the core premise of allowing any user-defined type to
+serve as a custom data source and/or access pattern in a first
+class manner.
 
 In contrast to other data-centered Julia packages, the focus of
 MLDataPattern is specifically on functionality utilized in a
-Machine Learning context. This includes *shuffling*,
-*partitioning*, and *resampling* data sets of various types and
-origin. More importantly, this package was designed around the
-core premise of allowing any user-defined type to serve as a
-custom data source and/or access pattern in a first class manner.
-
+Machine Learning context. As such, it is a part of the `JuliaML
+<https://github.com/JuliaML>`_ ecosystem.
 
 Where to begin?
 ----------------
@@ -69,7 +69,7 @@ many observations they contain, as well as how to access specific
 observation(s). As such they are the most flexible kind of data
 sources and will thus be at the heart of most of the subsequent
 sections. To start off, we will discuss what makes some type a
-data container and what that term entails. (I like the concept!)
+data container and what that term entails.
 
 .. toctree::
    :maxdepth: 2
@@ -81,9 +81,9 @@ interacted with, we can introduce more interesting behaviour on
 top of them. The most enabling of them all is the idea of a
 **data subset**. A data subset is in essence just a lazy
 representation of a specific sequence of observations from a data
-container, the sequence itself being another data container. What that means and
-why that is useful will be discussed in detail in the following
-section.
+container, the sequence itself being another data container. What
+that means and why that is useful will be discussed in detail in
+the following section.
 
 .. toctree::
    :maxdepth: 3
@@ -111,15 +111,12 @@ Most of the time, this boils down to choosing appropriate
 hyper-parameters for the model one is working with. To avoid
 subtle problems in this selection process, and to reduce variance
 of the performance estimates, it is quite common to employ some
-kind of **repartitioning strategy** on the training data. One of
-the most famous of these strategies is used by :math:`k`-folds
-cross validation. (maybe just a brief description of what are fold 
-and unfold for the layman?) Of course the partitioning itself is just one
-part of such a model selection process, since we still have to somehow
-compute and compare the performance. However, it is an
-important step that is needed to make the most of the available
-data. So important in fact, that we will spend a whole section on
-it.
+kind of **repartitioning strategy** on the training data. Of
+course the partitioning itself is just one part of such a model
+selection process, since we still have to somehow compute and
+compare the performance. However, it is an important step that is
+needed to make the most of the available data. So important in
+fact, that we will spend a whole section on it.
 
 .. toctree::
    :maxdepth: 2
@@ -145,5 +142,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-THIS IS GREAT. CHEERS!
