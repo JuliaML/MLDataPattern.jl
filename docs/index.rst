@@ -8,7 +8,7 @@ MLDataPattern.jl's documentation
 
 This package represents a community effort to provide a native
 and generic `Julia <http://julialang.org>`_ implementation for
-commonly used **data access pattern** in Machine Learning. As
+commonly used **data access pattern** (what is DAP?) in Machine Learning. As
 such, it is a part of the `JuliaML <https://github.com/JuliaML>`_
 ecosystem.
 
@@ -69,7 +69,7 @@ many observations they contain, as well as how to access specific
 observation(s). As such they are the most flexible kind of data
 sources and will thus be at the heart of most of the subsequent
 sections. To start off, we will discuss what makes some type a
-data container and what that term entails.
+data container and what that term entails. (I like the concept!)
 
 .. toctree::
    :maxdepth: 2
@@ -81,7 +81,7 @@ interacted with, we can introduce more interesting behaviour on
 top of them. The most enabling of them all is the idea of a
 **data subset**. A data subset is in essence just a lazy
 representation of a specific sequence of observations from a data
-container, and itself again a data container. What that means and
+container, the sequence itself being another data container. What that means and
 why that is useful will be discussed in detail in the following
 section.
 
@@ -90,22 +90,22 @@ section.
 
    documentation/datasubset
 
-At this point we know what data container and data subsets are.
+By this point we know what are data containers and data subsets.
 In particular we discussed how we can split our data container
 into disjoint subsets. We have even seen how we can use tuples to
 link multiple data container together on a per-observation level.
-While we mentioned that this is particular useful for labeled
+While we mentioned that this is particularly useful for labeled
 data, we did not really elaborate on what that means. In order to
 change that, we will spend the next section solely on working
-with data container that have **targets**. This will put us into
+with data containers that have **targets**. This will put us into
 the realm of supervised learning. We will see how we can work
-with labeled data container and what special functionality is
+with labeled data containers and what special functionality is
 available for them.
 
 .. TODO Labeled Data Sources
 
 Now that we have discussed all the basics, we can start to cover
-some of the more advanced topic. A particularly important aspect
+some of the more advanced topics. A particularly important aspect
 of modern Machine Learning is what is known as *model selection*.
 Most of the time, this boils down to choosing appropriate
 hyper-parameters for the model one is working with. To avoid
@@ -113,9 +113,10 @@ subtle problems in this selection process, and to reduce variance
 of the performance estimates, it is quite common to employ some
 kind of **repartitioning strategy** on the training data. One of
 the most famous of these strategies is used by :math:`k`-folds
-cross validation. Of course the partitioning itself is just one
-part of such a model selection process, since we still have to
-compute and compare the performance somehow. However, it is an
+cross validation. (maybe just a brief description of what are fold 
+and unfold for the layman?) Of course the partitioning itself is just one
+part of such a model selection process, since we still have to somehow
+compute and compare the performance. However, it is an
 important step that is needed to make the most of the available
 data. So important in fact, that we will spend a whole section on
 it.
@@ -125,7 +126,7 @@ it.
 
    documentation/folds
 
-At some point during an machine learning experiment, chances are
+At some point during a machine learning experiment, chances are
 that we need to iterate over the observations of the training
 data in some manner. Typically it is either iterated one
 observation at a time, or in small equal-sized "chunks" called
@@ -145,3 +146,4 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+THIS IS GREAT. CHEERS!
