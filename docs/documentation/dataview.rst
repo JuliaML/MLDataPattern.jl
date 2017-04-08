@@ -4,16 +4,23 @@ Data Views
 There exist a wide variety of machine learning algorithms, each
 of which unique in their own way. Yet, there are clear
 similarities concerning how these algorithms utilize the data set
-for training the model. Some algorithms use the whole training
-data in every iteration of the training procedure. In such a case
-it is not necessary to partition or otherwise prepare it any
-further. Many modern algorithms prefer to process the training
-data in the form of small chunks. These "chunks" are usually of
-some fixed size and are commonly referred to as *mini batches*.
-Yet another (but overlapping) group of algorithms processes the
-training data just one observation at a time.
+during model training. In fact, most algorithms belong to at
+least one of the following categories.
 
-What we learn from this is that regardless of the concrete
+- Some algorithms use the whole training data in every iteration
+  of the training procedure. If that is the case, then it is not
+  necessary to partition or otherwise prepare the data any
+  further.
+
+- In contrast to this, many of the modern algorithms prefer to
+  process the training data piece by piece using smaller chunks.
+  These "chunks" are usually of some fixed size and are commonly
+  referred to as *mini batches*.
+
+- Yet another (but overlapping) group of algorithms processes the
+  training data just one single observation at a time.
+
+What we can learn from this is that regardless of the concrete
 algorithm and all its details, it is quite likely that at some
 point during a machine learning experiment, we need to iterate
 over the training data in a particular way. Most of the time we
@@ -31,14 +38,15 @@ Observation View
 -------------------
 
 One could be inclined to believe, that in order to iterate over
-some data container a single observation at a time, it should
-suffice to just iterate over the data container itself. While
-this may work as expected for some data container types, it will
-not work in general.
+some data container one observation at a time, it should suffice
+to just iterate over the data container itself. While this may
+work as expected for some data container types, it will not work
+in general.
 
-Consider the following two data containers, the matrix ``X`` and
-the vector ``y``. While both are different types of data
-container, each stores exactly 5 observations.
+Consider the following two example data containers, the matrix
+``X`` and the vector ``y``. While both are different types of
+data container, we will make each one store exactly 5
+observations.
 
 .. code-block:: jlcon
 
@@ -56,8 +64,9 @@ container, each stores exactly 5 observations.
     0.841177
 
 When we iterate over ``y``, it turns out we also iterate over
-each observation. So in other words, for a ``Vector`` is would
-work to just iterate over the data container itself
+each observation. So in other words, for a ``Vector`` it would
+work to just iterate over the data container itself, if our goal
+is to process it one observation at a time.
 
 .. code-block:: jlcon
 
@@ -71,7 +80,7 @@ work to just iterate over the data container itself
 On the other hand, when we iterate over ``X``, we iterate over
 all individual array elements, and *not* over what we consider to
 be the observations. In general that is the behaviour we want for
-a ``Array``, but it is not inline with our domain interpretation
+a ``Array``, but it is not in line with our domain interpretation
 of a data container.
 
 .. code-block:: jlcon
@@ -102,10 +111,12 @@ corresponds to a single observation.
 .. class:: ObsView <: DataView <: AbstractVector
 
    Lazy representation of a data container as a vector of
-   individual observations. Any data access is delayed until
-   ``getindex`` is called, and even ``getindex`` returns the
-   result of :func:`datasubset` which in general avoids data
-   movement until :func:`getobs` is invoked.
+   individual observations.
+
+   Any data access is delayed until ``getindex`` is called, and
+   even ``getindex`` returns the result of :func:`datasubset`
+   which in general avoids data movement until :func:`getobs` is
+   invoked.
 
 .. function:: obsview(data, [obsdim]) -> ObsView
 
@@ -147,6 +158,11 @@ such, no data from ``X`` is copied.
     [0.0443222,0.722906]
     [0.812814,0.245457]
 
+   julia> ov[2] # access second observation
+   2-element SubArray{Float64,1,Array{Float64,2},Tuple{Colon,Int64},true}:
+    0.933372
+    0.522172
+
    julia> foreach(println, ov) # now we iterate over observation
    [0.226582,0.504629]
    [0.933372,0.522172]
@@ -175,10 +191,13 @@ snippet we treat ``X`` as a data set that has 2 observations with
     [0.226582,0.933372,0.505208,0.0443222,0.812814]
     [0.504629,0.522172,0.0997825,0.722906,0.245457]
 
+   julia> ov = obsview(X, ObsDim.First()); # same as above but type-stable
+
 Similarly, we can also call :func:`obsview` with our toy vector
 ``y``. Recall that a ``Vector`` is just an ``Array`` with only
-one dimension. This will demonstrate how an :class:`ObsView`
-handles data container that are already in a vector-like form.
+one dimension. This example will help demonstrate how an
+:class:`ObsView` handles data container that are already in a
+vector-like form.
 
 .. code-block:: jlcon
 
@@ -259,6 +278,14 @@ same exact number of observations.
 Batch View
 -------------------
 
+Another common use case is to iterate over the given data set in
+small equal-sized chunks. These chunks are usually referred to as
+*mini-batches*.
+
+Not unlike :class:`ObsView`, this package provides a vector-like
+type called :class:`BatchView`, that can be used to treat any
+data container as a vector of equal-sized batches.
+
 .. class:: BatchView <: DataView <: AbstractVector
 
    Lazy representation of a data container as a vector of
@@ -290,7 +317,7 @@ Batch View
 
    :param Integer count: \
         Optional. The number of batches that should be used. This
-        will also we the length of the vector-like return value.
+        will also we the length of the return value.
 
    :param obsdim: \
         Optional. If it makes sense for the type of `data`, then
@@ -299,3 +326,116 @@ Batch View
         typestable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
+
+Consider the following toy data-matrix ``X``, which we will
+interpret as containing a total of 5 observations, where each
+observation consists of 2 features.
+
+.. code-block:: jlcon
+
+   julia> X = rand(2, 5)
+   2×5 Array{Float64,2}:
+    0.226582  0.933372  0.505208   0.0443222  0.812814
+    0.504629  0.522172  0.0997825  0.722906   0.245457
+
+Using a prime number for the total number of observations makes
+this data container a particularly interesting example for using
+:func:`batchview`. Unless we choose a batch-size of ``1`` or
+``5``, there is no way to iterate the whole data in terms of
+equally-sized batches. :class:`BatchView` deals with such edge
+cases by ignoring the excess observations with an informative
+message.
+
+.. code-block:: jlcon
+
+   julia> bv = batchview(X, size = 2)
+   INFO: The specified values for size and/or count will result in 1 unused data points
+   2-element MLDataPattern.BatchView{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},Array{Float64,2},LearnBase.ObsDim.Last}:
+    [0.226582 0.933372; 0.504629 0.522172]
+    [0.505208 0.0443222; 0.0997825 0.722906]
+
+You can query the size of each batch by using the function
+:func:`batchsize` on any :class:`BatchView`.
+
+.. code-block:: jlcon
+
+   julia> batchsize(bv)
+   2
+
+Similar to :class:`ObsView`, a :class:`BatchView` acts like a
+vector and can be used as such. The one big difference to the
+former is that each element is now a batch of ``X`` instead of a
+single observation.
+
+.. code-block:: jlcon
+
+   julia> bv[2] # access second batch
+   2×2 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}:
+    0.505208   0.0443222
+    0.0997825  0.722906
+
+Naturally, :func:`batchview` also supports the optional parameter
+``obsdim``, which can be used to specify which dimension denotes
+the observation. If that concept of dimensionality does not make
+sense for the given data container, then ``obsdim`` can simply be
+omitted.
+
+.. code-block:: jlcon
+
+   julia> bv = batchview(X', size = 2, obsdim = 1) # note the transpose
+   INFO: The specified values for size and/or count will result in 1 unused data points
+   2-element MLDataPattern.BatchView{SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},Colon},false},Array{Float64,2},LearnBase.ObsDim.Constant{1}}:
+    [0.226582 0.504629; 0.933372 0.522172]
+    [0.505208 0.0997825; 0.0443222 0.722906]
+
+So far we used the parameter ``size`` to explicitly specify how
+many observation we want to be in each batch. Alternatively, we
+can also use the parameter ``count`` to specify the total number
+of batches that we would like to use.
+
+.. code-block:: jlcon
+
+   julia> bv = batchview(X, count = 4)
+   INFO: The specified values for size and/or count will result in 1 unused data points
+   4-element MLDataPattern.BatchView{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},Array{Float64,2},LearnBase.ObsDim.Last}:
+    [0.226582; 0.504629]
+    [0.933372; 0.522172]
+    [0.505208; 0.0997825]
+    [0.0443222; 0.722906]
+
+   julia> bv[2] # access second batch
+   2×1 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}:
+    0.933372
+    0.522172
+
+Note how in the above example, the inferred batch-size is ``1``.
+Arguably, this makes the resulting :class:`BatchView`, ``bv``,
+appear very similar to an :class:`ObsView`. The big difference,
+though, is that :class:`BatchView` preserves the shape on
+indexing. Consequently, each element of ``bv`` is a subtype of
+``AbstractMatrix`` and not ``AbstractVector``.
+
+It is also possible to call :func:`batchview` with multiple data
+containers wrapped in a ``Tuple``. Note, however, that all data
+containers must have the same total number of observations. Using
+a tuple this way will link those data containers together on a
+per-observation basis.
+
+.. code-block:: jlcon
+
+   julia> y = rand(5)
+   5-element Array{Float64,1}:
+    0.11202
+    0.000341996
+    0.380001
+    0.505277
+    0.841177
+
+   julia> bv = batchview((X, y))
+   INFO: The specified values for size and/or count will result in 1 unused data points
+   2-element MLDataPattern.BatchView{Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},SubArray{Float64,1,Array{Float64,1},Tuple{UnitRange{Int64}},true}},Tuple{Array{Float64,2},Array{Float64,1}},Tuple{LearnBase.ObsDim.Last,LearnBase.ObsDim.Last}}:
+   ([0.226582 0.933372; 0.504629 0.522172], [0.11202,0.000341996])
+   ([0.505208 0.0443222; 0.0997825 0.722906], [0.380001,0.505277])
+
+   julia> bv[2]
+   ([0.505208 0.0443222; 0.0997825 0.722906], [0.380001,0.505277])

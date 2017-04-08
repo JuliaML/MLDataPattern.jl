@@ -343,6 +343,11 @@ BatchView(data, obsdim::Union{Tuple,ObsDimension}) =
 BatchView(data; size = -1, count = -1, obsdim = default_obsdim(data)) =
     BatchView(data, size, count, convert(LearnBase.ObsDimension,obsdim))
 
+"""
+    batchsize(data) -> Int
+
+Return the fixed size of each batch in `data`.
+"""
 batchsize(A::BatchView) = A.size
 nobs(A::BatchView) = A.count * A.size
 Base.parent(A::BatchView) = A.data
