@@ -1,6 +1,7 @@
 __precompile__()
 module MLDataPattern
 
+using StatsBase
 using LearnBase
 using MLLabelUtils
 using Compat
@@ -33,6 +34,11 @@ export
     targets,
     eachtarget,
 
+    oversample,
+    undersample,
+    upsample,
+    downsample,
+
     FoldsView,
     kfolds,
     leaveout
@@ -44,6 +50,7 @@ include("shuffleobs.jl")
 include("splitobs.jl")
 include("dataview.jl")
 include("targets.jl")
+include("resample.jl")
 include("folds.jl")
 
 end # module

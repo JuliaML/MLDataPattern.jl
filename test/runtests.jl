@@ -1,6 +1,8 @@
 using Base.Test
-using MLDataPattern
+using StatsBase
 using LearnBase
+using MLLabelUtils
+using MLDataPattern
 
 # --------------------------------------------------------------------
 # create some test data
@@ -56,6 +58,7 @@ tests = [
     "tst_splitobs.jl"
     "tst_dataview.jl"
     "tst_targets.jl"
+    "tst_resample.jl"
     "tst_folds.jl"
 ]
 
