@@ -30,6 +30,9 @@ export
     batchview,
     batchsize,
 
+    targets,
+    eachtarget,
+
     FoldsView,
     kfolds,
     leaveout
@@ -40,6 +43,7 @@ include("randobs.jl")
 include("shuffleobs.jl")
 include("splitobs.jl")
 include("dataview.jl")
+include("targets.jl")
 include("folds.jl")
 
 end # module

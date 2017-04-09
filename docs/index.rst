@@ -102,7 +102,10 @@ the realm of supervised learning. We will see how we can work
 with labeled data containers and what special functionality is
 available for them.
 
-.. TODO Labeled Data Sources
+.. toctree::
+   :maxdepth: 2
+
+   documentation/targets
 
 Now that we have discussed all the basics, we can start to cover
 some of the more advanced topics. A particularly important aspect

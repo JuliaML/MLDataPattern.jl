@@ -55,6 +55,7 @@ tests = [
     "tst_shuffleobs.jl"
     "tst_splitobs.jl"
     "tst_dataview.jl"
+    "tst_targets.jl"
     "tst_folds.jl"
 ]
 
