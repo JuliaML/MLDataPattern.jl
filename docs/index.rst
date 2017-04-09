@@ -103,7 +103,7 @@ with labeled data containers and what special functionality is
 available for them.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    documentation/targets
 
