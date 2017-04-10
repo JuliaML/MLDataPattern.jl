@@ -7,7 +7,7 @@ Most non-trivial machine learning experiments require some form
 of model tweaking *prior* to training. A particularly common
 scenario is when the model (or algorithm) has hyper parameters
 that need to be specified manually. The process of searching for
-suitable hyper parameters is sub-task of what we call *model
+suitable hyper parameters is a sub-task of what we call *model
 selection*.
 
 If model selection is part of the experiment, then it is quite
@@ -35,9 +35,9 @@ the various terms are interpreted in the context of this package.
 The rest of this document will then focus on how these concepts
 are implemented and exposed to the user. There we will start by
 introducing some low-level helper methods for computing the
-required assignments. We will then use those assignments to
-motivate a type called :class:`FoldsView`, which can be
-configured to represent almost any kind of repartitioning
+required subset-assignment indices. We will then use those
+"assignments" to motivate a type called :class:`FoldsView`, which
+can be configured to represent almost any kind of repartitioning
 strategy for a given data container. After discussing those
 basics, we will introduce the high-level methods that serve as a
 convenience layer around :class:`FoldsView` and the low-level
@@ -103,9 +103,9 @@ it important that we share the same wording.
 - The result of a repartitioning strategy can be described
   through a sequences of *subset assignment indices*, or short
   **assignments**. An assignment (singular) describes a partition
-  that is valid for any data container of size :math:`N`, by
-  using indices from the set :math:`\{1,2,...,N\}`. For instance,
-  if a single partition should consist of two subsets, then the
+  that is valid for any data container of size :math:`N` by using
+  indices from the set :math:`\{1,2,...,N\}`. For instance, if a
+  single partition should consist of two subsets, then the
   corresponding assignment (singular), is made up of two vectors
   of indices, each vector describing the content of one subset.
   Because of this, it is also fair to think about the result of a
@@ -425,7 +425,7 @@ object can then be queried for its individual folds using
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -650,7 +650,7 @@ steps in just one single swoop by passing the data container to
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -808,7 +808,7 @@ you.
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 

@@ -131,7 +131,7 @@ corresponds to a single observation.
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -323,7 +323,7 @@ data container as a vector of equal-sized batches.
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 

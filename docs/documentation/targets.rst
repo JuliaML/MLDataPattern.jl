@@ -45,15 +45,15 @@ data sources equally well.
   stored on the disk. If so, it is likely the case, that the
   targets are not part of the observations, but instead part of
   the data container metadata. An example would be a data
-  container that represents a directory of images in the file
-  system, in which each sub-directory contains the images of a
-  single class. In that scenario, the targets are known from the
-  directory names (i.e. the metadata). As such it would be far
-  more efficient if the data container can make use of this
-  information, instead of having to load an actual image from the
-  disk just to access its target. Remember that targets are not
-  only needed during training itself, but also for data
-  partitioning and resampling.
+  container that represents a nested directory of images in the
+  file system. Each sub-directory would then contain all the
+  images of a single class. In that scenario, the targets are
+  known from the directory names and could be part of some
+  metadata. As such, it would be far more efficient if the data
+  container can make use of this information, instead of having
+  to load an actual image from the disk just to access its
+  target. Remember that targets are not only needed during
+  training itself, but also for data partitioning and resampling.
 
 The targets logic is in some ways a bit more complex than the
 :func:`getobs` logic. The main reason for this is that while
@@ -65,27 +65,29 @@ on data sources that are considered :ref:`container`.
 Query Target(s)
 -------------------
 
-The first question one may ask is, why would access pattern
-framework need to "extract" the targets out of some data
-container. After all, it would be simpler to just pass the
-targets as an additional parameter. In fact, that is pretty much
-how almost all other ML frameworks handle labeled data. The
-reason why we diverge from tradition this is two-fold.
+The first question one may ask is: "Why would access pattern need
+to "extract" the targets out of some data container?". After all,
+it would be simpler to just pass the targets as an additional
+parameter. In fact, that is pretty much how almost all other ML
+frameworks handle labeled data. The reason why we diverge from
+tradition this is two-fold.
 
 1. The set of access pattern that work on labeled data is really
    just a superset of the set of access pattern that work on
    unlabeled data. So by doing it our way, we avoid duplicate
    code.
 
-2. The second - and more important - reason is that we decided
+2. The second (and more important) reason is that we decided
    that there is really no convincing argument for restricting
    the user input to either be in the form of one variable
-   (unlabeled data), or two variables (for labeled data).
-   In fact, we wanted to allow the same variable to contain the
-   features as well as targets.
+   (unlabeled data), or two variables (for labeled data). In
+   fact, we wanted to allow the same variable to contain the
+   features as well as targets. We also wanted to allow users to
+   work with mutliple data sources that doesn't contain any
+   targets at all.
 
 To that end we provide the function :func:`targets`. It can be
-used to query the, well, all the targets of some given data
+used to query all the, well, targets of some given data
 container or data subset.
 
 .. function:: targets(data, [obsdim])
@@ -215,7 +217,7 @@ to :func:`targets`.
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -270,7 +272,8 @@ function) is passed to :func:`targets`, it will always be applied
 to the observations, and **not** the container. In other words,
 the first parameter is applied to each observation individually
 and not to the data as a whole. In general this means that the
-return type changes drastically even if passing a no-op function.
+return type changes drastically, even if passing a no-op
+function.
 
 .. code-block:: jlcon
 
@@ -295,9 +298,12 @@ return type changes drastically even if passing a no-op function.
     [3,4]
     [5,6]
 
-The optional parameter ``obsdim`` can be used to specify which
-dimension denotes the observations, if that concept makes sense
-for the type of ``data``.
+We can see in the above example, that the default assumption for
+an ``Array`` of higher order is that the last array dimension
+enumerates the observations. The optional parameter ``obsdim``
+can be used to explicitly overwrite that default. If the concept
+of an observation dimension is not defined for the type of
+``data``, then ``obsdim`` can simply be omitted.
 
 .. code-block:: jlcon
 
@@ -327,12 +333,11 @@ for more information on that topic.
 Iterate over Targets
 ---------------------
 
-In some situations, one only wants to iterate over the targets,
+In some situations, one only wants to *iterate* over the targets,
 instead of querying all of them at once. In those scenarios it
-would be beneficial to avoid allocation temporary memory all
+would be beneficial to avoid the allocation temporary memory all
 together. To that end we provide the function :func:`eachtarget`,
-which returns a ``Base.Generator``, that when iterated over
-returns each target in ``data`` once and in the correct order.
+which returns a ``Base.Generator``.
 
 .. function:: eachtarget([fun], data, [obsdim]) -> Generator
 
@@ -407,7 +412,7 @@ we will assume that the column ``:y`` contains the targets.
    │ 1   │ 0.176654  │ 0.821837 │ a │
    │ 2   │ 0.0397664 │ 0.894399 │ a │
    │ 3   │ 0.390938  │ 0.29062  │ b │
-   │ 4   │ 0.582912  │ 0.509047 │ a │
+│ 4   │ 0.582912  │ 0.509047 │ a │
    │ 5   │ 0.407289  │ 0.113006 │ b │
 
    julia> iter = eachtarget(row->row[1,:y], df)
@@ -537,7 +542,8 @@ works seamlessly in combination with :func:`datasubset`.
 Note however, that calling :func:`targets` with a
 target-extraction-function will still trigger :func:`getobs`.
 This is expected behaviour, since the extraction function is
-intended to "extract" the target from each actual observation.
+intended to "extract" the target from each actual observation
+(i.e. the result of :func:`getobs`).
 
 .. code-block:: jlcon
 
@@ -547,8 +553,8 @@ intended to "extract" the target from each actual observation.
 Example 2: Symbol Support for DataFrames.jl
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``DataFrame`` are a kind of data container, where the targets are
-as much part of the data as the features are (in contrast to
+``DataFrame`` are a kind of data container for which the targets
+are as much part of the data as the features are (in contrast to
 Example 1). Furthermore, each observation is itself also a
 ``DataFrame``. Before we start, let us implement the required
 :ref:`container` interface.

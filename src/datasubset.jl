@@ -37,7 +37,7 @@ Arguments
 
 - **`obsdim`** : Optional. If it makes sense for the type of `data`,
     `obsdim` can be used to specify which dimension of `data`
-    denotes the observations. It can be specified in a typestable
+    denotes the observations. It can be specified in a type-stable
     manner as a positional argument (see `?LearnBase.ObsDim`), or
     more conveniently as a smart keyword argument.
 
@@ -128,7 +128,7 @@ subset = DataSubset(X, 21:100)
 subset = DataSubset(X', 21:100, obsdim = :first) # or "obsdim = 1"
 @assert nobs(subset) == 80
 
-# To specify the obsdim in a typestable way, use positional arguments
+# To specify the obsdim in a type-stable way, use positional arguments
 # provided by the submodule `ObsDim`.
 @inferred DataSubset(X', 21:100, ObsDim.First())
 
@@ -270,7 +270,7 @@ corresponding to the given `indices` in their native type, use
 
 If it makes sense for the type of `data`, `obsdim` can be used to
 specify which dimension of `data` denotes the observations. It
-can be specified in a typestable manner as a positional argument
+can be specified in a type-stable manner as a positional argument
 (see `?LearnBase.ObsDim`), or more conveniently as a smart
 keyword argument.
 
@@ -294,7 +294,7 @@ for fun in (:DataSubset, :datasubset)
         # No-op
         ($fun)(subset::DataSubset) = subset
 
-        # allow typestable way to just provide the obsdim
+        # allow type-stable way to just provide the obsdim
         ($fun)(data, obsdim::ObsDimension) =
             ($fun)(data, 1:nobs(data, obsdim), obsdim)
 

@@ -95,7 +95,7 @@ type of subset for the given data container.
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -358,7 +358,7 @@ for :func:`datasubset`.
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -688,7 +688,7 @@ function that implements this functionality is called
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -925,7 +925,7 @@ more convenient method for :func:`splitobs` as well.
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -1141,7 +1141,7 @@ fractions. The sum of all fractions must be in the interval
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 

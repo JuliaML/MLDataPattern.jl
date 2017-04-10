@@ -39,7 +39,7 @@ Arguments
 - **`obsdim`** : Optional. If it makes sense for the type of
     `data`, `obsdim` can be used to specify which dimension of
     `data` denotes the observations. It can be specified in a
-    typestable manner as a positional argument (see
+    type-stable manner as a positional argument (see
     `?LearnBase.ObsDim`), or more conveniently as a smart keyword
     argument.
 

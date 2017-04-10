@@ -59,7 +59,7 @@ as well as `idx` being an abstract vector, respectively.
 
 If it makes sense for the type of `data`, `obsdim` can be used to
 specify which dimension of `data` denotes the observations. It
-can be specified in a typestable manner as a positional argument
+can be specified in a type-stable manner as a positional argument
 (see `?LearnBase.ObsDim`), or more conveniently as a smart
 keyword argument.
 """
@@ -105,7 +105,7 @@ Unless explicitly implemented for `data` it defaults to returning
 
 If it makes sense for the type of `data`, `obsdim` can be used to
 specify which dimension of `data` denotes the observations. It
-can be specified in a typestable manner as a positional argument
+can be specified in a type-stable manner as a positional argument
 (see `?LearnBase.ObsDim`), or more conveniently as a smart
 keyword argument.
 """

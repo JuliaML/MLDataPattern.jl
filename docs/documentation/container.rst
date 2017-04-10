@@ -126,7 +126,7 @@ additional argument, that denotes the observation dimension.
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -228,7 +228,7 @@ a method for the function :func:`getobs`.
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -520,7 +520,7 @@ provide a mutating variant of :func:`getobs` called
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
