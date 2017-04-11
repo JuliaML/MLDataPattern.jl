@@ -8,6 +8,15 @@ This way, all classes will have as many observations in the
 resulting data set as the largest class has in the given
 (original) `data`.
 
+The convenience parameter `shuffle` determines if the
+resulting data will be shuffled after its creation; if it is not
+shuffled then all the repeated samples will be together at the
+end, sorted by class. Defaults to `true`.
+
+The optional parameter `obsdim` can be used to specify which
+dimension denotes the observations, if that concept makes sense
+for the type of `data`. See `?ObsDim` for more information.
+
 ```julia
 # 6 observations with 3 features each
 X = rand(3, 6)
@@ -27,7 +36,8 @@ X_bal, Y_bal = oversample((X,Y))
 ```
 
 For this function to work, the type of `data` must implement
-`nobs` and `getobs`.
+[`nobs`](@ref) and [`getobs`](@ref). For example, the following
+code allows `oversample` to work on a `DataFrame`.
 
 ```julia
 # Make DataFrames.jl work
@@ -36,10 +46,10 @@ LearnBase.nobs(data::DataFrame) = nrow(data)
 ```
 
 You can use the (keyword) parameter `f` to specify how to
-retrieve the targets of the given `data`. Note that if `data` is
-a tuple, then it will be assumed that the last element of the
-tuple contains the targets and `f` will be applied to
-that element.
+extract or retrieve the targets from each observation of the
+given `data`. Note that if `data` is a tuple, then it will be
+assumed that the last element of the tuple contains the targets
+and `f` will be applied to each observation in that element.
 
 ```julia
 julia> data = DataFrame(Any[rand(6), rand(6), [:a,:b,:b,:b,:b,:a]], [:X1,:X2,:Y])
@@ -67,14 +77,7 @@ julia> getobs(oversample(row->row[:Y], data))
 │ 8   │ 0.87524  │ 0.547199 │ b │
 ```
 
-The convenience parameter `shuffle` determines if the
-resulting data will be shuffled after its creation; if it is not
-shuffled then all the repeated samples will be together at the
-end, sorted by class. Defaults to `true`.
-
-The optional parameter `obsdim` can be used to specify which
-dimension denotes the observations, if that concept makes sense
-for the type of `data`. See `?ObsDim` for more information.
+see also [`undersample`](@ref).
 """
 oversample(data; shuffle=true, obsdim=default_obsdim(data)) =
     oversample(identity, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
@@ -115,6 +118,15 @@ observations will be the same number for every class. This way,
 all classes will have as many observations in the resulting data
 set as the smallest class has in the given (original) `data`.
 
+The convenience parameter `shuffle` determines if the
+resulting data will be shuffled after its creation; if it is not
+shuffled then all the observations will be in their original
+order. Defaults to `false`.
+
+The optional parameter `obsdim` can be used to specify which
+dimension denotes the observations, if that concept makes sense
+for the type of `data`. See `?ObsDim` for more information.
+
 ```julia
 # 6 observations with 3 features each
 X = rand(3, 6)
@@ -134,7 +146,8 @@ X_bal, Y_bal = undersample((X,Y))
 ```
 
 For this function to work, the type of `data` must implement
-`nobs` and `getobs`.
+[`nobs`](@ref) and [`getobs`](@ref). For example, the following
+code allows `undersample` to work on a `DataFrame`.
 
 ```julia
 # Make DataFrames.jl work
@@ -143,10 +156,10 @@ LearnBase.nobs(data::DataFrame) = nrow(data)
 ```
 
 You can use the (keyword) parameter `f` to specify how to
-retrieve the targets of the given `data`. Note that if `data` is
-a tuple, then it will be assumed that the last element of the
-tuple contains the targets and `f` will be applied to
-that element.
+extract or retrieve the targets from each observation of the
+given `data`. Note that if `data` is a tuple, then it will be
+assumed that the last element of the tuple contains the targets
+and `f` will be applied to each observation in that element.
 
 ```julia
 julia> data = DataFrame(Any[rand(6), rand(6), [:a,:b,:b,:b,:b,:a]], [:X1,:X2,:Y])
@@ -170,14 +183,7 @@ julia> getobs(undersample(row->row[:Y], data))
 │ 4   │ 0.147621 │ 0.527292 │ a │
 ```
 
-The convenience parameter `shuffle` determines if the
-resulting data will be shuffled after its creation; if it is not
-shuffled then all the observations will be in their original
-order. Defaults to `false`.
-
-The optional parameter `obsdim` can be used to specify which
-dimension denotes the observations, if that concept makes sense
-for the type of `data`. See `?ObsDim` for more information.
+see also [`oversample`](@ref).
 """
 undersample(data; shuffle=false, obsdim=default_obsdim(data)) =
     undersample(identity, data, shuffle, convert(LearnBase.ObsDimension,obsdim))

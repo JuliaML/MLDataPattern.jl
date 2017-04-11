@@ -55,22 +55,26 @@ data sources equally well.
   target. Remember that targets are not only needed during
   training itself, but also for data partitioning and resampling.
 
-The targets logic is in some ways a bit more complex than the
-:func:`getobs` logic. The main reason for this is that while
-:func:`getobs` was solely define for data containers, we want the
-target logic to seamlessly support a wide variety of data sources
-and data scenarios. In this document, however, we will only focus
-on data sources that are considered :ref:`container`.
+The implemented target logic is in some ways a bit more complex
+than the :func:`getobs` logic. The main reason for this is that
+while :func:`getobs` is solely designed for data containers, we
+want the target logic to seamlessly support a wide variety of
+data sources and data scenarios. In this document, however, we
+will only focus on data sources that are considered labeled
+:ref:`container`. Note that in the context of this package, a
+**labeled data container** is a data container that contains
+*targets*; be it categorical or continuous.
 
 Query Target(s)
 -------------------
 
-The first question one may ask is: "Why would access pattern need
-to "extract" the targets out of some data container?". After all,
-it would be simpler to just pass the targets as an additional
-parameter. In fact, that is pretty much how almost all other ML
-frameworks handle labeled data. The reason why we diverge from
-tradition this is two-fold.
+The first question one may ask is: "Why would the access pattern
+need to *extract* the targets out of some data container?". After
+all, it would be simpler to just pass the targets as an
+additional parameter to any function that needs them. In fact,
+that is pretty much how almost all other ML frameworks handle
+labeled data. The reason why we diverge from this tradition is
+two-fold.
 
 1. The set of access pattern that work on labeled data is really
    just a superset of the set of access pattern that work on
@@ -87,24 +91,25 @@ tradition this is two-fold.
    targets at all.
 
 To that end we provide the function :func:`targets`. It can be
-used to query all the, well, targets of some given data
+used to query all the, well, targets of some given labeled data
 container or data subset.
 
 .. function:: targets(data, [obsdim])
 
-   Extract the concrete targets from `data` and return them.
+   Query the concrete targets from `data` and return them.
 
    This function is eager in the sense that it will always call
-   :func:`getobs` unless a custom method for :func:`gettargets`
-   (see later) is implemented for the type of `data`. This will
-   make sure that actual values are returned (in contrast to
-   placeholders such as :class:`DataSubset` or ``SubArray``).
+   :func:`getobs` unless a custom method for
+   ``LearnBase.gettargets`` (see later) is implemented for the
+   type of `data`. This will make sure that actual values are
+   returned (in contrast to placeholders such as
+   :class:`DataSubset` or ``SubArray``).
 
    In other words, the returned values must be in the form
    intended to be passed as-is to some resampling strategy or
    learning algorithm.
 
-   :param data: The object representing a data container.
+   :param data: The object representing a labeled data container.
 
    :param obsdim: \
         Optional. If it makes sense for the type of `data`, then
@@ -211,7 +216,7 @@ to :func:`targets`.
         be applied to each observation individually in order to
         extract or compute the target for that observation.
 
-   :param data: The object representing a data container.
+   :param data: The object representing a labeled data container.
 
    :param obsdim: \
         Optional. If it makes sense for the type of `data`, then
@@ -351,13 +356,13 @@ which returns a ``Base.Generator``.
         order to extract or compute the target for that
         observation.
 
-   :param data: The object representing a data container.
+   :param data: The object representing a labeled data container.
 
    :param obsdim: \
         Optional. If it makes sense for the type of `data`, then
         `obsdim` can be used to specify which dimension of `data`
         denotes the observations. It can be specified in a
-        typestable manner as a positional argument, or as a more
+        type-stable manner as a positional argument, or as a more
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
@@ -412,7 +417,7 @@ we will assume that the column ``:y`` contains the targets.
    │ 1   │ 0.176654  │ 0.821837 │ a │
    │ 2   │ 0.0397664 │ 0.894399 │ a │
    │ 3   │ 0.390938  │ 0.29062  │ b │
-│ 4   │ 0.582912  │ 0.509047 │ a │
+   │ 4   │ 0.582912  │ 0.509047 │ a │
    │ 5   │ 0.407289  │ 0.113006 │ b │
 
    julia> iter = eachtarget(row->row[1,:y], df)
@@ -472,9 +477,9 @@ implementing custom methods. The first one for
 ``LearnBase.gettarget``. Note again that these functions are
 internal and only intended to be *extended* by the user (and
 **not** called). A user should not use them directly but instead
-always call :func:`targets`.
+always call :func:`targets` or :func:`eachtarget`.
 
-Example 1: Custom Directory Based Image Source
+Example 1: Custom File-Based Data Source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Let's say you want to write a custom data container that
@@ -633,3 +638,373 @@ is possible.
     :b
     :a
     :b
+
+Under- and Over-Sampling
+---------------------------
+
+It is not uncommon in a classification setting, that we find
+ourselves working with an *imbalanced data set*. We call a
+labeled data set **imbalanced**, if it contains more observations
+of some class(es) than for the other(s). Training on such a data
+set can pose a significant challenge for many commonly used
+algorithms; especially if the difference in the class frequency
+is large.
+
+There are different conceptual approaches for dealing with
+imbalanced data. A quite simple but popular strategy that works
+for *data containers*, is to either under- or over-sample it
+according to the class distribution. What that means is that the
+data container is re-sampled in such a way, that the class
+distribution in the resulting data container is approximately
+uniform.
+
+This package provides two functions to re-sample an imbalanced
+data container; the first of which is called :func:`undersample`.
+When under-sampling a data container, it will be down-sampled in
+such a way, that each class has about as many observations in the
+resulting subset, as the least represented class has in the
+original data container.
+
+.. function:: undersample([fun], data, [shuffle], [obsdim])
+
+   Generate a class-balanced version of `data` by down-sampling
+   its observations in such a way that the resulting number of
+   observations will be the same number for every class. This
+   way, all classes will have as many observations in the
+   resulting data subset as the smallest class has in the given
+   (i.e. original) `data` container.
+
+   :param fun: \
+        Optional. A callable object (usually a function) that
+        should be applied to each observation individually in
+        order to extract or compute the label for that
+        observation.
+
+   :param data: The object representing a labeled data container.
+
+   :param bool shuffle: \
+        Optional. Determines if the resulting data will be
+        shuffled after its creation. If ``false``, then all the
+        observations will be in their original order. Defaults to
+        ``false``.
+
+   :param obsdim: \
+        Optional. If it makes sense for the type of `data`, then
+        `obsdim` can be used to specify which dimension of `data`
+        denotes the observations. It can be specified in a
+        type-stable manner as a positional argument, or as a more
+        convenient keyword parameter. See :ref:`obsdim` for more
+        information.
+
+   :return: A down-sampled but class-balanced version of `data`
+            in the form of a lazy data subset. No data is copied
+            until :func:`getobs` is called.
+
+Let's consider the following toy data set, which consists of a
+feature matrix ``X`` and a corresponding target vector ``y``.
+Both variables are data containers with 6 observations.
+
+.. code-block:: jlcon
+
+   julia> X = rand(2, 6)
+   2×6 Array{Float64,2}:
+    0.226582  0.933372  0.505208   0.0443222  0.812814  0.11202
+    0.504629  0.522172  0.0997825  0.722906   0.245457  0.000341996
+
+   julia> y = ["a", "b", "b", "b", "b", "a"]
+   6-element Array{String,1}:
+    "a"
+    "b"
+    "b"
+    "b"
+    "b"
+    "a"
+
+As we can see, the target of each observation is either ``"a"``
+or ``"b"``, which means we have a binary classification problem.
+We can also see that the data set has twice as many observations
+for ``"b"`` as it has for ``"a"``. Thus we consider it
+imbalanced.
+
+We can down-sample our toy data set by passing it to
+:func:`undersample`. In order to tell the function that these two
+data containers should be treated as a one data set, we have to
+group them together using a ``Tuple``. This will cause
+:func:`undersample` to return a ``Tuple`` of equal length and
+ordering.
+
+.. code-block:: jlcon
+
+   julia> X_bal, y_bal = undersample((X, y));
+
+   julia> X_bal
+   2×4 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false}:
+    0.226582  0.933372  0.0443222  0.11202
+    0.504629  0.522172  0.722906   0.000341996
+
+   julia> y_bal
+   4-element SubArray{String,1,Array{String,1},Tuple{Array{Int64,1}},false}:
+    "a"
+    "b"
+    "b"
+    "a"
+
+Note two things in the code above.
+
+1. Both, ``X_bal`` and ``y_bal``, are of type ``SubArray``. As
+   such, they are just views into the corresponding original
+   variable ``X`` or ``y``. The motivation for this behaviour is
+   to avoid data movement until :func:`getobs`  is called.
+
+2. The order of the observations in the resulting data subsets
+   is the same as in the original data containers. This is no
+   accident. If that behaviour is undesired, you can pass
+   ``shuffle = true`` to the function.
+
+If the type of the data is not sufficient information to be able
+to extract the targets, one can specify a
+target-extraction-function ``fun``, that is to be applied to each
+individual observation. The behaviour when specifying or omitting
+``fun`` is equivalent to its behaviour for :func:`eachtarget`,
+because that is the function that is used internally by
+:func:`undersample`.
+
+A good example for a type that requires the parameter ``fun`` is
+a ``DataTable``. Consider the following toy data container where
+we know that the column ``:y`` contains the targets (see
+:ref:`datatable` to make the following code work).
+
+.. code-block:: jlcon
+
+   julia> dt = DataTable(x1 = rand(6), x2 = rand(6), y = [:a,:b,:b,:b,:b,:a])
+   6×3 DataTables.DataTable
+   │ Row │ x1        │ x2          │ y  │
+   ├─────┼───────────┼─────────────┼────┤
+   │ 1   │ 0.226582  │ 0.0443222   │ :a │
+   │ 2   │ 0.504629  │ 0.722906    │ :b │
+   │ 3   │ 0.933372  │ 0.812814    │ :b │
+   │ 4   │ 0.522172  │ 0.245457    │ :b │
+   │ 5   │ 0.505208  │ 0.11202     │ :b │
+   │ 6   │ 0.0997825 │ 0.000341996 │ :a │
+
+   julia> undersample(row->row[1,:y], dt)
+   4×3 DataTables.SubDataTable{Array{Int64,1}}
+   │ Row │ x1        │ x2          │ y  │
+   ├─────┼───────────┼─────────────┼────┤
+   │ 1   │ 0.226582  │ 0.0443222   │ :a │
+   │ 2   │ 0.504629  │ 0.722906    │ :b │
+   │ 3   │ 0.522172  │ 0.245457    │ :b │
+   │ 4   │ 0.0997825 │ 0.000341996 │ :a │
+
+Of course, under-sampling the larger classes has the consequence
+of decreasing the total size of the training set. After all, this
+approach effectively discards perfectly usable training examples
+for the sake of having a balanced data set. Alternatively, one
+can also achieve a balanced class distribution by over-sampling
+the smaller classes instead. To that end, we provide the function
+:func:`oversample`. While this function effectively increases the
+apparent size of the given data container, it does use the same
+exact observations multiple times.
+
+.. function:: oversample([fun], data, [shuffle], [obsdim])
+
+   Generates a class-balanced version of `data` by repeatedly
+   sampling existing observations in such a way that the
+   resulting number of observations will be the same number for
+   every class. This way, all classes will have as many
+   observations in the resulting data subset as the largest class
+   has in the given (i.e. original) `data` container.
+
+   :param fun: \
+        Optional. A callable object (usually a function) that
+        should be applied to each observation individually in
+        order to extract or compute the label for that
+        observation.
+
+   :param data: The object representing a labeled data container.
+
+   :param bool shuffle: \
+        Optional. Determines if the resulting data will be
+        shuffled after its creation. If ``false``, then all the
+        repeated samples will be together at the end, sorted by
+        class. Defaults to ``true``.
+
+   :param obsdim: \
+        Optional. If it makes sense for the type of `data`, then
+        `obsdim` can be used to specify which dimension of `data`
+        denotes the observations. It can be specified in a
+        type-stable manner as a positional argument, or as a more
+        convenient keyword parameter. See :ref:`obsdim` for more
+        information.
+
+   :return: An up-sampled, class-balanced version of `data` in the
+            form of a lazy data subset. No data is copied until
+            :func:`getobs` is called.
+
+Let us again consider the toy data set from before, which
+consists of a feature matrix ``X`` and a corresponding target
+vector ``y``. Both variables are data containers with 6
+observations.
+
+.. code-block:: jlcon
+
+   julia> X = rand(2, 6)
+   2×6 Array{Float64,2}:
+    0.226582  0.933372  0.505208   0.0443222  0.812814  0.11202
+    0.504629  0.522172  0.0997825  0.722906   0.245457  0.000341996
+
+   julia> y = ["a", "b", "b", "b", "b", "a"]
+   6-element Array{String,1}:
+    "a"
+    "b"
+    "b"
+    "b"
+    "b"
+    "a"
+
+We previously "balanced" this data set by down-sampling it. To
+show you an alternative, we can also up-sample it by repeating
+observations for the under-represented class ``a``. You may
+notice that this time the order of the observations will *not* be
+preserved; it will even be shuffled. If that behaviour is
+undesired, you can specify ``shuffle = false``.
+
+.. code-block:: jlcon
+
+   julia> X_bal, y_bal = oversample((X, y));
+
+   julia> X_bal
+   2×8 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false}:
+    0.11202      0.812814  0.226582  0.11202      0.933372 0.0443222  0.226582  0.505208
+    0.000341996  0.245457  0.504629  0.000341996  0.522172 0.722906   0.504629  0.0997825
+
+   julia> y_bal
+   8-element SubArray{String,1,Array{String,1},Tuple{Array{Int64,1}},false}:
+    "a"
+    "b"
+    "a"
+    "a"
+    "b"
+    "b"
+    "a"
+    "b"
+
+
+Similar to :func:`undersample` it is also possible to specify a
+target-extraction-function ``fun``, that is to be applied to each
+observation individually. Consider the following toy
+``DataTable``, which we also used as an example data container to
+demonstrate :func:`undersample`. For this particular data table
+we know that the column ``:y`` contains the targets (see
+:ref:`datatable` to make the following code work).
+
+.. code-block:: jlcon
+
+   julia> dt = DataTable(x1 = rand(6), x2 = rand(6), y = [:a,:b,:b,:b,:b,:a])
+   6×3 DataTables.DataTable
+   │ Row │ x1        │ x2          │ y  │
+   ├─────┼───────────┼─────────────┼────┤
+   │ 1   │ 0.226582  │ 0.0443222   │ :a │
+   │ 2   │ 0.504629  │ 0.722906    │ :b │
+   │ 3   │ 0.933372  │ 0.812814    │ :b │
+   │ 4   │ 0.522172  │ 0.245457    │ :b │
+   │ 5   │ 0.505208  │ 0.11202     │ :b │
+   │ 6   │ 0.0997825 │ 0.000341996 │ :a │
+
+   julia> oversample(row->row[1,:y], dt)
+   8×3 DataTables.SubDataTable{Array{Int64,1}}
+   │ Row │ x1        │ x2          │ y  │
+   ├─────┼───────────┼─────────────┼────┤
+   │ 1   │ 0.226582  │ 0.0443222   │ :a │
+   │ 2   │ 0.505208  │ 0.11202     │ :b │
+   │ 3   │ 0.0997825 │ 0.000341996 │ :a │
+   │ 4   │ 0.504629  │ 0.722906    │ :b │
+   │ 5   │ 0.933372  │ 0.812814    │ :b │
+   │ 6   │ 0.226582  │ 0.0443222   │ :a │
+   │ 7   │ 0.0997825 │ 0.000341996 │ :a │
+   │ 8   │ 0.522172  │ 0.245457    │ :b │
+
+While primarily intended for data container types, such as
+``DataTable``, it is also useful for discretizing continuous
+regression targets. Let's say you have a regression problem,
+where you know that you have a small but important cluster of
+observations with a particularly low target value. Given that
+this cluster is under-represented, it could very well cause a
+model to neglect those observations in order to improve its
+performance on the rest of the data.
+
+.. code-block:: jlcon
+
+   julia> X = rand(2, 6)
+   2×6 Array{Float64,2}:
+    0.226582  0.933372  0.505208   0.0443222  0.812814  0.11202
+    0.504629  0.522172  0.0997825  0.722906   0.245457  0.000341996
+
+   julia> y = [0.1, 0.95, 0.8, 0.9, 1.1, 0.11];
+
+As can be seen in the code above, most observations have a target
+value around ``1``, while just a small group of observations have
+a target value around ``0.1``. In such a situation, you could use
+the parameter ``fun`` to categorize the targets in such a way,
+that will cause the under-represented "category" to be up-sampled
+(or down-sampled) accordingly.
+
+.. code-block:: jlcon
+
+   julia> X_bal, y_bal = oversample(yi -> yi > 0.2, (X, y));
+
+   julia> y_bal
+   8-element
+   SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false}:
+    0.11
+    1.1
+    0.1
+    0.11
+    0.95
+    0.9
+    0.1
+    0.8
+
+While the above example is a bit arbitrary, it highlights the
+possibility that the functions :func:`undersample` and
+:func:`oversample` can also be used to re-sample data container
+with continuous targets.
+
+A more common scenario would be when working with targets in the
+form of a ``Matrix``. For instance, consider the following toy
+data set where the targets ``Y`` are now a one-of-k encoded
+matrix. In such a case we would like the be able to re-sample
+without first having to convert ``Y`` to a different
+class-encoding.
+
+.. code-block:: jlcon
+
+   julia> X = rand(2, 6)
+   2×6 Array{Float64,2}:
+    0.226582  0.933372  0.505208   0.0443222  0.812814  0.11202
+    0.504629  0.522172  0.0997825  0.722906   0.245457  0.000341996
+
+   julia> Y = [1. 0. 0. 0. 0. 1.; 0. 1. 1. 1. 1. 0.]
+   2×6 Array{Float64,2}:
+    1.0  0.0  0.0  0.0  0.0  1.0
+    0.0  1.0  1.0  1.0  1.0  0.0
+
+Here we could use the function ``indmax`` to discretize the
+individual target vectors on the fly. Remember that the
+target-extraction-function is applied on each individual
+observation in ``Y``. Since ``Y`` is a matrix, each observation
+is a vector slice.
+
+.. code-block:: jlcon
+
+   julia> X_bal, Y_bal = oversample(indmax, (X, Y));
+
+   julia> X_bal
+   2×8 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false}:
+    0.226582  0.11202      0.11202      0.505208   0.226582  0.0443222  0.933372  0.812814
+    0.504629  0.000341996  0.000341996  0.0997825  0.504629  0.722906   0.522172  0.245457
+
+   julia> Y_bal
+   2×8 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false}:
+    1.0  1.0  1.0  0.0  1.0  0.0  0.0  0.0
+    0.0  0.0  0.0  1.0  0.0  1.0  1.0  1.0
