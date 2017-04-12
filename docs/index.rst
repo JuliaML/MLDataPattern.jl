@@ -90,8 +90,8 @@ the following section.
 
    documentation/datasubset
 
-By this point we know what are data containers and data subsets.
-In particular we discussed how we can split our data container
+By this point we know what data containers and data subsets are.
+In particular, we discussed how we can split our data container
 into disjoint subsets. We have even seen how we can use tuples to
 link multiple data container together on a per-observation level.
 While we mentioned that this is particularly useful for labeled
@@ -107,7 +107,7 @@ available for them.
 
    documentation/targets
 
-Now that we have discussed all the basics, we can start to cover
+Now that we have covered all the basics, we can start to discuss
 some of the more advanced topics. A particularly important aspect
 of modern Machine Learning is what is known as *model selection*.
 Most of the time, this boils down to choosing appropriate
@@ -115,7 +115,7 @@ hyper-parameters for the model one is working with. To avoid
 subtle problems in this selection process, and to reduce variance
 of the performance estimates, it is quite common to employ some
 kind of **repartitioning strategy** on the training data. Of
-course the partitioning itself is just one part of such a model
+course, the partitioning itself is just one part of such a model
 selection process, since we still have to somehow compute and
 compare the performance. However, it is an important step that is
 needed to make the most of the available data. So important in
@@ -126,18 +126,49 @@ fact, that we will spend a whole section on it.
 
    documentation/folds
 
-At some point during a machine learning experiment, chances are
-that we need to iterate over the observations of the training
-data in some manner. Typically it is either iterated one
-observation at a time, or in small equal-sized "chunks" called
-mini-batches. In the next section we will introduce a few types,
-which we call **data views**, that will allow us to perform such
-iteration-pattern conveniently for data containers.
+A different kind of partitioning-need arises from the fact that
+the interesting data sets are increasing in size as the
+scientific community continues to improve the state-of-the-art in
+Machine Learning. While "too much" data is a nice problem to
+have, bigger data sets also pose additional challenges in terms
+of computing resources. Luckily, there are popular techniques in
+place to deal with such constraints in a surprisingly effective
+manner. For example, there are a lot of empirical results that
+demonstrate the efficiency of optimization techniques that
+continuously update on small subsets of the data. As such, it has
+become a de facto standard for many algorithms to iterate over a
+given dataset in mini-batches, or even just one observation at a
+time.
+
+The way this package approaches the topic of data iteration is
+complex enough that it deserves two parts. In the first part we
+will introduce a few special data iterators, which we call **data
+views**, that will allow us to perform such iteration-pattern
+conveniently for data containers. In fact, they are more than
+"just" data iterators; they are proper vectors. As such, they
+also serve as a tool to "view" a data container from a specific
+aspect: As a sequence of observations, or a sequences of batches.
+Thus these views know how many observations they contain, and how
+to query specific parts of the data.
 
 .. toctree::
    :maxdepth: 2
 
    documentation/dataview
+
+While these data views are also data iterators, the inverse is
+not true. In the following section we will introduce a number of
+**data iterators**, that don't make *any* other promises than,
+well, iteration. As such, they may know how many observations
+they can provide, nor have the means to access specific
+observations. Consequently, these data iterators are not data
+containers. We will see how that is useful, and also how some of
+them are actually created using a data container as input.
+
+.. toctree::
+   :maxdepth: 2
+
+   documentation/dataiterator
 
 Indices and tables
 ==================

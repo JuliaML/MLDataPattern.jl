@@ -186,8 +186,7 @@ Arguments
 
 - **`count`** : Optional. The number of randomly sampled batches
     that the iterator will generate before stopping. If omitted,
-    the iterator will generate randomly sampled observations
-    forever.
+    the iterator will generate randomly sampled batches forever.
 
 - **`obsdim`** : Optional. If it makes sense for the type of
     `data`, `obsdim` can be used to specify which dimension of

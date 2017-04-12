@@ -34,8 +34,8 @@ properties. Recall how we differentiated between data container
 and data iterators. In this document, however, we will solely
 focus on data sources that are considered :ref:`container`.
 
-Observation View
--------------------
+As Vector of Observations
+---------------------------
 
 One could be inclined to believe, that in order to iterate over
 some data container one observation at a time, it should suffice
@@ -244,6 +244,32 @@ subsets into the original data container.
    julia> getobs(ov, 2)
    0.0003419958128361156
 
+You may have noted in all the examples so far, that creating an
+:class:`ObsView` preserves the order of the observations. This is
+of course on purpose and the desired behaviour. However, since
+:class:`ObsView` is commonly used as an iterator, one may be
+inclined to prefer iterating over the data in a random order. To
+do so, simply combine the functions :func:`obsview` and
+:func:`shuffleobs`.
+
+.. code-block:: jlcon
+
+   julia> ov = obsview(shuffleobs(y))
+   5-element MLDataPattern.ObsView{SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false},SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false},LearnBase.ObsDim.Last}:
+    0.505277
+    0.11202
+    0.841177
+    0.380001
+    0.000341996
+
+   julia> ov = shuffleobs(obsview(y)) # also possible
+   5-element MLDataPattern.ObsView{SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false},SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false},LearnBase.ObsDim.Last}:
+    0.505277
+    0.380001
+    0.000341996
+    0.841177
+    0.11202
+
 It is also possible to link multiple different data containers
 together on an per-observation level. To do that, simply put all
 the relevant data container into a single ``Tuple``, before
@@ -275,8 +301,8 @@ code above, where ``X`` is a ``Matrix`` while ``y`` is a
 containers themselves. Furthermore, they all must contain the
 same exact number of observations.
 
-Batch View
--------------------
+As Vector of Batches
+-----------------------
 
 Another common use case is to iterate over the given data set in
 small equal-sized chunks. These chunks are usually referred to as
