@@ -41,7 +41,13 @@ export
 
     FoldsView,
     kfolds,
-    leaveout
+    leaveout,
+
+    RandomObs,
+    RandomBatches,
+    BufferGetObs,
+    eachobs,
+    eachbatch
 
 include("container.jl")
 include("datasubset.jl")
@@ -52,5 +58,6 @@ include("dataview.jl")
 include("targets.jl")
 include("resample.jl")
 include("folds.jl")
+include("dataiterator.jl")
 
 end # module

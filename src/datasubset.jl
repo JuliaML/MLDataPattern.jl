@@ -110,7 +110,7 @@ Examples
 =========
 
 ```julia
-X, y = load_iris()
+X, y = MLDataUtils.load_iris()
 
 # The iris set has 150 observations and 4 features
 @assert size(X) == (4,150)

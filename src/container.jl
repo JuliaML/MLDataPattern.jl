@@ -112,8 +112,10 @@ keyword argument.
 getobs!(buffer, A::AbstractSparseArray, idx, obsdim) = getobs(A, idx, obsdim)
 getobs!(buffer, A::AbstractSparseArray) = getobs(A)
 
-getobs!(buffer, A::AbstractArray, idx, obsdim) = copy!(buffer, datasubset(A, idx, obsdim))
+getobs!(buffer, A::AbstractArray, idx, obsdim) = getobs!(buffer, datasubset(A, idx, obsdim))
 getobs!(buffer, A::AbstractArray) = copy!(buffer, A)
+
+getobs!{T}(buffer, A::SubArray{T,0}) = A[1]
 
 # catch the undefined setting for consistency.
 # should never happen by accident

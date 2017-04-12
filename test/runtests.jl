@@ -60,6 +60,7 @@ tests = [
     "tst_targets.jl"
     "tst_resample.jl"
     "tst_folds.jl"
+    "tst_dataiterator.jl"
 ]
 
 for t in tests

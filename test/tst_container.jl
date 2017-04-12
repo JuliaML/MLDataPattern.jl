@@ -301,8 +301,8 @@ end
         @test @inferred(getobs!(Xbuf2, XX, 6:10, ObsDim.Constant(2))) == XX[:,6:10,:]
         @test getobs!(Xbuf2, XX, 11:15, obsdim = 2) == XX[:,11:15,:]
         # string vector
-        @test_throws MethodError getobs!("setosa", y, 1)
-        @test_throws MethodError getobs!(nothing, y, 1)
+        @test getobs!("setosa", y, 1) == "setosa"
+        @test getobs!(nothing, y, 1) == "setosa"
     end
 
     @testset "SparseArray" begin

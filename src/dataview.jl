@@ -81,7 +81,7 @@ Examples
 =========
 
 ```julia
-X, Y = load_iris()
+X, Y = MLDataUtils.load_iris()
 
 A = obsview(X)
 @assert typeof(A) <: ObsView <: AbstractVector
@@ -270,7 +270,7 @@ Examples
 =========
 
 ```julia
-X, Y = load_iris()
+X, Y = MLDataUtils.load_iris()
 
 A = batchview(X, size = 30)
 @assert typeof(A) <: BatchView <: AbstractVector
