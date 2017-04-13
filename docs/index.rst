@@ -11,14 +11,13 @@ and generic `Julia <http://julialang.org>`_ implementation for
 commonly used **data access pattern** in Machine Learning. Most
 notably it provides a number of pattern for *shuffling*,
 *partitioning*, and *resampling* data sets of various types and
-origin. In fact, all implemented functionality was designed
-around the core premise of allowing any user-defined type to
-serve as a custom data source and/or access pattern in a first
-class manner.
+origin. At its core, the package was designed around the key
+requirement of allowing any user-defined type to serve as a
+custom data source and/or access pattern in a first class manner.
 
-In contrast to other data-centered Julia packages, the focus of
+In contrast to other data-related Julia packages, the focus of
 MLDataPattern is specifically on functionality utilized in a
-Machine Learning context. As such, it is a part of the `JuliaML
+machine learning context. As such, it is a part of the `JuliaML
 <https://github.com/JuliaML>`_ ecosystem.
 
 Where to begin?
@@ -26,11 +25,8 @@ Where to begin?
 
 If this is the first time you consider using MLDataPattern for
 your machine learning related experiments or packages, make sure
-to check out the "Getting Started" section; specifically "How to
-...?", which lists some of most common scenarios and links to the
-appropriate places that should guide you on how to approach these
-scenarios using the functionality provided by this or other
-packages.
+to check out the "Getting Started" section. It will provide a
+very condensed overview of all the topics outlined below.
 
 .. toctree::
    :maxdepth: 2

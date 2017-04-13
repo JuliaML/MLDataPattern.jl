@@ -2,15 +2,16 @@ Data Iterators
 ================
 
 We hinted a few times before that we differentiate between two
-data sources, namely *data containers* and *data iterators*. We
-also briefly mentioned that a data source can either be one,
-both, or neither of the two. So far, though, we solely focused on
-data containers, and a special kind of data container / data
-iterator hybrid that we called *data views*. If we free ourselves
-from the notion that a data source has to know how many
-observations it can provide, or that it has to understand the
-concept of "accessing a specific observation", it opens up a lot
-of new functionality that would otherwise be infeasible.
+kinds of data sources, namely *data containers* and *data
+iterators*. We also briefly mentioned that a data source can
+either be one, both, or neither of the two. So far, though, we
+solely focused on data containers, and a special kind of data
+container / data iterator hybrid that we called *data views*. If
+we free ourselves from the notion that a data source has to know
+how many observations it can provide, or that it has to
+understand the concept of "accessing a specific observation", it
+opens up a lot of new functionality that would otherwise be
+infeasible.
 
 In this document we will finally introduce those types of data
 iterators, that do not make any other guarantees than what the

@@ -41,7 +41,7 @@ function Base.show{E,T}(io::IO, iter::BatchIterator{E,T})
     if get(io, :compact, false)
         print(io, typeof(iter).name.name, "{", E, ",", T, "} with " , _length(iter), " batches")
     else
-        print(io, summary(iter), "\n Iterator providing ", _length(iter), " batches")
+        print(io, summary(iter), "\n Iterator providing ", _length(iter), " batches of size ", batchsize(iter))
     end
 end
 
