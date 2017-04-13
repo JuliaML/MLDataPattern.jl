@@ -1,3 +1,5 @@
+.. _labeledcontainer:
+
 Labeled Data Container
 =======================
 

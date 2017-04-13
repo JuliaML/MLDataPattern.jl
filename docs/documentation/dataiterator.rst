@@ -1,3 +1,5 @@
+.. _dataiterators:
+
 Data Iterators
 ================
 

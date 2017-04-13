@@ -1,3 +1,5 @@
+.. _dataviews:
+
 Data Views
 =============
 
