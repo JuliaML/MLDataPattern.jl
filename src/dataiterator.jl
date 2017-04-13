@@ -252,13 +252,13 @@ end
 function RandomBatches{T,O}(data::T, size::Int, count::Int, obsdim::O)
     size  > 0 || throw(ArgumentError("size has to be greater than 0"))
     count > 0 || throw(ArgumentError("count has to be greater than 0"))
-    E = typeof(datasubset(data, rand(1:size, size), obsdim))
+    E = typeof(datasubset(data, rand(1:nobs(data,obsdim), size), obsdim))
     RandomBatches{E,T,O,Base.HasLength}(data, size, count, obsdim)
 end
 
 function RandomBatches{T,O}(data::T, size::Int, obsdim::O)
     size > 0 || throw(ArgumentError("size has to be greater than 0"))
-    E = typeof(datasubset(data, rand(1:size, size), obsdim))
+    E = typeof(datasubset(data, rand(1:nobs(data,obsdim), size), obsdim))
     RandomBatches{E,T,O,Base.IsInfinite}(data, size, 1337, obsdim)
 end
 

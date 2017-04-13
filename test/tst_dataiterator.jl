@@ -106,6 +106,12 @@ end
     println([RandomBatches(X)])
 
     @testset "constructor" begin
+        A = @inferred RandomBatches(rand(2,5), 10)
+        @test typeof(A) <: RandomBatches
+        @test @inferred(nobs(A)) == 5
+        @test @inferred(batchsize(A)) == 10
+        @test typeof(@inferred(first(A))) == typeof(datasubset(rand(2,5), rand(1:5, 10)))
+
         for var in (vars..., tuples..., Xs, ys)
             A = @inferred RandomBatches(var)
             @test_throws MethodError collect(A)
