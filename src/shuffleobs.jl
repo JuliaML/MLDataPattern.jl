@@ -31,5 +31,5 @@ shuffleobs(data; obsdim = default_obsdim(data)) =
     shuffleobs(data, convert(LearnBase.ObsDimension,obsdim))
 
 function shuffleobs(data, obsdim)
-    datasubset(data, shuffle(1:nobs(data, obsdim)), obsdim)
+    datasubset(data, randperm(nobs(data, obsdim)), obsdim)
 end
