@@ -491,6 +491,8 @@ containers. Instead, it maps the constructor onto each data
 container individually. Thus if we invoke :func:`DataSubset` with
 a ``Tuple``, it will return a ``Tuple`` of :class:`DataSubset`.
 
+.. _customsubset:
+
 Support for Custom Types
 ----------------------------------
 

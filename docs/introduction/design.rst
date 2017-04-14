@@ -52,9 +52,9 @@ as much first class as any other language-provided one. We
 recognize this as a quite unique opportunity in modern scientific
 computing and want to make sure that working with custom types is
 not penalized when using basic functionality such as
-data-partitioning. Thus we made it a key design priority to
+data partitioning. Thus we made it a key design priority to
 make as little assumptions as possible about the data at hand.
-For example, we do not require custom data-source-types to share
+For instance, we do not require custom data-source-types to share
 a common super-type.
 
 # Type Stable
@@ -108,10 +108,10 @@ rest of the package.
 
 The situation that we judge as probably the most common, though,
 will be that users will want to work with their own special
-data-containers. Therefore we put our core priority on making
+data containers. Therefore we put our core priority on making
 sure that doing so is as simple and non-disruptive as possible.
 Thus we settled on the solution of using duck-typing for custom
-data-containers for the sole reason to avoid influencing the
+data containers for the sole reason to avoid influencing the
 overall design-decisions of your experiment with some super-type
 requirement.
 
@@ -129,10 +129,10 @@ ecosystem.
 
 While test coverage can give a rough estimate of how much effort
 was spend in testing your code, it is still just a proxy variable
-when it comes to test-quality. We do not have a solution to this
+when it comes to test quality. We do not have a solution to this
 problem, but we put a large emphasis on testing the actual
 functionality of our code. As such we can also only consider
-pull-requests that provide sensible and meaningful tests for
+pull requests that provide sensible and meaningful tests for
 their proposed changes (so coverage alone won't cut it).
 
 # Cross-Community
@@ -143,8 +143,8 @@ work through aesthetic-based disagreements, and so to converge
 towards common solutions to the underlying problems where
 possible. Machine Learning is a field that crosses over many
 disciplines and we should try to make use of this opportunity to
-learn from each other where we can.  So if you came across this
-package and found that it doesn't address your specific use-case
+learn from each other where we can. So if you came across this
+package and found that it doesn't address your specific use case
 in the way you would have expected it to, let us know! Maybe we
 can converge to a common solution.
 
@@ -168,7 +168,7 @@ Support for Custom Data Container
 
 We identified quite early in our design discussions, that we
 wanted to support custom data-container-types as first class
-citizen in our data-access pattern. Consequently, we had to
+citizen in our data access pattern. Consequently, we had to
 carefully think about what kind of functionality and information
 any data-source-type must expose in order to achieve this in a
 clean and efficient manner.
@@ -198,12 +198,9 @@ light-weight package called
 `LearnBase <https://github.com/JuliaML/LearnBase.jl>`_.
 The sole purpose of this package is to define common types and
 functions used through the JuliaML ecosystem.
-
-Thus to opt-in to the ecosystem with your custom package, the
+Thus, to opt-in to the ecosystem with your custom package, the
 LearnBase dependency is all that you will need to accomplish that
-(if it isn't then you likely found a bug!).  Take a look at
-:doc:`../accesspattern/custom` for more information on that
-topic.
+(if it isn't then you likely found a bug!).
 
 Representing Data Subsets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -218,13 +215,13 @@ context, we can think about it as really just a special case
 implementation for a data container decorator that keeps track of
 the indices (especially since the release of 0.5).
 
-We will call an object that connects some data-container to some
+We will call an object that connects some data container to some
 subset-indices a **Subset**. We decided that it would be
-preferable to allow data-containers to specify their own type of
+preferable to allow data containers to specify their own type of
 subset. For example, a ``SubArray`` would be a good choice as a
-subset for some ``Matrix``. See :doc:`../accesspattern/custom`
-for more information on how to provide a custom subset type for
-your data-container.
+subset for some ``Matrix``. See :ref:`customsubset` for more
+information on how to provide a custom subset type for your
+data container.
 
 To keep user-effort manageable, we provide a generic subset
 implementation for those types that do not want to implement
@@ -282,7 +279,7 @@ Data Iterator
     iterates over randomly sampled batches of the data container
     that you pass to it in its constructor.
 
-    It is not a requirement that a custom data iterator is a
+..  It is not a requirement that a custom data iterator is a
     subtype of :class:`DataIterator` (nor :class:`BatchIterator`
     or :class:`ObsIterator` for that matter). Their sole purpose
     is dispatch.  For those cases that you can't use these types
@@ -315,7 +312,8 @@ Data Container
     Any data container can be promoted to be a data iterator as
     well as a data container by boxing it into a
     :class:`DataView`, such as :class:`BatchView` or
-    :class:`ObsView`. See TODO for more information on data views.
+    :class:`ObsView`. See the section on :ref:`dataviews` for
+    more information.
 
 .. _tuples:
 
@@ -335,7 +333,7 @@ work we need to understand the assumptions made when using
 1. All elements of the Tuple must contain the same total number of
    observations
 
-2. If the data-set as a whole contains targets, these must be
+2. If the data set as a whole contains targets, these must be
    part of the **last** element of the tuple.
 
 Consider the following toy problem. Let's say we have a numeric
@@ -358,7 +356,7 @@ targets.
     :c
 
 Naturally we think of these two data sources as one data set.
-That means that we require the access-pattern to treat them as
+That means that we require the access pattern to treat them as
 such. For example if you want to shuffle your data set, you can't
 just shuffle ``x`` and ``y`` independently, because that would
 break the connection between observations.

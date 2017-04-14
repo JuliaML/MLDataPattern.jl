@@ -447,9 +447,11 @@ scenario.
    # Notice how we do not need to splat train into X and Y
    for (train, (val_X, val_Y)) in kfolds((cv_X, cv_Y); k = 10)
 
-       # Iterate over the data using mini-batches of 5 observations each
-       for (batch_X, batch_Y) in eachbatch(train, size = 5)
-            # ... train supervised model on minibatches here
+       for epoch = 1:100
+           # Iterate over the data using mini-batches of 5 observations each
+           for (batch_X, batch_Y) in eachbatch(train, size = 5)
+               # ... train supervised model on minibatches here
+           end
        end
    end
 

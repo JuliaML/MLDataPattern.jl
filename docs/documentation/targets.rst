@@ -83,14 +83,13 @@ two-fold.
    unlabeled data. So by doing it our way, we avoid duplicate
    code.
 
-2. The second (and more important) reason is that we decided
-   that there is really no convincing argument for restricting
-   the user input to either be in the form of one variable
-   (unlabeled data), or two variables (for labeled data). In
-   fact, we wanted to allow the same variable to contain the
-   features as well as targets. We also wanted to allow users to
-   work with mutliple data sources that doesn't contain any
-   targets at all.
+2. The second (and more important) reason is that we decided that
+   there is really no convincing argument for restricting the
+   user input to either be in the form of one variable (unlabeled
+   data), or two variables (for labeled data). In fact, we wanted
+   to allow the same variable to contain the features as well as
+   targets. We also wanted to allow users to work with mutliple
+   data sources that don't contain any targets at all.
 
 To that end we provide the function :func:`targets`. It can be
 used to query all the, well, targets of some given labeled data
@@ -143,9 +142,9 @@ returns the result of :func:`getobs` for the given data.
 The above edge-case isn't really that informative for the main
 functionality that :func:`targets` provides. The more interesting
 behaviour can be seen for custom types and/or tuples. More
-specifically, if ``data`` is a ``Tuple``, then the convention is
-that the last element of the tuple contains the targets and the
-function is recursed once (and only once).
+specifically, if the given data is a ``Tuple``, then the
+convention is that the last element of the tuple contains the
+targets and the function is recursed once (and only once).
 
 .. code-block:: jlcon
 

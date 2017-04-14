@@ -293,10 +293,10 @@ subset size to 1 observation.
                         Defaults to ``size = 1``.
 
    :return: A ``Tuple`` of two ``Vector``. Both vectors are of
-            length `k`, where each element is also a vector. The
-            first vector represents the sequence of training
-            assignments, and the second vector the sequence
-            of validation assignments.
+            queal length, where each element is also a vector.
+            The first vector represents the sequence of training
+            assignments, and the second vector the sequence of
+            validation assignments.
 
 Invoking :func:`leaveout` with an integer as first parameter will
 compute the sequence of assignments for a :math:`k`-folds
@@ -376,10 +376,11 @@ given sequence of assignments.
    .. attribute:: val_indices
 
       Vector of integer vectors containing the sequences of
-      assignments for the *test* subsets. This means that each
-      element of this vector is a vector of observation-indices
-      valid for ``data``. The length of this vector must match
-      ``train_indices``, and denotes the number of folds.
+      assignments for the *validation* subsets. This means that
+      each element of this vector is a vector of
+      observation-indices valid for ``data``. The length of this
+      vector must match ``train_indices``, and denotes the number
+      of folds.
 
    .. attribute:: obsdim
 
@@ -775,7 +776,7 @@ with the result of :func:`kfolds`, take a look at
 Leave-Out for Data Container
 --------------------------------
 
-Recall how we motivate leave-:math:`p`-out as a different way to
+Recall how we motivated leave-:math:`p`-out as a different way to
 think about :math:`k`-folds. Instead of specifying the number of
 folds :math:`k` directly, we specify how many observations of the
 given data container should be in each validation subset.
@@ -790,7 +791,7 @@ you.
 
    Repartition a `data` container using a k-fold strategy, where
    ``k`` is chosen in such a way, that each validation subset of
-   the computed folds contains roughly ``size`` observations. The
+   the computed folds contains roughly `size` observations. The
    resulting sequence of folds is then returned as a lazy
    :class:`FoldsView`, which can be index into or iterated over.
    Either way, only data subsets are created. That means no

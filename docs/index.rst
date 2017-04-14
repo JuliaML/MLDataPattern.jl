@@ -155,7 +155,7 @@ to query specific parts of the data.
 While these data views are also data iterators, the inverse is
 not true. In the following section we will introduce a number of
 **data iterators**, that don't make *any* other promises than,
-well, iteration. As such, they may know how many observations
+well, iteration. As such, they may not know how many observations
 they can provide, nor have the means to access specific
 observations. Consequently, these data iterators are not data
 containers. We will see how that is useful, and also how some of
@@ -168,6 +168,12 @@ them are actually created using a data container as input.
 
 Indices and tables
 ==================
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+
+   about/license
 
 * :ref:`genindex`
 * :ref:`modindex`

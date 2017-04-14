@@ -3,7 +3,7 @@
 Background and Motivation
 =============================
 
-In this section we discuss what data-partitioning entails and how
+In this section we discuss what data partitioning entails and how
 one could go about approaching this task efficiently when
 performing it manually. Furthermore, we will outline some of the
 pitfalls one might encounter when doing so, which will lead to
@@ -49,8 +49,9 @@ Iteration-based (aka Data iterator)
    of observations.
 
    These kind of data sources are primarily used for either
-   streaming data, or for large/remote data sets, where even
-   storing the indices requires too much memory.
+   streaming data, continuous resampling, or for large/remote
+   data sets where even storing the indices requires too much
+   memory.
 
 Index-based (aka Data Container)
    For a data source to belong in this category it needs to be
@@ -541,6 +542,7 @@ quite different data-storage type.
 .. code-block:: jlcon
 
    julia> using RDatasets
+
    julia> iris = dataset("datasets", "iris")
    150×5 DataFrames.DataFrame
    │ Row │ SepalLength │ SepalWidth │ PetalLength │ PetalWidth │ Species     │
@@ -573,12 +575,12 @@ a model matrix. This will give us a motivating example to deal with
 different conventions for the observation dimension.
 
 Without any explanation that does it justice, let us create a
-model matrix ``X`` from the data frame ``iris`` using the
+feature matrix ``X`` from the data frame ``iris`` using the
 following code snippet:
 
 .. code-block:: jlcon
 
-   julia> X = ModelMatrix(ModelFrame(Species ~ SepalLength + SepalWidth + PetalLength + PetalWidth, iris)).m
+   julia> X = ModelMatrix(ModelFrame(@formula(Species ~ SepalLength + SepalWidth + PetalLength + PetalWidth), iris)).m
    150×5 Array{Float64,2}:
     1.0  5.1  3.5  1.4  0.2
     1.0  4.9  3.0  1.4  0.2
@@ -625,8 +627,7 @@ considerations.
       train, test = splitobs(X, obsdim = :first)
       train, test = splitobs(X, ObsDim.First())
 
-   For more information take a look at the documentation for
-   :class:`ObsDimension`.
+   For more information take a look at the section on :ref:`obsdim`.
 
 
 Generalizing to Other Data
@@ -638,25 +639,24 @@ that it is feasible to consider supporting different conventions
 for which dimension to use to denote the individual observations.
 
 Now, what if we would like to work with data that is not in array
-form, such as data-frames or any other kind of database really.
-Well, if we look back at the code snippets we have written so
-far, we will see that we haven't actually specified any type- or
-structure requirement of the learning algorithm we are interested
-in. Indeed, we haven't said much about any learning algorithm at
-all, only that it expects the data in mini-batches. Instead we
-focused on how to represent our array-like data-subset and even
-considered to buffer it efficiently by preallocating the subset
-storage.
+form, such as data frames or any other kind of data container,
+really. Well, if we look back at the code snippets we have
+written so far, we will see that we haven't actually specified
+any type- or structure requirement of the learning algorithm we
+are interested in. Indeed, we haven't said much about any
+learning algorithm at all, only that it expects the data in
+mini-batches. Instead we focused on how to represent our
+array-like data-subset and even considered to buffer it
+efficiently by preallocating the subset storage.
 
 Whatever kind of partitioning scheme we code, we would like it to
 be agnostic about our learning algorithm. What it should really
 care about is the type of data storage it is working with and how
-to communicate with it.
-Ideally we would like to abstract whatever information we need
-from our data and whatever action we need to perform with our
-data.
+to communicate with it. Ideally we would like to abstract
+whatever information we need from our data and whatever action we
+need to perform with our data.
 
-Turns out we only need our data-container to expose two things:
+Turns out we only need our data container to expose two things:
 
 1. How many observation the data contains.
 
