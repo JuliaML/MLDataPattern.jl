@@ -141,14 +141,21 @@ gettarget
 # that means that "_gettarget((x,(y1,y2)))" --> "(y1,y2)", and NOT "y2"
 # furthermore "_gettargets" assumes that it is called with a subset
 # of one observation and will thus trigger "getobs"
-@inline _gettarget(f, data) = gettarget(f, getobs(data))
+@inline _gettarget(f, data) = gettarget(f, getobs_targetfun(data))
 
 # no nobs check because this should be a single observation
-@inline _gettarget{N}(f, tup::NTuple{N,Any}) = gettarget(f, getobs(tup[N]))
+@inline _gettarget{N}(f, tup::NTuple{N,Any}) = gettarget(f, getobs_targetfun(tup[N]))
 
 # gettarget is intended to be defined by the user
 @inline gettarget(data) = data
 @inline gettarget(f, data) = f(gettarget(data))
+
+# if a target extraction function is used, then
+# we don't need to call "getobs" on a "SubArray".
+getobs_targetfun(data) = getobs(data)
+getobs_targetfun(tup::Tuple) = map(getobs_targetfun, tup)
+getobs_targetfun(A::AbstractArray) = A
+getobs_targetfun{T}(A::AbstractArray{T,0}) = A[1]
 
 # --------------------------------------------------------------------
 # gettargets (plural)
@@ -202,7 +209,7 @@ gettargets
     gettargets(obsview(DataSubset(data, idx, args...)))
 
 @inline _gettargets_dispatch_idx(data, idx::Int, args...) =
-    gettarget(identity, getobs(data, idx, args...))
+    gettarget(identity, getobs_targetfun(datasubset(data, idx, args...)))
 
 # This method prevents ObsView to happen by default for Arrays.
 # Thus targets will return arrays in their original shape.
@@ -229,7 +236,7 @@ function gettargets(subset::DataSubset, idx, obsdim::ObsDimension)
 end
 
 function gettargets(data::AbstractObsView)
-    map(x->gettarget(identity,getobs(x)), data)
+    map(x->gettarget(identity,getobs_targetfun(x)), data)
 end
 
 gettargets(tup::Tuple) = map(gettargets, tup)
@@ -341,7 +348,7 @@ targets(f, data::AbstractObsView, obsdim) =
     _gettargets(data, obsdim)
 
 _targets(f, data, obsdim) =
-    map(x->gettarget(f,getobs(x)), obsview(data, obsdim))
+    map(x->gettarget(f,getobs_targetfun(x)), obsview(data, obsdim))
 
 # --------------------------------------------------------------------
 # eachtarget (lazy version of targets for iterating)

@@ -18,8 +18,7 @@ end
         @test @inferred(MLDataPattern._gettarget(x->x+1,[1,2])) == [2,3]
         @test @inferred(MLDataPattern._gettarget(identity, X)) === X
         @test @inferred(MLDataPattern._gettarget(identity, y)) === y
-        @test @inferred(MLDataPattern._gettarget(identity, yv)) !== yv
-        @test @inferred(MLDataPattern._gettarget(identity, yv)) == yv
+        @test @inferred(MLDataPattern._gettarget(identity, yv)) === yv
         @test @inferred(MLDataPattern._gettarget(identity, ys)) === ys
         # TODO 0.6: test that first parameter need not be
         #           "typeof(...) <: Function", just callable.
@@ -36,8 +35,7 @@ end
         tmp = [2,3,1]
         tmpv = view(tmp, :)
         @test @inferred(MLDataPattern._gettarget(indmax, tmpv)) === 2
-        @test @inferred(MLDataPattern._gettarget(identity, yv)) !== yv
-        @test @inferred(MLDataPattern._gettarget(identity, yv)) == yv
+        @test @inferred(MLDataPattern._gettarget(identity, yv)) === yv
     end
 
     @testset "AbstractSparseArray" begin
@@ -71,17 +69,14 @@ end
 
         @test @inferred(MLDataPattern._gettarget(identity, (y,))) === y
         @test @inferred(MLDataPattern._gettarget(identity, (ys,))) === ys
-        @test @inferred(MLDataPattern._gettarget(identity, (yv,))) !== yv
-        @test @inferred(MLDataPattern._gettarget(identity, (yv,))) == yv
-        @test @inferred(MLDataPattern._gettarget(identity, (ys,yv))) !== yv
-        @test @inferred(MLDataPattern._gettarget(identity, (ys,yv))) == yv
+        @test @inferred(MLDataPattern._gettarget(identity, (yv,))) === yv
+        @test @inferred(MLDataPattern._gettarget(identity, (ys,yv))) === yv
         @test @inferred(MLDataPattern._gettarget(identity, (XX,X,y))) === y
         @test @inferred(MLDataPattern._gettarget(identity, (XX,X,Y))) === Y
 
         # nested tuples
         @test @inferred(MLDataPattern._gettarget(identity, (y,(y,Y)))) === (y,Y)
-        @test @inferred(MLDataPattern._gettarget(identity, (y,(yv,)))) !== (yv,)
-        @test @inferred(MLDataPattern._gettarget(identity, (y,(yv,)))) == (yv,)
+        @test @inferred(MLDataPattern._gettarget(identity, (y,(yv,)))) === (yv,)
         @test @inferred(MLDataPattern._gettarget(x->map(round,x),(1,(@v(3.1),@v(4.9))))) === (3.,5.)
     end
 
@@ -128,8 +123,8 @@ println("<HEARTBEAT>")
         tmp = [2,3,1]
         tmpv = view(tmp, :)
         @test @inferred(MLDataPattern.gettarget(indmax, tmpv)) === 2
-        @test @inferred(MLDataPattern.gettarget(yv)) == yv
-        @test @inferred(MLDataPattern.gettarget(identity, yv)) == yv
+        @test @inferred(MLDataPattern.gettarget(yv)) === yv
+        @test @inferred(MLDataPattern.gettarget(identity, yv)) === yv
     end
 
     @testset "AbstractSparseArray" begin
@@ -348,6 +343,8 @@ println("<HEARTBEAT>")
     end
 
     @testset "Arrays" begin
+        @test eltype(collect(@inferred(eachtarget(Y)))) <: Vector
+        @test eltype(collect(@inferred(eachtarget(x->x,Y)))) <: SubArray
         @test collect(@inferred(eachtarget(y))) == y
         @test collect(@inferred(eachtarget(x->x=="setosa", y))) == vcat(trues(50), falses(100))
         @test collect(@inferred(eachtarget(Y))) == obsview(Y)
