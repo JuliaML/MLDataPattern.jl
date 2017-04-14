@@ -174,7 +174,7 @@ Compute the train/validation assignments for `k` repartitions of
 first vector contains the index-vectors for the training subsets,
 and the second vector the index-vectors for the validation subsets
 respectively. A general rule of thumb is to use either `k = 5` or
-`k = 10`. The following code snipped generates the indices
+`k = 10`. The following code snippet generates the indices
 assignments for `k = 5`
 
 ```julia
@@ -297,7 +297,7 @@ two vectors. The first vector contains the index-vectors for the
 training subsets, and the second vector the index-vectors for the
 validation subsets respectively. Each validation subset will have
 either `size` or `size+1` observations assigned to it. The
-following code snipped generates the index-vectors for `size = 2`.
+following code snippet generates the index-vectors for `size = 2`.
 
 ```julia
 julia> train_idx, val_idx = leaveout(10, 2);

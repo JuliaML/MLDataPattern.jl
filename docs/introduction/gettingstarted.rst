@@ -28,7 +28,7 @@ Installation
 -------------
 
 To install MLDataPattern.jl, start up Julia and type the
-following code-snippet into the REPL. It makes use of the native
+following code snippet into the REPL. It makes use of the native
 Julia package manger.
 
 .. code-block:: julia

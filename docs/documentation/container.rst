@@ -705,7 +705,7 @@ observation is). To that end, all relevant functions allow for an
 optional parameter ``obsdim``, which can usually be specified as
 either a keyword argument or a positional argument.
 
-The following two code-snippets show different ways to access the
+The following two code snippets show different ways to access the
 first observation of some example feature matrix ``X``. In the
 first snippet we assume that each row of ``X`` represents an
 observation.
@@ -738,7 +738,7 @@ observation.
     0.505208
     0.0443222
 
-The second code-snippet assumes that each column of ``X``
+The second code snippet assumes that each column of ``X``
 represents an observation
 
 .. code-block:: jlcon

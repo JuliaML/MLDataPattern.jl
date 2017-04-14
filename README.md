@@ -1,9 +1,9 @@
 # MLDataPattern
 
-*Utility package for subsetting, partitioning, and resampling
-Machine Learning datasets. Aside from providing common
-functionality, this library also allows for first class support
-of custom user-defined data structures.*
+*Utility package for subsetting, partitioning, iterating, and
+resampling of Machine Learning datasets. Aside from providing
+common functionality, this library also allows for first class
+support of custom user-defined data structures.*
 
 | **Package Status** | **Package Evaluator** | **Build Status**  |
 |:------------------:|:---------------------:|:-----------------:|
@@ -39,8 +39,9 @@ explanation) to get a feeling for how to use this package in a
 typical ML scenario. Note how the code snippet below does not
 reason about any training algorithm in any way. It is not the
 responsibility of the access pattern to decide in what form some
-algorithm needs the data. In fact, the package is designed to be
-data agnostic. Instead, the focus is on efficiently chaining
+algorithm needs the data. The output of the pattern depend solely
+on the input. In fact, the package is designed to be data
+agnostic. Instead, the focus is on efficiently chaining
 subsetting operations and thus to avoid temporary allocations
 where possible.
 
@@ -83,13 +84,13 @@ this package provides a generalization of such a "subset" for any
 type of data container.
 
 Furthermore both, `batch_X` and `batch_Y`, will be the same
-instance each iteration with only their values changed. In other
-words, they both are a preallocated buffers that will be reused
+instances each iteration with only their values changed. In other
+words, they both are preallocated buffers that will be reused
 each iteration and filled with the data for the current batch.
-Naturally it is not required to work with buffers like this, as
-stateful iterators can have undesired side effects when used
-without care. This package provides different alternatives for
-different use cases.
+Naturally, it is not a requirement to work with buffers like
+this, as stateful iterators can have undesired side effects when
+used without care. This package provides different alternatives
+for different use cases.
 
 ## Documentation
 

@@ -136,7 +136,7 @@ for ``Y``, which also includes the case of numerical outcomes, is
 Together, ``X`` and ``Y`` represent our data set. Both variables
 contain 150 observations and the individual elements of the two
 variables are linked together through the corresponding
-observation-index. For example, the following code-snipped shows
+observation-index. For example, the following code snippet shows
 how to access the 30-th observation of the data set.
 
 .. code-block:: jlcon
@@ -336,7 +336,7 @@ the training procedure.
 Even though this is starting to sound rather complex, it turns
 out that all we really need to do is keep track of our indices
 properly. In other words, all these sub-setting of sub-sets can
-be done by just accumulating indices. The following code-snipped
+be done by just accumulating indices. The following code snippet
 shows how this could be achieved if implemented manually.
 
 .. code-block:: julia
@@ -574,7 +574,7 @@ different conventions for the observation dimension.
 
 Without any explanation that does it justice, let us create a
 model matrix ``X`` from the data frame ``iris`` using the
-following code snipped:
+following code snippet:
 
 .. code-block:: jlcon
 
@@ -639,7 +639,7 @@ for which dimension to use to denote the individual observations.
 
 Now, what if we would like to work with data that is not in array
 form, such as data-frames or any other kind of database really.
-Well, if we look back at the code-snippets we have written so
+Well, if we look back at the code snippets we have written so
 far, we will see that we haven't actually specified any type- or
 structure requirement of the learning algorithm we are interested
 in. Indeed, we haven't said much about any learning algorithm at
@@ -667,7 +667,7 @@ total number of observations using ``nrow(iris)``, since each row
 contains a single observation.
 Further we can access the observations of some given indices
 ``idx`` using ``iris[idx, :]``. That is all that is needed to
-make our first code-snipped from the array example work with data
+make our first code snippet from the array example work with data
 frames (we leave the proof of this as an exercise).
 However, there are a few things to note.
 

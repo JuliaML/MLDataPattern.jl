@@ -683,7 +683,7 @@ lets us treat it as a sequence of distinct partitions/folds.
     ([1.0 2.0 … 7.0  8.0; 11.0 12.0 … 17.0 18.0], [9.0 10.0; 19.0 20.0])
 
 We can now query any individual fold using the typical indexing
-syntax. For instance, the following code snipped shows the
+syntax. For instance, the following code snippet shows the
 training- and validation subset of the third fold.
 
 .. code-block:: jlcon
