@@ -118,7 +118,7 @@ function splitobs(data, at::AbstractFloat, obsdim=default_obsdim(data))
 end
 
 # partition into length(at)+1 sets
-function splitobs{N,T<:AbstractFloat}(data, at::NTuple{N,T}, obsdim=default_obsdim(data))
+function splitobs{N}(data, at::NTuple{N,AbstractFloat}, obsdim=default_obsdim(data))
     n = nobs(data, obsdim)
     map(idx->datasubset(data, idx, obsdim), splitobs(n, at))
 end
