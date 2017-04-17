@@ -26,7 +26,12 @@ Where to begin?
 If this is the first time you consider using MLDataPattern for
 your machine learning related experiments or packages, make sure
 to check out the "Getting Started" section. It will provide a
-very condensed overview of all the topics outlined below.
+very condensed overview of all the topics outlined below. If you
+are looking to perform some specific task, then take a look at
+“How to ...?”, which lists some of most common scenarios and
+links to the appropriate places that should guide you on how to
+approach these scenarios using the functionality provided by this
+or other packages.
 
 .. toctree::
    :maxdepth: 2

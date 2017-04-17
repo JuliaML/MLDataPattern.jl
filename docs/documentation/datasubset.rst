@@ -517,6 +517,12 @@ package ecosystem.
 Example: DataFrames.jl
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note::
+
+   If you are using `MLDataUtils.jl
+   <https://github.com/JuliaML/MLDataUtils.jl>`_ then support for
+   ``DataFrame`` is already provided for you.
+
 Let's consider a type of data source that is very different to an
 ``Array``; a ``DataFrame`` from the `DataFrames.jl
 <https://github.com/JuliaStats/DataFrames.jl>`_ package. By
@@ -562,7 +568,9 @@ the :func:`DataSubset` constructor directly. This is the
 recommended way of creating data subsets. The main difference is,
 that :func:`datasubset` will try to choose the most appropriate
 type to represent a subset for the given container, while the
-constructor will always use :class:`DataSubset`.
+constructor will always use :class:`DataSubset`. For this example
+we did not specify any special kind of data subset for
+``DataFrame``, and thus the default :class:`DataSubset` is used.
 
 .. _datatable:
 
@@ -573,10 +581,10 @@ Another good example for a custom data source are ``DataTable``
 from the `DataTables.jl
 <https://github.com/JuliaData/DataTables.jl>`_ package. This
 rather new, table-like type is advertised as the "future of
-working with tabular data in Julia". An interesting difference to
-``DataFrame`` is that it offers a view-type called
-``SubDataTable``, which is a perfect candidate for a custom data
-subset type.
+working with tabular data in Julia". To make it more interesting
+after the ``DataFrame`` example, we will also make use of a
+native view-type called ``SubDataTable``, which is a perfect
+candidate for a custom data subset type.
 
 Not unlike ``DataFrame``, a ``DataTable`` is by default not a
 data container, because it does not implement the required
@@ -603,7 +611,9 @@ parameter ``obsdim`` (even if it is undefined).
 Now that we have the required interface implemented, every
 ``DataTable`` is regarded as a fully qualified data container. In
 contrast to the ``DataFrame`` example, it even has its own
-custom type for representing a data subset.
+custom type for representing a data subset (Note that we could
+also do the same thing for ``DataFrame`` using the type
+``SubDataFrame``).
 
 .. code-block:: jlcon
 
@@ -646,6 +656,8 @@ more useful ways than us just calling :func:`datasubset`
 ourselves. So once some data source supports the data container
 interface, all the high-level functionality that we will spend
 the rest of this document on, comes with it for free.
+
+.. _shuffle:
 
 Shuffling a Data Container
 ---------------------------
@@ -850,6 +862,8 @@ in a separate ``Vector``.
 As we can see, the observations in ``dt`` and ``y`` are both
 shuffled in the same manner. Thus the per-observation link is
 preserved and we can continue to treat it as a single data set.
+
+.. _split:
 
 Splitting into Train and Test
 ------------------------------

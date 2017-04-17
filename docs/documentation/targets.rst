@@ -640,6 +640,8 @@ is possible.
     :a
     :b
 
+.. _resampling:
+
 Under- and Over-Sampling
 ---------------------------
 

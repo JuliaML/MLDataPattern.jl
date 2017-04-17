@@ -605,6 +605,8 @@ using the type :class:`FoldsView`. In the rest of this document
 we will see how to do the same tasks in just one single step by
 using the high-level API.
 
+.. _k_folds:
+
 K-Folds for Data Container
 -----------------------------
 

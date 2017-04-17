@@ -475,6 +475,30 @@ in an array that has the exact same batch in each position.
 Oftentimes, though, reusing buffers is preferable. This package
 provides different alternatives for different use-cases.
 
+How to ... ?
+---------------
+
+Chances are you ended up here with a very specific use-case in
+mind. This section outlines a number of different but common
+scenarios and links to places that explain how this or a related
+package can be utilized to solve them.
+
+- :ref:`Create a lazy data subset of some data. <subsets>`
+
+- :ref:`Shuffle the observations of a data container. <shuffle>`
+
+- :ref:`Split data into train/test subsets. <split>`
+
+- :ref:`Group multiple variables together an treat as a single data set. <tuples>`
+
+- :ref:`Support my own custom user-define data container type. <customsubset>`
+
+- :ref:`Over- or undersample an imbalanced labeled data set. <resampling>`
+
+- :ref:`Repartition a data container using a k-folds scheme. <k_folds>`
+
+- :ref:`Iterate over my data one observation or batch at a time. <dataviews>`
+
 Getting Help
 -------------
 
