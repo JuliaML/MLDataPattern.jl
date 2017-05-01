@@ -41,7 +41,7 @@ _ispos(x) = x > 0
 end
 
 """
-    splitobs(data, [at = 0.7], [obsdim])
+    splitobs(data, [at = 0.7], [obsdim]) -> Tuple
 
 Split the `data` into multiple subsets proportional to the
 value(s) of `at`.
@@ -105,7 +105,10 @@ train, test = splitobs((X,y), 0.7)
 train, test = splitobs((X,y), 0.7, ObsDim.First())
 ```
 
-see [`DataSubset`](@ref) for more information.
+see [`DataSubset`](@ref) for more information on data subsets.
+
+see [`stratifiedobs`](@ref) for a related function that preserves
+the target distribution.
 """
 splitobs(data; at = 0.7, obsdim = default_obsdim(data)) =
     splitobs(data, at, convert(LearnBase.ObsDimension,obsdim))

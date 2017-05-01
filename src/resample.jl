@@ -1,7 +1,7 @@
 """
     oversample([f], data, [shuffle = true], [obsdim])
 
-Generates a class-balanced version of `data` by repeatedly
+Generate a class-balanced version of `data` by repeatedly
 sampling existing observations in such a way that the resulting
 number of observations will be the same number for every class.
 This way, all classes will have as many observations in the
@@ -37,47 +37,49 @@ X_bal, Y_bal = oversample((X,Y))
 
 For this function to work, the type of `data` must implement
 [`nobs`](@ref) and [`getobs`](@ref). For example, the following
-code allows `oversample` to work on a `DataFrame`.
+code allows `oversample` to work on a `DataTable`.
 
 ```julia
-# Make DataFrames.jl work
-LearnBase.getobs(data::DataFrame, i) = data[i,:]
-LearnBase.nobs(data::DataFrame) = nrow(data)
+# Make DataTables.jl work
+LearnBase.getobs(data::DataTable, i) = data[i,:]
+LearnBase.nobs(data::DataTable) = nrow(data)
 ```
 
-You can use the (keyword) parameter `f` to specify how to
-extract or retrieve the targets from each observation of the
-given `data`. Note that if `data` is a tuple, then it will be
-assumed that the last element of the tuple contains the targets
-and `f` will be applied to each observation in that element.
+You can use the parameter `f` to specify how to extract or
+retrieve the targets from each observation of the given `data`.
+Note that if `data` is a tuple, then it will be assumed that the
+last element of the tuple contains the targets and `f` will be
+applied to each observation in that element.
 
 ```julia
-julia> data = DataFrame(Any[rand(6), rand(6), [:a,:b,:b,:b,:b,:a]], [:X1,:X2,:Y])
-6×3 DataFrames.DataFrame
-│ Row │ X1       │ X2       │ Y │
-├─────┼──────────┼──────────┼───┤
-│ 1   │ 0.646593 │ 0.970426 │ a │
-│ 2   │ 0.363206 │ 0.479828 │ b │
-│ 3   │ 0.87524  │ 0.547199 │ b │
-│ 4   │ 0.618918 │ 0.661277 │ b │
-│ 5   │ 0.723626 │ 0.295239 │ b │
-│ 6   │ 0.147621 │ 0.527292 │ a │
+julia> data = DataTable(Any[rand(6), rand(6), [:a,:b,:b,:b,:b,:a]], [:X1,:X2,:Y])
+6×3 DataTables.DataTable
+│ Row │ X1        │ X2          │ Y │
+├─────┼───────────┼─────────────┼───┤
+│ 1   │ 0.226582  │ 0.0443222   │ a │
+│ 2   │ 0.504629  │ 0.722906    │ b │
+│ 3   │ 0.933372  │ 0.812814    │ b │
+│ 4   │ 0.522172  │ 0.245457    │ b │
+│ 5   │ 0.505208  │ 0.11202     │ b │
+│ 6   │ 0.0997825 │ 0.000341996 │ a │
 
 julia> getobs(oversample(row->row[:Y], data))
-8×3 DataFrames.DataFrame
-│ Row │ X1       │ X2       │ Y │
-├─────┼──────────┼──────────┼───┤
-│ 1   │ 0.646593 │ 0.970426 │ a │
-│ 2   │ 0.618918 │ 0.661277 │ b │
-│ 3   │ 0.147621 │ 0.527292 │ a │
-│ 4   │ 0.646593 │ 0.970426 │ a │
-│ 5   │ 0.723626 │ 0.295239 │ b │
-│ 6   │ 0.363206 │ 0.479828 │ b │
-│ 7   │ 0.147621 │ 0.527292 │ a │
-│ 8   │ 0.87524  │ 0.547199 │ b │
+8×3 DataTables.DataTable
+│ Row │ X1        │ X2          │ Y │
+├─────┼───────────┼─────────────┼───┤
+│ 1   │ 0.0997825 │ 0.000341996 │ a │
+│ 2   │ 0.505208  │ 0.11202     │ b │
+│ 3   │ 0.226582  │ 0.0443222   │ a │
+│ 4   │ 0.0997825 │ 0.000341996 │ a │
+│ 5   │ 0.504629  │ 0.722906    │ b │
+│ 6   │ 0.522172  │ 0.245457    │ b │
+│ 7   │ 0.226582  │ 0.0443222   │ a │
+│ 8   │ 0.933372  │ 0.812814    │ b │
 ```
 
-see also [`undersample`](@ref).
+see [`DataSubset`](@ref) for more information on data subsets.
+
+see also [`undersample`](@ref) and [`stratifiedobs`](@ref).
 """
 oversample(data; shuffle=true, obsdim=default_obsdim(data)) =
     oversample(identity, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
@@ -112,7 +114,7 @@ end
 """
     undersample([f], data, [shuffle = false], [obsdim])
 
-Generates a class-balanced version of `data` by subsampling its
+Generate a class-balanced version of `data` by subsampling its
 observations in such a way that the resulting number of
 observations will be the same number for every class. This way,
 all classes will have as many observations in the resulting data
@@ -147,43 +149,45 @@ X_bal, Y_bal = undersample((X,Y))
 
 For this function to work, the type of `data` must implement
 [`nobs`](@ref) and [`getobs`](@ref). For example, the following
-code allows `undersample` to work on a `DataFrame`.
+code allows `undersample` to work on a `DataTable`.
 
 ```julia
-# Make DataFrames.jl work
-LearnBase.getobs(data::DataFrame, i) = data[i,:]
-LearnBase.nobs(data::DataFrame) = nrow(data)
+# Make DataTables.jl work
+LearnBase.getobs(data::DataTable, i) = data[i,:]
+LearnBase.nobs(data::DataTable) = nrow(data)
 ```
 
-You can use the (keyword) parameter `f` to specify how to
-extract or retrieve the targets from each observation of the
-given `data`. Note that if `data` is a tuple, then it will be
-assumed that the last element of the tuple contains the targets
-and `f` will be applied to each observation in that element.
+You can use the parameter `f` to specify how to extract or
+retrieve the targets from each observation of the given `data`.
+Note that if `data` is a tuple, then it will be assumed that the
+last element of the tuple contains the targets and `f` will be
+applied to each observation in that element.
 
 ```julia
-julia> data = DataFrame(Any[rand(6), rand(6), [:a,:b,:b,:b,:b,:a]], [:X1,:X2,:Y])
-6×3 DataFrames.DataFrame
-│ Row │ X1       │ X2       │ Y │
-├─────┼──────────┼──────────┼───┤
-│ 1   │ 0.646593 │ 0.970426 │ a │
-│ 2   │ 0.363206 │ 0.479828 │ b │
-│ 3   │ 0.87524  │ 0.547199 │ b │
-│ 4   │ 0.618918 │ 0.661277 │ b │
-│ 5   │ 0.723626 │ 0.295239 │ b │
-│ 6   │ 0.147621 │ 0.527292 │ a │
+julia> data = DataTable(Any[rand(6), rand(6), [:a,:b,:b,:b,:b,:a]], [:X1,:X2,:Y])
+6×3 DataTables.DataTable
+│ Row │ X1        │ X2          │ Y │
+├─────┼───────────┼─────────────┼───┤
+│ 1   │ 0.226582  │ 0.0443222   │ a │
+│ 2   │ 0.504629  │ 0.722906    │ b │
+│ 3   │ 0.933372  │ 0.812814    │ b │
+│ 4   │ 0.522172  │ 0.245457    │ b │
+│ 5   │ 0.505208  │ 0.11202     │ b │
+│ 6   │ 0.0997825 │ 0.000341996 │ a │
 
 julia> getobs(undersample(row->row[:Y], data))
-4×3 DataFrames.DataFrame
-│ Row │ X1       │ X2       │ Y │
-├─────┼──────────┼──────────┼───┤
-│ 1   │ 0.646593 │ 0.970426 │ a │
-│ 2   │ 0.363206 │ 0.479828 │ b │
-│ 3   │ 0.618918 │ 0.661277 │ b │
-│ 4   │ 0.147621 │ 0.527292 │ a │
+4×3 DataTables.DataTable
+│ Row │ X1        │ X2          │ Y │
+├─────┼───────────┼─────────────┼───┤
+│ 1   │ 0.226582  │ 0.0443222   │ a │
+│ 2   │ 0.504629  │ 0.722906    │ b │
+│ 3   │ 0.522172  │ 0.245457    │ b │
+│ 4   │ 0.0997825 │ 0.000341996 │ a │
 ```
 
-see also [`oversample`](@ref).
+see [`DataSubset`](@ref) for more information on data subsets.
+
+see also [`oversample`](@ref) and [`stratifiedobs`](@ref).
 """
 undersample(data; shuffle=false, obsdim=default_obsdim(data)) =
     undersample(identity, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
