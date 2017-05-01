@@ -58,6 +58,7 @@ tests = [
     "tst_splitobs.jl"
     "tst_dataview.jl"
     "tst_targets.jl"
+    "tst_stratifiedobs.jl"
     "tst_resample.jl"
     "tst_folds.jl"
     "tst_dataiterator.jl"
