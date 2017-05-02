@@ -12,6 +12,7 @@ end
 
 @testset "Type Stability" begin
     for var in vars
+        srand(1335)
         @test_throws ArgumentError stratifiedobs(var, 0.)
         @test_throws ArgumentError stratifiedobs(var, 1.)
         @test_throws ArgumentError stratifiedobs(var, (0.2,0.0))
@@ -27,6 +28,7 @@ end
         @test eltype(@inferred(stratifiedobs(var, 0.5, true, ObsDim.First()))) <: SubArray
     end
     for tup in tuples
+        srand(1335)
         @test_throws ArgumentError stratifiedobs(tup, 0.)
         @test_throws ArgumentError stratifiedobs(tup, 1.)
         @test_throws ArgumentError stratifiedobs(tup, (0.2,0.0))

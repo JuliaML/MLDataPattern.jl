@@ -7,6 +7,7 @@ using MLDataPattern
 # --------------------------------------------------------------------
 # create some test data
 
+srand(1335)
 X = rand(4, 150)
 y = repeat(["setosa","versicolor","virginica"], inner = 50)
 Y = permutedims(hcat(y,y), [2,1])
