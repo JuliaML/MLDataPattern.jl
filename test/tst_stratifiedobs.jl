@@ -4,10 +4,10 @@
 srand(1335)
 
 ty = [:a, :a, :a, :a, :a, :a, :b, :b, :b, :b]
-if Int === Int64
-    @test splitobs(labelmap(ty), at = 0.5) == ([1,2,3,7,8],[4,5,6,9,10])
-else
+if Int === Int32 && VERSION < v"0.6-"
     @test splitobs(labelmap(ty), at = 0.5) == ([7,8,1,2,3],[9,10,4,5,6])
+else
+    @test splitobs(labelmap(ty), at = 0.5) == ([1,2,3,7,8],[4,5,6,9,10])
 end
 
 @testset "Type Stability" begin
