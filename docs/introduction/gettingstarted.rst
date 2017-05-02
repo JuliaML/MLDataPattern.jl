@@ -295,10 +295,24 @@ set. In fact, it makes no difference.
 
 On the other hand, some functions require the presence of targets
 to perform their respective tasks. In such a case, it is always
-assumed that the last tuple element contains the targets. Two
-such functions are :func:`undersample` and :func:`oversample`,
-which can be used to re-sample a labeled data container in such a
-way, that the resulting class distribution is uniform.
+assumed that the last tuple element contains the targets. An
+alternative to :func:`splitobs` that is explicitly for labeled
+data is :func:`stratifiedobs`, which tries to preserve the class
+distribution. The following example shows that both, ``y1`` and
+``y2``, contain twice as much ``"b"`` as ``"a"``, just like ``y``
+does.
+
+.. code-block:: jlcon
+
+   julia> (X1, y1), (X2, y2) = stratifiedobs((X, y), p = 0.5);
+
+   julia> y1, y2
+   (String["a","b","b"],String["b","b","a"])
+
+Other functions that deal with supervised data sets are
+:func:`undersample` and :func:`oversample`, which can be used to
+re-sample a labeled data container in such a way, that the
+resulting class distribution is uniform.
 
 .. code-block:: jlcon
 
@@ -488,6 +502,8 @@ package can be utilized to solve them.
 - :ref:`Shuffle the observations of a data container. <shuffle>`
 
 - :ref:`Split data into train/test subsets. <split>`
+
+- :ref:`Split labeled data into train/test subsets. <stratified>`
 
 - :ref:`Group multiple variables together an treat as a single data set. <tuples>`
 

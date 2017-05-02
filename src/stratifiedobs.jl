@@ -49,21 +49,24 @@ end
 """
     stratifiedobs([f], data, [p = 0.7], [shuffle = true], [obsdim]) -> Tuple
 
-Partitition the `data` into multiple disjoint subsets
-proportional to the value(s) of `p` by using stratified sampling
-without replacement. These data subsets are then returned as a
-`Tuple`, where the first element contains the fraction of
-observations of `data` that is specified by `p`.
+Partition the `data` into multiple disjoint subsets proportional
+to the value(s) of `p`. The observations are assignmed to a data
+subset using stratified sampling without replacement. These
+subsets are then returned as a `Tuple` of subsets, where the
+first element contains the fraction of observations of `data`
+that is specified by the first float in `p`.
 
-For example, if `p` is a `Float64` then the return-value will be
-a tuple with two elements (i.e. subsets), in which the first
-element contains the fracion of observations specified by `p` and
-the second element contains the rest. In the following code the
-first subset `train` will contain the around 70% of the
-observations and the second subset `test` the rest.
+For example, if `p` is a `Float64` itself, then the return-value
+will be a tuple with two elements (i.e. subsets), in which the
+first element contains the fraction of observations specified by
+`p` and the second element contains the rest. In the following
+code the first subset `train` will contain around 70% of the
+observations and the second subset `test` the rest. The key
+difference to [`splitobs`](@ref) is that the class distribution
+in `y` will actively be preserved in `train` and `test`.
 
 ```julia
-train, test = stratifiedobs(X, p = 0.7)
+train, test = stratifiedobs(y, p = 0.7)
 ```
 
 If `p` is a tuple of `Float64` then additional subsets will be
@@ -72,7 +75,7 @@ observations, `val` will contain around 30%, and `test` the
 remaining 20%.
 
 ```julia
-train, val, test = stratifiedobs(X, p = (0.5, 0.3))
+train, val, test = stratifiedobs(y, p = (0.5, 0.3))
 ```
 
 It is also possible to call `stratifiedobs` with multiple data
@@ -90,7 +93,7 @@ subsets should be shuffled. If `false`, then the observations in
 the subsets will be grouped together according to their labels.
 
 ```julia
-julia> Y = ["a", "b", "b", "b", "b", "a"] # 2 imbalanced classes
+julia> y = ["a", "b", "b", "b", "b", "a"] # 2 imbalanced classes
 6-element Array{String,1}:
  "a"
  "b"
@@ -99,7 +102,7 @@ julia> Y = ["a", "b", "b", "b", "b", "a"] # 2 imbalanced classes
  "b"
  "a"
 
-julia> train, test = stratifiedobs(Y, p = 0.5, shuffle = false)
+julia> train, test = stratifiedobs(y, p = 0.5, shuffle = false)
 (String["b","b","a"],String["b","b","a"])
 ```
 
