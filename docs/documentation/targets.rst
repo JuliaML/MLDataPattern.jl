@@ -640,6 +640,227 @@ is possible.
     :a
     :b
 
+.. _stratified:
+
+Stratified Sampling
+--------------------------
+
+In a supervised learning scenario, in which we are usually
+confronted with a labeled data set, we have to be considerate of
+the distribution of the targets. That is, how likely is it to
+observe some given target-value (e.g. an observation labeled
+"malignant") without conditioning on the features.
+
+It is important to be aware of the class distribution for a
+couple of different reason, one of which is data partitioning.
+Usually a good idea is to make sure that we actively try to
+preserve the class distribution for every data subset. This will
+help to make sure that the data subsets are similar in structure
+and more likely to be representative of the full data set.
+
+Consider the following target vector ``y``. Note how there are
+only two elements of value ``:b``. If we just use random
+assignment to partition the data set, then chances are that in
+some cases one subset does not contain any element of value
+``b``. This kind of effect becomes less frequent as the size of
+the data set increases.
+
+.. code-block:: jlcon
+
+   julia> y = [:a, :a, :a, :a, :b, :b];
+
+   julia> splitobs(shuffleobs(y), 0.5)
+   (Symbol[:b,:b,:a],Symbol[:a,:a,:a])
+
+To perform partitioning using stratified sampling without
+replacement, this package provides the function
+:func:`stratifiedobs`.
+
+.. function:: stratifiedobs([fun], data, [p], [shuffle], [obsdim])
+
+   Partition the data into multiple disjoint subsets proportional
+   to the value(s) of `p`. The observations are assignmed to a
+   data subset using stratified sampling without replacement.
+   These subsets are then returned as a Tuple of subsets, where
+   the first element contains the fraction of observations of
+   data that is specified by the first float in `p`.
+
+   :param fun: \
+        Optional. A callable object (usually a function) that
+        should be applied to each observation individually in
+        order to extract or compute the label for that
+        observation.
+
+   :param data: The object representing a labeled data container.
+
+   :param p: \
+        Optional. The fraction of observations that should be in
+        the first subset. Must be in the interval (0,1). Can be
+        specified as positional or keyword argument, as either a
+        single float or a tuple of floats. Defaults to 0.7 (i.e.
+        70% of the observations in the first subset).
+
+   :param bool shuffle: \
+        Optional. Determines if the resulting data subsets will
+        be shuffled after their creation. If ``false``, then all
+        the observations will be clustered together accoring to
+        their class label in each subset. Note that this has
+        nothing to do with random assignment to some data subset,
+        it only inluences the order of observation in each subset
+        individually. Defaults to ``true``.
+
+   :param obsdim: \
+        Optional. If it makes sense for the type of `data`, then
+        `obsdim` can be used to specify which dimension of `data`
+        denotes the observations. It can be specified in a
+        type-stable manner as a positional argument, or as a more
+        convenient keyword parameter. See :ref:`obsdim` for more
+        information.
+
+Let's consider the following toy data vector ``y``, which
+contains a total of 9 observations. Notice how each value of
+``y`` is either ``:a`` or ``:b``, which means we have a binary
+classification problem. We can also see that the data set has
+twice as many observations for ``:a`` as it has for ``:b``.
+
+.. code-block:: julia
+
+   y = [:a, :a, :a, :a, :a, :a, :b, :b, :b]
+
+We have seen before that using :func:`splitobs` can result in a
+partition where one subset contains all the ``:b``, while the
+other one contains only ``:a``. In contrast to this,
+:func:`stratifiedobs` will try to make sure that both subsets are
+both appropriately distributed. More concretely, if ``p`` is a
+``Float64``, then the return-value of :func:`stratifiedobs` will
+be a tuple with two elements (i.e. subsets), in which the first
+element contains the fraction of observations specified by ``p``
+and the second element contains the rest. In the following code
+the first subset ``train`` will contain around 70% of the
+observations and the second subset ``test`` the rest.
+
+.. code-block:: jlcon
+
+   julia> train, test = stratifiedobs(y, p = 0.7)
+   (Symbol[:b,:a,:a,:a,:a,:b],Symbol[:a,:a,:b])
+
+   julia> test
+   3-element SubArray{Symbol,1,Array{Symbol,1},Tuple{Array{Int64,1}},false}:
+    :a
+    :a
+    :b
+
+Notice how both subsets contain twice as much ``:a`` as ``:b``,
+just like ``y`` does. Furthermore, it is worth pointing out how
+``test`` (and ``train`` for that matter) is a ``SubArray``. As
+such, it is just a view into the corresponding original variable
+``y``. The motivation for this behaviour is to avoid data
+movement until :func:`getobs` is called.
+
+Recall how I said explicitly that :func:`stratifiedobs` will "try
+to make sure" that the distribution is preserved. This is because
+it is not always possible to preserve the class distribution. If
+that is the case, the function will try to have each subset
+contain at least one of each class, even if that does not reflect
+the distribution appropriately.
+
+.. code-block:: jlcon
+
+   julia> train, test = stratifiedobs(y, p = 0.8)
+   (Symbol[:b,:a,:b,:a,:a,:a,:a],Symbol[:a,:b])
+
+It is also possible to specify multiple fractions for ``p``. If
+``p`` is a ``Tuple`` of ``Float64``, then additional subsets will
+be created. This can be useful to create an additional validation
+set.
+
+.. code-block:: jlcon
+
+   julia> train, val, test = stratifiedobs(y, p = (0.3, 0.3))
+   (Symbol[:b,:a,:a],Symbol[:b,:a,:a],Symbol[:a,:b,:a])
+
+It is also possible to call :func:`stratifiedobs` with multiple
+data arguments as tuple, which all must have the same number of
+total observations. Note that if data is a tuple, then it will be
+assumed that the last element of the tuple contains the targets.
+
+.. code-block:: julia
+
+   train, test = stratifiedobs((X, y), p = 0.7)
+   (X_train,y_train), (X_test,y_test) = stratifiedobs((X, y), p = 0.7)
+
+If the type of the data is not sufficient information to be able
+to extract the targets, one can specify a
+target-extraction-function ``fun``, that is to be applied to each
+individual observation. The behaviour when specifying or omitting
+``fun`` is equivalent to its behaviour for :func:`eachtarget`,
+because that is the function that is used internally by
+:func:`stratifiedobs`.
+
+A good example for a type that requires the parameter ``fun`` is
+a ``DataTable``. Consider the following toy data container where
+we know that the column ``:y`` contains the targets (see
+:ref:`datatable` to make the following code work).
+
+.. code-block:: jlcon
+
+   julia> dt = DataTable(x1 = rand(6), x2 = rand(6), y = [:a,:b,:b,:b,:b,:a])
+   6×3 DataTables.DataTable
+   │ Row │ x1        │ x2          │ y  │
+   ├─────┼───────────┼─────────────┼────┤
+   │ 1   │ 0.226582  │ 0.0443222   │ :a │
+   │ 2   │ 0.504629  │ 0.722906    │ :b │
+   │ 3   │ 0.933372  │ 0.812814    │ :b │
+   │ 4   │ 0.522172  │ 0.245457    │ :b │
+   │ 5   │ 0.505208  │ 0.11202     │ :b │
+   │ 6   │ 0.0997825 │ 0.000341996 │ :a │
+
+   julia> train, test = stratifiedobs(row->row[1,:y], dt)
+   (3×3 DataTables.SubDataTable{Array{Int64,1}}
+   │ Row │ x1        │ x2          │ y  │
+   ├─────┼───────────┼─────────────┼────┤
+   │ 1   │ 0.505208  │ 0.11202     │ :b │
+   │ 2   │ 0.522172  │ 0.245457    │ :b │
+   │ 3   │ 0.0997825 │ 0.000341996 │ :a │,
+   3×3 DataTables.SubDataTable{Array{Int64,1}}
+   │ Row │ x1       │ x2        │ y  │
+   ├─────┼──────────┼───────────┼────┤
+   │ 1   │ 0.226582 │ 0.0443222 │ :a │
+   │ 2   │ 0.933372 │ 0.812814  │ :b │
+   │ 3   │ 0.504629 │ 0.722906  │ :b │)
+
+The optional parameter ``obsdim`` can be used to specify which
+dimension denotes the observations, if that concept makes sense
+for the type of data. For instance, consider the following toy
+data set where the targets ``Y`` are now a one-of-k encoded
+matrix. In such a case we would like the be able to re-sample
+without first having to convert ``Y`` to a different
+class-encoding.
+
+.. code-block:: jlcon
+
+   # 2 imbalanced classes in one-of-k encoding
+   julia> Y = [1 0; 1 0; 1 0; 1 0; 0 1; 0 1]
+   6×2 Array{Int64,2}:
+    1  0
+    1  0
+    1  0
+    1  0
+    0  1
+    0  1
+
+Here we could use the function ``indmax`` to discretize the
+individual target vectors on the fly. Remember that the
+target-extraction-function is applied on each individual
+observation in ``Y``. Since ``Y`` is a matrix, each observation
+is a vector slice. Here we use ``obsdim`` to specify that each
+row is an observation.
+
+.. code-block:: jlcon
+
+   julia> train, test = stratifiedobs(indmax, X, p = 0.5, obsdim = 1)
+   ([1 0; 1 0; 0 1], [0 1; 1 0; 1 0])
+
 .. _resampling:
 
 Under- and Over-Sampling

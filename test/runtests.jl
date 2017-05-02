@@ -7,6 +7,7 @@ using MLDataPattern
 # --------------------------------------------------------------------
 # create some test data
 
+srand(1335)
 X = rand(4, 150)
 y = repeat(["setosa","versicolor","virginica"], inner = 50)
 Y = permutedims(hcat(y,y), [2,1])
@@ -58,6 +59,7 @@ tests = [
     "tst_splitobs.jl"
     "tst_dataview.jl"
     "tst_targets.jl"
+    "tst_stratifiedobs.jl"
     "tst_resample.jl"
     "tst_folds.jl"
     "tst_dataiterator.jl"

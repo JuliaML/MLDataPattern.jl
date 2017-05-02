@@ -9,6 +9,8 @@ using Compat
 using LearnBase: ObsDimension
 import LearnBase: nobs, getobs, getobs!, gettarget, gettargets, targets, datasubset, default_obsdim
 
+using Base.Cartesian
+
 export
 
     ObsDim,
@@ -34,6 +36,8 @@ export
     targets,
     eachtarget,
 
+    stratifiedobs,
+
     oversample,
     undersample,
     upsample,
@@ -56,6 +60,7 @@ include("shuffleobs.jl")
 include("splitobs.jl")
 include("dataview.jl")
 include("targets.jl")
+include("stratifiedobs.jl")
 include("resample.jl")
 include("folds.jl")
 include("dataiterator.jl")
