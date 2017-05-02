@@ -1,8 +1,14 @@
 @test_throws DimensionMismatch stratifiedobs((X, rand(149)))
 @test_throws DimensionMismatch stratifiedobs((X, rand(149)), obsdim=:last)
 
+srand(1335)
+
 ty = [:a, :a, :a, :a, :a, :a, :b, :b, :b, :b]
-@test splitobs(labelmap(ty), at = 0.5) == ([1,2,3,7,8],[4,5,6,9,10])
+if Int === Int64
+    @test splitobs(labelmap(ty), at = 0.5) == ([1,2,3,7,8],[4,5,6,9,10])
+else
+    @test splitobs(labelmap(ty), at = 0.5) == ([7,8,1,2,3],[9,10,4,5,6])
+end
 
 @testset "Type Stability" begin
     for var in vars
@@ -37,6 +43,7 @@ end
 
 println("<HEARTBEAT>")
 
+srand(1335)
 @testset "SparseArray" begin
     @test nobs.(stratifiedobs(round, ys)) == (105,45)
     @test nobs.(stratifiedobs(round, ys, p=0.7)) == (105,45)
