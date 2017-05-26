@@ -5,15 +5,19 @@ os:
   - osx
 julia:
   - 0.5
+  - 0.6
   - nightly
+matrix:
+  allow_failures:
+    - julia: nightly
 notifications:
   email: false
 # uncomment the following lines to override the default test script
 #script:
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia -e 'Pkg.clone(pwd()); Pkg.build("MLDataPattern"); Pkg.test("MLDataPattern"; coverage=true)'
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia -e 'Pkg.clone(pwd()); Pkg.build("MLDataPattern"); Pkg.test("MLDataPattern"; coverage=VERSION >= v"0.6.0-pre.alpha")'
 after_success:
   # push coverage results to Coveralls
-  - julia -e 'cd(Pkg.dir("MLDataPattern")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  - julia -e 'if VERSION >= v"0.6.0-pre.alpha" cd(Pkg.dir("MLDataPattern")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder()); end'
   # push coverage results to Codecov
   #  - julia -e 'cd(Pkg.dir("MLDataPattern")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
