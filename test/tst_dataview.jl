@@ -142,6 +142,8 @@ end
 @testset "_compute_batch_settings" begin
     @test MLDataPattern._compute_batch_settings(X) === (30,5)
     @test MLDataPattern._compute_batch_settings(X',-1,-1,ObsDim.First()) === (30,5)
+    @test MLDataPattern._compute_batch_settings(X',32,-1,ObsDim.First()) === (32,4)
+    @test MLDataPattern._compute_batch_settings(X',32,-1,ObsDim.First(),true) === (30,5)
     @test MLDataPattern._compute_batch_settings(Xv) === (30,5)
     @test MLDataPattern._compute_batch_settings(Xs) === (30,5)
     @test MLDataPattern._compute_batch_settings(DataSubset(X)) === (30,5)
@@ -254,6 +256,8 @@ end
             @test @inferred(A[[1,3]]) == BatchView(datasubset(var, [1:15..., 31:45...]), 15)
         end
         A = BatchView(X',size=15,obsdim=1)
+        @test_throws ArgumentError BatchView(X',size=15, maxsize=15, obsdim=1)
+        @test A == BatchView(X',maxsize=16,obsdim=1)
         @test A == BatchView(X',count=10,obsdim=1)
         @test @inferred(length(A)) == 10
         @test @inferred(size(A)) == (10,)

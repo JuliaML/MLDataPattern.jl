@@ -424,6 +424,8 @@ end
     @test size(A.buffer) == (30,4)
     @test length(A) == 5
     A = @inferred eachbatch(X, 10)
+    @test_throws ArgumentError eachbatch(X, size = 10, maxsize = 11)
+    @test length(A) == length(eachbatch(X, maxsize = 11))
     @inferred first(A)
     @test typeof(A) <: BufferGetObs
     @test typeof(A.iter) <: BatchView

@@ -505,14 +505,22 @@ see [`BufferGetObs`](@ref), [`batchview`](@ref), and
 [`getobs!`](@ref) for more info. also see [`eachobs`](@ref) for a
 single-observation version.
 """
-eachbatch(data; size = -1, count = -1, obsdim = default_obsdim(data)) =
-    BufferGetObs(BatchView(data, size, count, convert(LearnBase.ObsDimension,obsdim)))
+function eachbatch(data; size = -1, maxsize = -1, count = -1, obsdim = default_obsdim(data))
+    maxsize != -1 && size != -1 && throw(ArgumentError("Providing both \"size\" and \"maxsize\" is not supported"))
+    if maxsize != -1
+        # set upto to true in order to allow a flexible batch size
+        BufferGetObs(BatchView(data, maxsize, count, convert(LearnBase.ObsDimension,obsdim), true))
+    else
+        # force given batch size
+        BufferGetObs(BatchView(data, size, count, convert(LearnBase.ObsDimension,obsdim)))
+    end
+end
 
 eachbatch{T<:Union{Tuple,ObsDimension}}(data, obsdim::T) =
     BufferGetObs(BatchView(data, -1, -1, obsdim))
 
-eachbatch{T<:Union{Tuple,ObsDimension}}(data, size::Int, obsdim::T = default_obsdim(data)) =
-    BufferGetObs(BatchView(data, size, -1, obsdim))
+eachbatch{T<:Union{Tuple,ObsDimension}}(data, size::Int, obsdim::T = default_obsdim(data), upto::Bool = false) =
+    BufferGetObs(BatchView(data, size, -1, obsdim, upto))
 
-eachbatch{T<:Union{Tuple,ObsDimension}}(data, size::Int, count::Int, obsdim::T = default_obsdim(data)) =
-    BufferGetObs(BatchView(data, size, count, obsdim))
+eachbatch{T<:Union{Tuple,ObsDimension}}(data, size::Int, count::Int, obsdim::T = default_obsdim(data), upto::Bool = false) =
+    BufferGetObs(BatchView(data, size, count, obsdim, upto))

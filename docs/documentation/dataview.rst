@@ -327,21 +327,30 @@ data container as a vector of equal-sized batches.
    which in general avoids data movement until :func:`getobs` is
    invoked.
 
-.. function:: batchview(data, [size], [count], [obsdim]) -> BatchView
+.. function:: batchview(data, [size|maxsize], [count], [obsdim]) -> BatchView
 
    Create a :class:`BatchView` for the given `data` container. It
    will serve as a vector-like view into `data`, where every
    element of the vector points to a batch of `size` observations
    from `data`. The number of batches and the batch-size can be
-   specified using (keyword) parameters `count` and `size`. In
-   the case that the size of the dataset is not dividable by the
-   specified (or inferred) `size`, the remaining observations
-   will be ignored.
+   specified using (keyword) parameters `count` and `size` (or
+   alternatively `maxsize`).
+
+   In the case that the size of the dataset is not dividable by
+   the specified (or inferred) `size`, the remaining observations
+   will be ignored. If `maxsize` is provided instead of `size`,
+   then the next dividable size will be used such that no
+   observations are ignored.
 
    :param data: The object representing a data container.
 
-   :param Integer size: Optional. The number of observations in
-                        each batch.
+   :param Integer size: Optional. The exact number of observations
+                        in each batch.
+
+   :param Integer maxsize: Optional alternative to `size`. The
+                           maximal number of observations in each
+                           batch, such that all observations get
+                           used.
 
    :param Integer count: \
         Optional. The number of batches that should be used. This
@@ -381,6 +390,14 @@ message.
    2-element MLDataPattern.BatchView{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},Array{Float64,2},LearnBase.ObsDim.Last}:
     [0.226582 0.933372; 0.504629 0.522172]
     [0.505208 0.0443222; 0.0997825 0.722906]
+
+   julia> bv = batchview(X, maxsize = 2)
+   5-element MLDataPattern.BatchView{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},Array{Float64,2},LearnBase.ObsDim.Last}:
+    [0.226582; 0.504629]
+    [0.933372; 0.522172]
+    [0.505208; 0.0997825]
+    [0.0443222; 0.722906]
+    [0.812814; 0.245457]
 
 You can query the size of each batch by using the function
 :func:`batchsize` on any :class:`BatchView`.
