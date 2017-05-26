@@ -156,11 +156,16 @@ default_batch_size(source, obsdim) = clamp(div(nobs(source,obsdim), 5), 2, 100)
 Helper function to compute sensible and compatible values for the
 `size` and `count`
 """
-function _compute_batch_settings(source, size::Int = -1, count::Int = -1, obsdim = default_obsdim(source))
+function _compute_batch_settings(source, size::Int = -1, count::Int = -1, obsdim = default_obsdim(source), upto = false)
     num_observations = nobs(source, obsdim)::Int
     @assert num_observations > 0
     size  <= num_observations || throw(ArgumentError("Specified batch-size is too large for the given number of observations"))
     count <= num_observations || throw(ArgumentError("Specified batch-count is too large for the given number of observations"))
+    if size > 0 && upto
+        while num_observations % size != 0 && size > 1
+            size = size - 1
+        end
+    end
     if size <= 0 && count <= 0
         # no batch settings specified, use default size and as many batches as possible
         size = default_batch_size(source, obsdim)::Int
@@ -197,7 +202,7 @@ end
 # --------------------------------------------------------------------
 
 """
-    BatchView(data, [size], [count], [obsdim])
+    BatchView(data, [size|maxsize], [count], [obsdim])
 
 Description
 ============
@@ -229,6 +234,11 @@ Arguments
 
 - **`size`** : The batch-size of each batch. I.e. the number of
     observations that each batch must contain.
+
+- **`maxsize`** : The maximum batch-size of each batch. I.e. the
+    number of observations that each batch should contain. If the
+    number of total observation is not divideable by the size it
+    will be reduced until it is.
 
 - **`count`** : The number of batches that the view will contain.
 
@@ -270,6 +280,7 @@ Examples
 =========
 
 ```julia
+using MLDataUtils
 X, Y = MLDataUtils.load_iris()
 
 A = batchview(X, size = 30)
@@ -292,6 +303,13 @@ for (x,y) in batchview((X,Y), size = 20)
     @assert typeof(x) <: SubArray{Float64,2}
     @assert typeof(y) <: SubArray{String,1}
     @assert nobs(x) === nobs(y) === 20
+end
+
+# 10 batches of size 15 observations
+for (x,y) in batchview((X,Y), maxsize = 20)
+    @assert typeof(x) <: SubArray{Float64,2}
+    @assert typeof(y) <: SubArray{String,1}
+    @assert nobs(x) === nobs(y) === 15
 end
 
 # randomly assign observations to one and only one batch.
@@ -322,26 +340,34 @@ immutable BatchView{TElem,TData,O} <: AbstractBatchView{TElem,TData}
     obsdim::O
 end
 
-function BatchView{T,O}(data::T, size::Int, count::Int, obsdim::O = default_obsdim(data))
-    nsize, ncount = _compute_batch_settings(data, size, count, obsdim)
+function BatchView{T,O}(data::T, size::Int, count::Int, obsdim::O = default_obsdim(data), upto::Bool = false)
+    nsize, ncount = _compute_batch_settings(data, size, count, obsdim, upto)
     E = typeof(datasubset(data, 1:nsize, obsdim))
     BatchView{E,T,O}(data, nsize, ncount, obsdim)
 end
 
-function BatchView{T,O<:Union{Tuple,ObsDimension}}(data::T, size::Int, obsdim::O = default_obsdim(data))
-    BatchView(data, size, -1, obsdim)
+function BatchView{T,O<:Union{Tuple,ObsDimension}}(data::T, size::Int, obsdim::O = default_obsdim(data), upto::Bool = false)
+    BatchView(data, size, -1, obsdim, upto)
 end
 
-function BatchView(A::BatchView, size::Int, count::Int, obsdim)
+function BatchView(A::BatchView, size::Int, count::Int, obsdim, upto::Bool = false)
     @assert obsdim == A.obsdim
-    BatchView(parent(A), size, count, obsdim)
+    BatchView(parent(A), size, count, obsdim, upto)
 end
 
 BatchView(data, obsdim::Union{Tuple,ObsDimension}) =
     BatchView(data, -1, -1, obsdim)
 
-BatchView(data; size = -1, count = -1, obsdim = default_obsdim(data)) =
-    BatchView(data, size, count, convert(LearnBase.ObsDimension,obsdim))
+function BatchView(data; size = -1, maxsize = -1, count = -1, obsdim = default_obsdim(data))
+    maxsize != -1 && size != -1 && throw(ArgumentError("Providing both \"size\" and \"maxsize\" is not supported"))
+    if maxsize != -1
+        # set upto to true in order to allow a flexible batch size
+        BatchView(data, maxsize, count, convert(LearnBase.ObsDimension,obsdim), true)
+    else
+        # force given batch size
+        BatchView(data, size, count, convert(LearnBase.ObsDimension,obsdim))
+    end
+end
 
 """
     batchsize(data) -> Int
