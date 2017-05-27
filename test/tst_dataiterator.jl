@@ -4,6 +4,7 @@
     @test RandomObs <: LearnBase.AbstractDataIterator
     @test RandomObs <: LearnBase.AbstractObsIterator
     println(RandomObs(X))
+    println(RandomObs(X, 10))
     println([RandomObs(X)])
 
     @testset "constructor" begin
@@ -103,6 +104,7 @@ end
     @test RandomBatches <: LearnBase.AbstractDataIterator
     @test RandomBatches <: LearnBase.AbstractBatchIterator
     println(RandomBatches(X))
+    println(RandomBatches(X, 10, 10))
     println([RandomBatches(X)])
 
     @testset "constructor" begin

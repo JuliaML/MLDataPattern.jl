@@ -153,7 +153,7 @@ such, no data from ``X`` is copied.
     0.504629  0.522172  0.0997825  0.722906   0.245457
 
    julia> ov = obsview(X)
-   5-element MLDataPattern.ObsView{SubArray{Float64,1,Array{Float64,2},Tuple{Colon,Int64},true},Array{Float64,2},LearnBase.ObsDim.Last}:
+   5-element obsview(::Array{Float64,2}, ObsDim.Last()) with element type SubArray{Float64,1,Array{Float64,2},Tuple{Colon,Int64},true}:
     [0.226582,0.504629]
     [0.933372,0.522172]
     [0.505208,0.0997825]
@@ -189,7 +189,7 @@ snippet we treat ``X`` as a data set that has 2 observations with
     0.504629  0.522172  0.0997825  0.722906   0.245457
 
    julia> ov = obsview(X, obsdim = 1)
-   2-element MLDataPattern.ObsView{SubArray{Float64,1,Array{Float64,2},Tuple{Int64,Colon},true},Array{Float64,2},LearnBase.ObsDim.Constant{1}}:
+   2-element obsview(::Array{Float64,2}, ObsDim.Constant{1}()) with element type SubArray{Float64,1,Array{Float64,2},Tuple{Int64,Colon},true}:
     [0.226582,0.933372,0.505208,0.0443222,0.812814]
     [0.504629,0.522172,0.0997825,0.722906,0.245457]
 
@@ -212,7 +212,7 @@ vector-like form.
     0.841177
 
    julia> ov = obsview(y)
-   5-element MLDataPattern.ObsView{SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false},Array{Float64,1},LearnBase.ObsDim.Last}:
+   5-element obsview(::Array{Float64,1}, ObsDim.Last()) with element type SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false}:
     0.11202
     0.000341996
     0.380001
@@ -257,7 +257,7 @@ do so, simply combine the functions :func:`obsview` and
 .. code-block:: jlcon
 
    julia> ov = obsview(shuffleobs(y))
-   5-element MLDataPattern.ObsView{SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false},SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false},LearnBase.ObsDim.Last}:
+   5-element obsview(::SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false}, ObsDim.Last()) with element type SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false}:
     0.505277
     0.11202
     0.841177
@@ -265,7 +265,7 @@ do so, simply combine the functions :func:`obsview` and
     0.000341996
 
    julia> ov = shuffleobs(obsview(y)) # also possible
-   5-element MLDataPattern.ObsView{SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false},SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false},LearnBase.ObsDim.Last}:
+   5-element obsview(::SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false}, ObsDim.Last()) with element type SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false}:
     0.505277
     0.380001
     0.000341996
@@ -282,7 +282,7 @@ observation in the same tuple position.
 .. code-block:: jlcon
 
    julia> ov = obsview((X, y))
-   5-element MLDataPattern.ObsView{Tuple{SubArray{Float64,1,Array{Float64,2},Tuple{Colon,Int64},true},SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false}},Tuple{Array{Float64,2},Array{Float64,1}},Tuple{LearnBase.ObsDim.Last,LearnBase.ObsDim.Last}}:
+   5-element obsview(::Tuple{Array{Float64,2},Array{Float64,1}}, (ObsDim.Last(),ObsDim.Last())) with element type Tuple{SubArray{Float64,1,Array{Float64,2},Tuple{Colon,Int64},true},SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false}}:
     ([0.226582,0.504629],0.11202)
     ([0.933372,0.522172],0.000341996)
     ([0.505208,0.0997825],0.380001)
@@ -387,12 +387,12 @@ message.
 
    julia> bv = batchview(X, size = 2)
    INFO: The specified values for size and/or count will result in 1 unused data points
-   2-element MLDataPattern.BatchView{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},Array{Float64,2},LearnBase.ObsDim.Last}:
+   2-element batchview(::Array{Float64,2}, 2, 2, ObsDim.Last()) with element type SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}:
     [0.226582 0.933372; 0.504629 0.522172]
     [0.505208 0.0443222; 0.0997825 0.722906]
 
    julia> bv = batchview(X, maxsize = 2)
-   5-element MLDataPattern.BatchView{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},Array{Float64,2},LearnBase.ObsDim.Last}:
+   5-element batchview(::Array{Float64,2}, 1, 5, ObsDim.Last()) with element type SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}:
     [0.226582; 0.504629]
     [0.933372; 0.522172]
     [0.505208; 0.0997825]
@@ -429,7 +429,7 @@ omitted.
 
    julia> bv = batchview(X', size = 2, obsdim = 1) # note the transpose
    INFO: The specified values for size and/or count will result in 1 unused data points
-   2-element MLDataPattern.BatchView{SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},Colon},false},Array{Float64,2},LearnBase.ObsDim.Constant{1}}:
+   2-element batchview(::Array{Float64,2}, 2, 2, ObsDim.Constant{1}()) with element type SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},Colon},false}:
     [0.226582 0.504629; 0.933372 0.522172]
     [0.505208 0.0997825; 0.0443222 0.722906]
 
@@ -442,7 +442,7 @@ of batches that we would like to use.
 
    julia> bv = batchview(X, count = 4)
    INFO: The specified values for size and/or count will result in 1 unused data points
-   4-element MLDataPattern.BatchView{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},Array{Float64,2},LearnBase.ObsDim.Last}:
+   4-element batchview(::Array{Float64,2}, 1, 4, ObsDim.Last()) with element type SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}:
     [0.226582; 0.504629]
     [0.933372; 0.522172]
     [0.505208; 0.0997825]
@@ -478,7 +478,7 @@ per-observation basis.
 
    julia> bv = batchview((X, y))
    INFO: The specified values for size and/or count will result in 1 unused data points
-   2-element MLDataPattern.BatchView{Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},SubArray{Float64,1,Array{Float64,1},Tuple{UnitRange{Int64}},true}},Tuple{Array{Float64,2},Array{Float64,1}},Tuple{LearnBase.ObsDim.Last,LearnBase.ObsDim.Last}}:
+   2-element batchview(::Tuple{Array{Float64,2},Array{Float64,1}}, 2, 2, (ObsDim.Last(),ObsDim.Last())) with element type Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},SubArray{Float64,1,Array{Float64,1},Tuple{UnitRange{Int64}},true}}:
    ([0.226582 0.933372; 0.504629 0.522172], [0.11202,0.000341996])
    ([0.505208 0.0443222; 0.0997825 0.722906], [0.380001,0.505277])
 

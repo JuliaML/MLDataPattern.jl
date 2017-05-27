@@ -374,11 +374,11 @@ have seen provide their own special type of subset.
     0.504629  0.522172  0.0997825  0.722906
 
    julia> DataSubset(X, 2) # single observation at index 2
-   MLDataPattern.DataSubset{Array{Float64,2},Int64,LearnBase.ObsDim.Last}
+   DataSubset(::Array{Float64,2}, ::Int64, ObsDim.Last())
     1 observations
 
    julia> DataSubset(X, [2, 4]) # batch of 2 observations
-   MLDataPattern.DataSubset{Array{Float64,2},Array{Int64,1},LearnBase.ObsDim.Last}
+   DataSubset(::Array{Float64,2}, ::Array{Int64,1}, ObsDim.Last())
     2 observations
 
 As you can see, a :class:`DataSubset` does not tell you a lot of
@@ -392,7 +392,7 @@ also a fully qualified data container. As such, it supports both
 .. code-block:: jlcon
 
    julia> mysubset = DataSubset(X, [2, 4]) # batch of 2 observations
-   MLDataPattern.DataSubset{Array{Float64,2},Array{Int64,1},LearnBase.ObsDim.Last}
+   DataSubset(::Array{Float64,2}, ::Array{Int64,1}, ObsDim.Last())
     2 observations
 
    julia> nobs(mysubset)
@@ -414,7 +414,7 @@ subset of a subset of a subset represented as nested types)
 .. code-block:: jlcon
 
    julia> mysubset2 = DataSubset(mysubset, 2) # second observation of mysubset
-   MLDataPattern.DataSubset{Array{Float64,2},Int64,LearnBase.ObsDim.Last}
+   DataSubset(::Array{Float64,2}, ::Int64, ObsDim.Last())
     1 observations
 
    julia> getobs(mysubset2) # request the data it represents
@@ -434,7 +434,7 @@ argument.
 .. code-block:: jlcon
 
    julia> mysubset = DataSubset(X', 2, obsdim = 1) # note the transpose
-   MLDataPattern.DataSubset{Array{Float64,2},Int64,LearnBase.ObsDim.Constant{1}}
+   DataSubset(::Array{Float64,2}, ::Int64, ObsDim.Constant{1}())
     1 observations
 
    julia> getobs(mysubset)
@@ -469,9 +469,9 @@ it to :func:`DataSubset`.
     0.000341996
 
    julia> Xs, ys = DataSubset((X,y), [2,4]); # batch of 2 observations
-   (MLDataPattern.DataSubset{Array{Float64,2},Array{Int64,1},LearnBase.ObsDim.Last}
+   (DataSubset(::Array{Float64,2}, ::Array{Int64,1}, ObsDim.Last())
      2 observations,
-    MLDataPattern.DataSubset{Array{Float64,1},Array{Int64,1},LearnBase.ObsDim.Last}
+    DataSubset(::Array{Float64,1}, ::Array{Int64,1}, ObsDim.Last())
      2 observations)
 
    julia> getobs(Xs)
@@ -553,7 +553,7 @@ subsetted.
    │ 4   │ 0.522172 │ 0.722906  │
 
    julia> mysubset = datasubset(df, [2,4])
-   MLDataPattern.DataSubset{DataFrames.DataFrame,Array{Int64,1},LearnBase.ObsDim.Undefined}
+   DataSubset(::DataFrames.DataFrame, ::Array{Int64,1})
     2 observations
 
    julia> getobs(mysubset)
@@ -801,7 +801,7 @@ we did as an exercise in :ref:`dataframe`)
    │ 4   │ 0.522172 │ 0.722906  │
 
    julia> df_shuf = shuffleobs(df)
-   MLDataPattern.DataSubset{DataFrames.DataFrame,Array{Int64,1},LearnBase.ObsDim.Undefined}
+   DataSubset(::DataFrames.DataFrame, ::Array{Int64,1})
     4 observations
 
    julia> getobs(df_shuf)

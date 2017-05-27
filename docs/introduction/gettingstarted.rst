@@ -366,7 +366,7 @@ take a look at :ref:`folds`.
   julia> x = collect(1:10);
 
   julia> folds = kfolds(x, k = 5)
-  5-element MLDataPattern.FoldsView{Tuple{SubArray{Int64,1,Array{Int64,1},Tuple{Array{Int64,1}},false}, ...
+  5-element FoldsView(::Array{Int64,1}, ::Array{Array{Int64,1},1}, ::Array{UnitRange{Int64},1}, ObsDim.Last()) with element type Tuple{SubArray{Int64,1,Array{Int64,1},Tuple{Array{Int64,1}},false},SubArray{Int64,1,Array{Int64,1},Tuple{UnitRange{Int64}},true}}:
    ([3,4,5,6,7,8,9,10],[1,2])
    ([1,2,5,6,7,8,9,10],[3,4])
    ([1,2,3,4,7,8,9,10],[5,6])
@@ -390,7 +390,7 @@ into or iterated over.
     0.504629  0.522172  0.0997825  0.722906   0.245457  0.000341996
 
    julia> ov = obsview(X)
-   6-element MLDataPattern.ObsView{SubArray{Float64,1,Array{Float64,2},Tuple{Colon,Int64},true},Array{Float64,2},LearnBase.ObsDim.Last}:
+   6-element obsview(::Array{Float64,2}, ObsDim.Last()) with element type SubArray{Float64,1,Array{Float64,2},Tuple{Colon,Int64},true}:
     [0.226582,0.504629]
     [0.933372,0.522172]
     [0.505208,0.0997825]
@@ -406,7 +406,7 @@ section on :ref:`dataviews`.
 .. code-block:: jlcon
 
    julia> bv = batchview(X, size = 2)
-   3-element MLDataPattern.BatchView{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true},Array{Float64,2},LearnBase.ObsDim.Last}:
+   3-element batchview(::Array{Float64,2}, 2, 3, ObsDim.Last()) with element type SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}:
     [0.226582 0.933372; 0.504629 0.522172]
     [0.505208 0.0443222; 0.0997825 0.722906]
     [0.812814 0.11202; 0.245457 0.000341996]
@@ -420,7 +420,7 @@ observation (with replacement) from the given data container.
 .. code-block:: jlcon
 
    julia> iter = RandomObs(X)
-   MLDataPattern.RandomObs{SubArray{Float64,1,Array{Float64,2},Tuple{Colon,Int64},true},Array{Float64,2},LearnBase.ObsDim.Last,Base.IsInfinite}
+   RandomObs(::Array{Float64,2}, ObsDim.Last())
     Iterator providing Inf observations
 
 To give a second example for a data iterator, the type
@@ -431,11 +431,11 @@ at the section on :ref:`dataiterators`.
 .. code-block:: jlcon
 
    julia> iter = RandomBatches(X, size = 10)
-   MLDataPattern.RandomBatches{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},Array{Float64,2},LearnBase.ObsDim.Last,Base.IsInfinite}
+   RandomBatches(::Array{Float64,2}, 10, ObsDim.Last())
     Iterator providing Inf batches with size 10
 
    julia> iter = RandomBatches(X, count = 50, size = 10)
-   MLDataPattern.RandomBatches{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},Array{Float64,2},LearnBase.ObsDim.Last,Base.HasLength}
+   RandomBatches(::Array{Float64,2}, 10, 50, ObsDim.Last())
     Iterator providing 50 batches with size 10
 
 Let us round out this introduction by taking a look at a "hello

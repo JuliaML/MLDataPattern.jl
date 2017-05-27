@@ -104,7 +104,7 @@ use ``collect`` on it.
 .. code-block:: jlcon
 
    julia> iter = RandomObs(x, count = 10)
-   MLDataPattern.RandomObs{SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false},Array{Float64,1},LearnBase.ObsDim.Last,Base.HasLength}
+   RandomObs(::Array{Float64,1}, 10, ObsDim.Last())
     Iterator providing 10 observations
 
    julia> xnew = collect(iter)
@@ -143,7 +143,7 @@ interrupted.
 .. code-block:: jlcon
 
    julia> iter = RandomObs(x)
-   MLDataPattern.RandomObs{SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false},Array{Float64,1},LearnBase.ObsDim.Last,Base.IsInfinite}
+   RandomObs(::Array{Float64,1}, ObsDim.Last())
     Iterator providing Inf observations
 
    julia> collect(iter) # can't collect infinite iterator
@@ -167,7 +167,7 @@ equal length and ordering.
    julia> y = [:a, :b, :c, :d, :e];
 
    julia> iter = RandomObs((x, y), count = 5)
-   MLDataPattern.RandomObs{Tuple{SubArray{Float64,0,Array{Float64,1},Tuple{Int64},false},SubArray{Symbol,0,Array{Symbol,1},Tuple{Int64},false}},Tuple{Array{Float64,1},Array{Symbol,1}},Tuple{LearnBase.ObsDim.Last,LearnBase.ObsDim.Last},Base.HasLength}
+   RandomObs(::Tuple{Array{Float64,1},Array{Symbol,1}}, 5, (ObsDim.Last(),ObsDim.Last()))
     Iterator providing 5 observations
 
    julia> collect(iter)
@@ -250,7 +250,7 @@ limit the number of mini-batches to generate), we can use
 .. code-block:: jlcon
 
    julia> iter = RandomBatches(x, size = 3, count = 10)
-   MLDataPattern.RandomBatches{SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false},Array{Float64,1},LearnBase.ObsDim.Last,Base.HasLength}
+   RandomBatches(::Array{Float64,1}, 3, 10, ObsDim.Last())
     Iterator providing 10 batches of size 3
 
    julia> collect(iter)
@@ -274,7 +274,7 @@ interrupted.
 .. code-block:: jlcon
 
    julia> iter = RandomBatches(x, size = 3)
-   MLDataPattern.RandomBatches{SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false},Array{Float64,1},LearnBase.ObsDim.Last,Base.IsInfinite}
+   RandomBatches(::Array{Float64,1}, 3, ObsDim.Last())
     Iterator providing Inf batches of size 3
 
    julia> collect(iter) # can't collect infinite iterator
@@ -302,7 +302,7 @@ data container. For example if we instead use a feature *matrix*
     0.504629  0.522172  0.0997825  0.722906   0.245457
 
    julia> iter = RandomBatches(X, size = 3, count = 10)
-   MLDataPattern.RandomBatches{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},Array{Float64,2},LearnBase.ObsDim.Last,Base.HasLength}
+   RandomBatches(::Array{Float64,2}, 3, 10, ObsDim.Last())
     Iterator providing 10 batches of size 3
 
    julia> collect(iter)
@@ -330,7 +330,7 @@ return a ``Tuple`` of equal length and ordering.
    julia> y = [:a, :b, :c, :d, :e];
 
    julia> iter = RandomBatches((x, y), size = 3, count = 5)
-   MLDataPattern.RandomBatches{Tuple{SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false},SubArray{Symbol,1,Array{Symbol,1},Tuple{Array{Int64,1}},false}},Tuple{Array{Float64,1},Array{Symbol,1}},Tuple{LearnBase.ObsDim.Last,LearnBase.ObsDim.Last},Base.HasLength}
+   RandomBatches(::Tuple{Array{Float64,1},Array{Symbol,1}}, 3, 5, (ObsDim.Last(),ObsDim.Last()))
     Iterator providing 5 batches of size 3
 
    julia> collect(iter)
@@ -418,7 +418,7 @@ any obvious differences.
 .. code-block:: jlcon
 
    julia> ov = obsview(X, obsdim = 1)
-   5-element MLDataPattern.ObsView{SubArray{Float64,1,Array{Float64,2},Tuple{Int64,Colon},true},Array{Float64,2},LearnBase.ObsDim.Constant{1}}:
+   5-element obsview(::Array{Float64,2}, ObsDim.Constant{1}()) with element type SubArray{Float64,1,Array{Float64,2},Tuple{Int64,Colon},true}:
     [0.226582,0.0997825,0.11202]
     [0.504629,0.0443222,0.000341996]
     [0.933372,0.722906,0.380001]

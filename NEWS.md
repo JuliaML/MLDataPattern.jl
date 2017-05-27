@@ -1,6 +1,8 @@
 # v0.1.1
 
-Small API additions:
+Small changes:
+
+- reworked how data views and data iterators are displayed
 
 - added `maxsize` keyword argument to `eachbatch` and `batchview`
 

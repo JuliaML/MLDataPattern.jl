@@ -4,6 +4,12 @@ _length(iter, ::Base.HasShape)  = length(iter)
 _length(iter, ::Base.IsInfinite) = Inf
 _length(iter, ::Base.SizeUnknown) = "NA"
 
+_length_str(iter) = _length_str(iter, Base.iteratorsize(iter))
+_length_str(iter, ::Base.HasLength) = "$(length(iter)), "
+_length_str(iter, ::Base.HasShape)  = "$(length(iter)), "
+_length_str(iter, ::Base.IsInfinite) = ""
+_length_str(iter, ::Base.SizeUnknown) = ""
+
 Base.iteratoreltype{T<:DataIterator}(::Type{T}) = Base.HasEltype()
 Base.eltype{E,T}(::Type{DataIterator{E,T}}) = E
 
@@ -161,6 +167,16 @@ Base.iteratorsize{E,T,O,I}(::Type{RandomObs{E,T,O,I}}) = I()
 Base.length{E,T,O}(iter::RandomObs{E,T,O,Base.HasLength}) = iter.count
 nobs(iter::RandomObs) = nobs(iter.data, iter.obsdim)
 
+function Base.summary(iter::RandomObs)
+    io = IOBuffer()
+    print(io, typeof(iter).name.name, "(")
+    showarg(io, iter.data)
+    print(io, ", ", _length_str(iter))
+    print(io, replace(string(iter.obsdim), "LearnBase.", ""))
+    print(io, ')')
+    first(readlines(seek(io,0)))
+end
+
 # --------------------------------------------------------------------
 
 """
@@ -294,6 +310,18 @@ Base.length{E,T,O}(iter::RandomBatches{E,T,O,Base.HasLength}) = iter.count
 nobs(iter::RandomBatches) = nobs(iter.data, iter.obsdim)
 batchsize(iter::RandomBatches) = iter.size
 
+function Base.summary(iter::RandomBatches)
+    io = IOBuffer()
+    print(io, typeof(iter).name.name, "(")
+    showarg(io, iter.data)
+    print(io, ", ")
+    print(io, iter.size, ", ")
+    print(io, _length_str(iter))
+    print(io, replace(string(iter.obsdim), "LearnBase.", ""))
+    print(io, ')')
+    first(readlines(seek(io,0)))
+end
+
 # --------------------------------------------------------------------
 
 """
@@ -351,6 +379,16 @@ Base.length(b::BufferGetObs) = length(b.iter)
 Base.size(b::BufferGetObs, I...) = size(b.iter, I...)
 nobs(b::BufferGetObs) = nobs(b.iter)
 batchsize(b::BufferGetObs) = batchsize(b.iter)
+
+function Base.summary(b::BufferGetObs)
+    io = IOBuffer()
+    print(io, typeof(b).name.name, "(")
+    showarg(io, b.iter)
+    print(io, ", ")
+    showarg(io, b.buffer)
+    print(io, ')')
+    first(readlines(seek(io,0)))
+end
 
 # --------------------------------------------------------------------
 

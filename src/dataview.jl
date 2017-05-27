@@ -148,6 +148,16 @@ default_obsdim(A::ObsView) = A.obsdim
 
 const obsview = ObsView
 
+function ShowItLikeYouBuildIt.showarg(io::IO, A::ObsView)
+    print(io, "obsview(")
+    showarg(io, parent(A))
+    print(io, ", ")
+    print(io, replace(string(A.obsdim), "LearnBase.", ""))
+    print(io, ')')
+end
+
+Base.summary(A::ObsView) = summary_build(A)
+
 # --------------------------------------------------------------------
 
 default_batch_size(source, obsdim) = clamp(div(nobs(source,obsdim), 5), 2, 100)
@@ -390,6 +400,18 @@ end
 default_obsdim(A::BatchView) = A.obsdim
 
 const batchview = BatchView
+
+function ShowItLikeYouBuildIt.showarg(io::IO, A::BatchView)
+    print(io, "batchview(")
+    showarg(io, parent(A))
+    print(io, ", ")
+    print(io, A.size, ", ")
+    print(io, A.count, ", ")
+    print(io, replace(string(A.obsdim), "LearnBase.", ""))
+    print(io, ')')
+end
+
+Base.summary(A::BatchView) = summary_build(A)
 
 # --------------------------------------------------------------------
 
