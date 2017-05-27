@@ -196,6 +196,18 @@ function Base.show(io::IO, subset::DataSubset)
     end
 end
 
+function Base.summary(subset::DataSubset)
+    io = IOBuffer()
+    print(io, typeof(subset).name.name, "(")
+    showarg(io, subset.data)
+    print(io, ", ")
+    showarg(io, subset.indices)
+    print(io, ", ")
+    print(io, replace(string(subset.obsdim), "LearnBase.", ""))
+    print(io, ')')
+    first(readlines(seek(io,0)))
+end
+
 # compare if both subsets cover the same observations of the same data
 # we don't care how the indices are stored, just that they match
 # in order and values

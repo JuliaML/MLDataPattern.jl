@@ -1178,8 +1178,7 @@ that will cause the under-represented "category" to be up-sampled
    julia> X_bal, y_bal = oversample(yi -> yi > 0.2, (X, y));
 
    julia> y_bal
-   8-element
-   SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false}:
+   8-element SubArray{Float64,1,Array{Float64,1},Tuple{Array{Int64,1}},false}:
     0.11
     1.1
     0.1

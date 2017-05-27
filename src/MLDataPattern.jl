@@ -4,6 +4,7 @@ module MLDataPattern
 using StatsBase
 using LearnBase
 using MLLabelUtils
+using ShowItLikeYouBuildIt
 using Compat
 
 using LearnBase: ObsDimension

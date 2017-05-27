@@ -32,6 +32,7 @@
             @test @inferred(ObsView(A)) == A
             @test @inferred(ObsView(var)) == A
         end
+        show(STDOUT, MIME"text/plain"(), ObsView(rand(2)))
         A = ObsView(X',obsdim=1)
         @test A == @inferred(ObsView(X',ObsDim.First()))
         @test A == ObsView(X',obsdim=:first)
@@ -201,6 +202,7 @@ end
         end
         @test BatchView((X,X)) == @inferred(BatchView((X,X), (ObsDim.Last(),ObsDim.Last())))
         @test BatchView((X,X)) == @inferred(BatchView((X,X), -1, (ObsDim.Last(),ObsDim.Last())))
+        show(STDOUT, MIME"text/plain"(), BatchView(rand(2)))
         A = BatchView(X',obsdim=1)
         @test A == @inferred(BatchView(X',ObsDim.First()))
         @test A == @inferred(BatchView(X',-1,ObsDim.First()))

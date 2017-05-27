@@ -480,7 +480,7 @@ Note that since :class:`FoldsView` is designed to act as a
 .. code-block:: jlcon
 
    julia> folds = FoldsView(X, train_idx, val_idx) # output reformated for readability
-   5-element MLDataPattern.FoldsView{Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}},Array{Float64,2},LearnBase.ObsDim.Last,Array{Array{Int64,1},1},Array{UnitRange{Int64},1}}:
+   5-element FoldsView(::Array{Float64,2}, ::Array{Array{Int64,1},1}, ::Array{UnitRange{Int64},1}, ObsDim.Last()) with element type Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}}:
     ([3.0 4.0 … 9.0 10.0; 13.0 14.0 … 19.0 20.0], [1.0  2.0; 11.0 12.0])
     ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [3.0  4.0; 13.0 14.0])
     ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [5.0  6.0; 15.0 16.0])
@@ -515,7 +515,7 @@ the observations.
 .. code-block:: jlcon
 
    julia> folds = FoldsView(X', train_idx, val_idx, obsdim=1) # note the transpose
-   5-element MLDataPattern.FoldsView{Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Array{Int64,1},Colon},false},SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},Colon},false}},Array{Float64,2},LearnBase.ObsDim.Constant{1},Array{Array{Int64,1},1},Array{UnitRange{Int64},1}}:
+   5-element FoldsView(::Array{Float64,2}, ::Array{Array{Int64,1},1}, ::Array{UnitRange{Int64},1}, ObsDim.Constant{1}()) with element type Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Array{Int64,1},Colon},false},SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},Colon},false}}:
     ([3.0 13.0; 4.0 14.0; … ; 9.0 19.0; 10.0 20.0], [1.0 11.0; 2.0 12.0])
     ([1.0 11.0; 2.0 12.0; … ; 9.0 19.0; 10.0 20.0], [3.0 13.0; 4.0 14.0])
     ([1.0 11.0; 2.0 12.0; … ; 9.0 19.0; 10.0 20.0], [5.0 15.0; 6.0 16.0])
@@ -678,7 +678,7 @@ lets us treat it as a sequence of distinct partitions/folds.
 .. code-block:: jlcon
 
    julia> folds = kfolds(X, k = 5) # output reformated for readability
-   5-element MLDataPattern.FoldsView{Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}},Array{Float64,2},LearnBase.ObsDim.Last,Array{Array{Int64,1},1},Array{UnitRange{Int64},1}}:
+   5-element FoldsView(::Array{Float64,2}, ::Array{Array{Int64,1},1}, ::Array{UnitRange{Int64},1}, ObsDim.Last()) with element type Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}}:
     ([3.0 4.0 … 9.0 10.0; 13.0 14.0 … 19.0 20.0], [1.0  2.0; 11.0 12.0])
     ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [3.0  4.0; 13.0 14.0])
     ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [5.0  6.0; 15.0 16.0])
@@ -742,7 +742,7 @@ the first dimension enumerates the observations.
    julia> folds = kfolds(X', 5, ObsDim.First()); # equivalent to below, but typesable
 
    julia> folds = kfolds(X', k = 5, obsdim = 1) # note the transpose
-   5-element MLDataPattern.FoldsView{Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Array{Int64,1},Colon},false},SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},Colon},false}},Array{Float64,2},LearnBase.ObsDim.Constant{1},Array{Array{Int64,1},1},Array{UnitRange{Int64},1}}:
+   5-element FoldsView(::Array{Float64,2}, ::Array{Array{Int64,1},1}, ::Array{UnitRange{Int64},1}, ObsDim.Constant{1}()) with element type Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Array{Int64,1},Colon},false},SubArray{Float64,2,Array{Float64,2},Tuple{UnitRange{Int64},Colon},false}}:
     ([3.0 13.0; 4.0 14.0; … ; 9.0 19.0; 10.0 20.0], [1.0 11.0; 2.0 12.0])
     ([1.0 11.0; 2.0 12.0; … ; 9.0 19.0; 10.0 20.0], [3.0 13.0; 4.0 14.0])
     ([1.0 11.0; 2.0 12.0; … ; 9.0 19.0; 10.0 20.0], [5.0 15.0; 6.0 16.0])
@@ -829,7 +829,7 @@ partitions/folds.
     11.0  12.0  13.0  14.0  15.0  16.0  17.0  18.0  19.0  20.0
 
    julia> folds = leaveout(X, size = 2) # output reformated for readability
-   5-element MLDataPattern.FoldsView{Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}},Array{Float64,2},LearnBase.ObsDim.Last,Array{Array{Int64,1},1},Array{UnitRange{Int64},1}}:
+   5-element FoldsView(::Array{Float64,2}, ::Array{Array{Int64,1},1}, ::Array{UnitRange{Int64},1}, ObsDim.Last()) with element type Tuple{SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false},SubArray{Float64,2,Array{Float64,2},Tuple{Colon,UnitRange{Int64}},true}}:
     ([3.0 4.0 … 9.0 10.0; 13.0 14.0 … 19.0 20.0], [1.0  2.0; 11.0 12.0])
     ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [3.0  4.0; 13.0 14.0])
     ([1.0 2.0 … 9.0 10.0; 11.0 12.0 … 19.0 20.0], [5.0  6.0; 15.0 16.0])
@@ -837,7 +837,7 @@ partitions/folds.
     ([1.0 2.0 … 7.0  8.0; 11.0 12.0 … 17.0 18.0], [9.0 10.0; 19.0 20.0])
 
 We can now query any individual fold using the typical indexing
-syntax. Additionally, the function :func:`leavout` supports all
+syntax. Additionally, the function :func:`leaveout` supports all
 the signatures of :func:`kfolds`. For more information and
 additional examples on what you can do with the result of
 :func:`leaveout`, take a look at :ref:`foldsview`.
