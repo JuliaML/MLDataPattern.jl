@@ -169,6 +169,9 @@ Helper function to compute sensible and compatible values for the
 function _compute_batch_settings(source, size::Int = -1, count::Int = -1, obsdim = default_obsdim(source), upto = false)
     num_observations = nobs(source, obsdim)::Int
     @assert num_observations > 0
+    if upto && size > num_observations
+        size = num_observations
+    end
     size  <= num_observations || throw(ArgumentError("Specified batch-size is too large for the given number of observations"))
     count <= num_observations || throw(ArgumentError("Specified batch-count is too large for the given number of observations"))
     if size > 0 && upto
