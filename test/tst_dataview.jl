@@ -151,6 +151,7 @@ end
     @test MLDataPattern._compute_batch_settings((X,y)) === (30,5)
     @test MLDataPattern._compute_batch_settings((X',y),-1,-1,ObsDim.First()) === (30,5)
     @test MLDataPattern._compute_batch_settings((Xv,yv)) === (30,5)
+    @test MLDataPattern._compute_batch_settings(X,160,-1,ObsDim.Last(),true) === (150,1)
 
     @test_throws ArgumentError MLDataPattern._compute_batch_settings(X, 160)
     @test_throws ArgumentError MLDataPattern._compute_batch_settings(X, 1, 160)
@@ -192,6 +193,10 @@ end
             @test_throws MethodError BatchView(var...)
             @test_throws MethodError BatchView(var..., obsdim=:last)
             @test_throws ArgumentError BatchView(var, 151)
+            A = BatchView(var, maxsize=151)
+            @test length(A) == 1
+            @test batchsize(A) == 150
+            @test nobs(A) == nobs(var)
             @test @inferred(parent(BatchView(var))) === var
             A = @inferred(BatchView(var))
             @test @inferred(BatchView(A)) == A
