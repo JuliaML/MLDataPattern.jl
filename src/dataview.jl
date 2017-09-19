@@ -199,7 +199,7 @@ function _compute_batch_settings(source, size::Int = -1, count::Int = -1, obsdim
     # check if the settings will result in all data points being used
     unused = num_observations - size*count
     if unused > 0
-        info("The specified values for size and/or count will result in $unused unused data points")
+        Base.warn_once("The specified values for size and/or count will result in $unused unused data points")
     end
     size::Int, count::Int
 end

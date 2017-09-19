@@ -1,4 +1,10 @@
-# v0.1.1
+# v0.1.3
+
+Small changes:
+
+- make `BatchView` only print the "unused datapoints" warning once.
+
+# v0.1.2
 
 Small changes:
 
