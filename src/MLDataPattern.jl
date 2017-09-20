@@ -54,6 +54,12 @@ export
     eachobs,
     eachbatch
 
+simplify_obsdim(::ObsDim.First) = :first
+simplify_obsdim(::ObsDim.Last) = :last
+simplify_obsdim(::ObsDim.Constant{D}) where {D} = D
+simplify_obsdim(::ObsDim.Undefined) = "NA"
+simplify_obsdim(obsdim::Tuple) = string("(", join(map(simplify_obsdim, obsdim), ", "), ")")
+
 include("container.jl")
 include("datasubset.jl")
 include("randobs.jl")

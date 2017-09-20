@@ -3,6 +3,7 @@ using StatsBase
 using LearnBase
 using MLLabelUtils
 using MLDataPattern
+using ReferenceTests
 
 # --------------------------------------------------------------------
 # create some test data

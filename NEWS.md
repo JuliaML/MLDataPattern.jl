@@ -2,6 +2,8 @@
 
 Small changes:
 
+- rework how `FoldsView` is displayed
+
 - make `BatchView` only print the "unused datapoints" warning once.
 
 # v0.1.2
