@@ -1,0 +1,1 @@
+MLDataPattern.RandomBatches{SubArray{Float64,2,Array{Float64,2},Tuple{Base.Slice{Base.OneTo{Int64}},Array{Int64,1}},false},Array{Float64,2},LearnBase.ObsDim.Last,Base.IsInfinite}[RandomBatches{SubArray{Float64,2,Array{Float64,2},Tuple{Base.Slice{Base.OneTo{Int64}},Array{Int64,1}},false},Array{Float64,2}} with Inf batches]

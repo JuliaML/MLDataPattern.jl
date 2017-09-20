@@ -1,0 +1,2 @@
+RandomObs(::Array{Float64,2}, 10, ObsDim.Last())
+ Iterator providing 10 observations
