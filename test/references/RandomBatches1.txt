@@ -1,0 +1,2 @@
+RandomBatches(::Array{Float64,2}, 30, ObsDim.Last())
+ Iterator providing Inf batches of size 30

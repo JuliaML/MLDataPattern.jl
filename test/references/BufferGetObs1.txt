@@ -1,0 +1,2 @@
+BufferGetObs(obsview(::Array{Float64,2}, ObsDim.Last()), ::Array{Float64,1})
+ Iterator providing 150 elements

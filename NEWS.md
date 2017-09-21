@@ -1,8 +1,14 @@
-# v0.1.3
+# v0.2.0
+
+- drop julia 0.5 support.
 
 Small changes:
 
+- rework how `FoldsView` is displayed.
+
 - make `BatchView` only print the "unused datapoints" warning once.
+
+- add test dependency on `ReferenceTests.jl`.
 
 # v0.1.2
 

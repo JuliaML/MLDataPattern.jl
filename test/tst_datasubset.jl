@@ -46,10 +46,10 @@
     @testset "Array, SubArray, SparseArray" begin
         @test nobs(DataSubset(X, obsdim = 1)) == 4
         @test nobs(DataSubset(X, 1:3, obsdim = 1)) == 3
+        @test_reference "references/DataSubset1.txt" DataSubset(X, Int64(1):Int64(nobs(X)))
+        @test_reference "references/DataSubset2.txt" @io2str showcompact(::IO, DataSubset(X))
         for var in (Xs, ys, vars...)
             subset = @inferred(DataSubset(var))
-            println(subset) # make sure it doesn't crash
-            println([subset,subset]) # make sure it doesn't crash
             @test subset.data === var
             @test subset.indices === 1:150
             @test typeof(subset) <: DataSubset

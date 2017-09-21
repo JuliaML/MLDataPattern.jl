@@ -166,19 +166,23 @@ end
 # compatibility with nested functions
 default_obsdim(iter::FoldsView) = iter.obsdim
 
-function ShowItLikeYouBuildIt.showarg(io::IO, A::FoldsView)
-    print(io, "FoldsView(")
-    showarg(io, parent(A))
-    print(io, ", ")
-    showarg(io, A.train_indices)
-    print(io, ", ")
-    showarg(io, A.val_indices)
-    print(io, ", ")
-    print(io, replace(string(A.obsdim), "LearnBase.", ""))
-    print(io, ')')
+function Base.summary(A::FoldsView)
+    string(length(A), "-fold ", typeof(A).name,
+           " of ", nobs(A), " observations")
 end
 
-Base.summary(A::FoldsView) = summary_build(A)
+_datastr(data) = summary(data)
+_datastr(data::Tuple) = string("(", join(map(_datastr, data), ", "), ")")
+function Base.show(io::IO, ::MIME"text/plain", A::FoldsView)
+    println(io, summary(A), ":")
+    println(io, "  data: ", _datastr(A.data))
+    # TODO: consider the case where fold sizes differ
+    ntrain = length(first(A.train_indices))
+    println(io, "  training: ", ntrain, " observations/fold")
+    nval = length(first(A.val_indices))
+    println(io, "  validation: ", nval, " observations/fold")
+    print(io, "  obsdim: ", obsdim_string(A.obsdim))
+end
 
 """
     kfolds(n::Integer, [k = 5]) -> Tuple

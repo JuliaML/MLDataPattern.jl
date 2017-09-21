@@ -48,7 +48,8 @@ println("<HEARTBEAT>")
     @test FoldsView <: AbstractVector
     @test FoldsView <: DataView
     @test FoldsView{Tuple} <: DataView{Tuple}
-    show(STDOUT, MIME"text/plain"(), kfolds(rand(2),k=2)); println()
+
+    @test_reference "references/FoldsView.txt" @io2str show(::IO, MIME"text/plain"(), kfolds(rand(10),k=5))
 
     @testset "Illegal arguments" begin
         # fold indices out of bounds for the given data
