@@ -34,6 +34,9 @@ export
     batchview,
     batchsize,
 
+    SlidingWindow,
+    slidingwindow,
+
     targets,
     eachtarget,
 
@@ -54,10 +57,10 @@ export
     eachobs,
     eachbatch
 
-obsdim_string(::ObsDim.First) = "first"
-obsdim_string(::ObsDim.Last) = "last"
+obsdim_string(::ObsDim.First) = ":first"
+obsdim_string(::ObsDim.Last) = ":last"
 obsdim_string(::ObsDim.Constant{D}) where {D} = string(D)
-obsdim_string(::ObsDim.Undefined) = "NA"
+obsdim_string(::ObsDim.Undefined) = "\"NA\""
 obsdim_string(obsdim::Tuple) = string("(", join(map(obsdim_string, obsdim), ", "), ")")
 
 include("container.jl")
@@ -66,6 +69,7 @@ include("randobs.jl")
 include("shuffleobs.jl")
 include("splitobs.jl")
 include("dataview.jl")
+include("slidingwindow.jl")
 include("targets.jl")
 include("stratifiedobs.jl")
 include("resample.jl")
