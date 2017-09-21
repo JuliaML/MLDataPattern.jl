@@ -181,7 +181,7 @@ function Base.show(io::IO, ::MIME"text/plain", A::FoldsView)
     println(io, "  training: ", ntrain, " observations/fold")
     nval = length(first(A.val_indices))
     println(io, "  validation: ", nval, " observations/fold")
-    print(io, "  obsdim: ", simplify_obsdim(A.obsdim))
+    print(io, "  obsdim: ", obsdim_string(A.obsdim))
 end
 
 """

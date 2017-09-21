@@ -54,11 +54,11 @@ export
     eachobs,
     eachbatch
 
-simplify_obsdim(::ObsDim.First) = :first
-simplify_obsdim(::ObsDim.Last) = :last
-simplify_obsdim(::ObsDim.Constant{D}) where {D} = D
-simplify_obsdim(::ObsDim.Undefined) = "NA"
-simplify_obsdim(obsdim::Tuple) = string("(", join(map(simplify_obsdim, obsdim), ", "), ")")
+obsdim_string(::ObsDim.First) = "first"
+obsdim_string(::ObsDim.Last) = "last"
+obsdim_string(::ObsDim.Constant{D}) where {D} = string(D)
+obsdim_string(::ObsDim.Undefined) = "NA"
+obsdim_string(obsdim::Tuple) = string("(", join(map(obsdim_string, obsdim), ", "), ")")
 
 include("container.jl")
 include("datasubset.jl")
