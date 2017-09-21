@@ -1,1 +1,1 @@
-MLDataPattern.DataSubset{Array{Float64,2},UnitRange{Int64},LearnBase.ObsDim.Last}[DataSubset{Array{Float64,2}} with 150 observations]
+DataSubset{Array{Float64,2}} with 150 observations
