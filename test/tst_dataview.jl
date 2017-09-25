@@ -8,7 +8,6 @@
 
     @testset "constructor" begin
         @test_throws DimensionMismatch ObsView((rand(2,10),rand(9)))
-        @test_throws DimensionMismatch ObsView((rand(2,10),rand(9)))
         @test_throws DimensionMismatch ObsView((rand(2,10),rand(4,9,10),rand(9)))
         @test_throws MethodError ObsView(EmptyType())
         @test_throws MethodError ObsView(EmptyType(), ObsDim.Last())

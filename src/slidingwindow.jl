@@ -13,6 +13,12 @@ function _windowsettings(A::SlidingWindow, windowindex::Int)
     offset, range
 end
 
+function _check_windowargs(data, size::Int, stride::Int, obsdim)
+    size > 0 || throw(ArgumentError("Specified window size must be strictly greater than 0. Actual: $size"))
+    size <= nobs(data,obsdim) || throw(ArgumentError("Specified window size is too large for the given number of observations"))
+    stride > 0 || throw(ArgumentError("Specified stride must be strictly greater than 0. Actual: $stride"))
+end
+
 # --------------------------------------------------------------------
 
 const WindowBatchView{TElem,O} = BatchView{TElem,<:SlidingWindow,O}
@@ -45,19 +51,27 @@ struct UnlabeledSlidingWindow{TElem,TData,O} <: SlidingWindow{TElem,TData,O}
 end
 
 function slidingwindow(data::T, size::Int, stride::Int, obsdim::O = default_obsdim(data)) where {T,O}
+    _check_windowargs(data, size, stride, obsdim)
     E = typeof(datasubset(data,1:size,obsdim))
     count = floor(Int, (nobs(data,obsdim) - size + stride) / stride)
     UnlabeledSlidingWindow{E,T,O}(data, size, stride, count, obsdim)
 end
 
+function slidingwindow(data, size::Int, obsdim::Union{Tuple,ObsDimension})
+    # default to using same stride as size
+    slidingwindow(data, size, size, obsdim)
+end
+
 function slidingwindow(data, size::Int; stride=size, obsdim=default_obsdim(data))
-    slidingwindow(data, size, stride, convert(LearnBase.ObsDimension, obsdim))
+    slidingwindow(data, size, stride, convert(ObsDimension, obsdim))
 end
 
 function Base.getindex(A::UnlabeledSlidingWindow, windowindex::Int)
     _, windowrange = _windowsettings(A, windowindex)
     datasubset(A.data, windowrange, A.obsdim)
 end
+
+getobs(A::UnlabeledSlidingWindow, indices::AbstractVector) = [getobs(A,i) for i in indices]
 
 # --------------------------------------------------------------------
 
@@ -87,10 +101,11 @@ struct LabeledSlidingWindow{TElem,TData,O,TFun,Exclude} <: SlidingWindow{TElem,T
 end
 
 function slidingwindow(f::F, data::T, size::Int, stride::Int, ::Type{Val{Exclude}}=Val{false}, obsdim::O = default_obsdim(data)) where {F,T,Exclude,O}
+    _check_windowargs(data, size, stride, obsdim)
     count = floor(Int, (nobs(data,obsdim) - size + stride) / stride)
     # limit back of sequence until it contains target
     o = 1 + (count-1) * stride
-    while maximum(f(o)) > nobs(data)
+    while maximum(f(o)) > nobs(data,obsdim)
         count -= 1
         o = 1 + (count-1) * stride
     end
@@ -107,8 +122,22 @@ function slidingwindow(f::F, data::T, size::Int, stride::Int, ::Type{Val{Exclude
     LabeledSlidingWindow{E,T,O,F,Exclude}(data, f, size, stride, count, offset, obsdim)
 end
 
-function slidingwindow(f, data, size::Int; stride=size, excludetarget=false, obsdim=default_obsdim(data))
-    slidingwindow(f, data, size, stride, Val{excludetarget}, convert(LearnBase.ObsDimension, obsdim))
+function slidingwindow(f, data, size::Int, stride::Int, obsdim::Union{ObsDimension,Tuple}, ::Type{Val{Exclude}}=Val{false}) where {Exclude}
+    slidingwindow(f, data, size, stride, Val{Exclude}, obsdim)
+end
+
+function slidingwindow(f::Function, data, size::Int, obsdim::Union{ObsDimension,Tuple}, ::Type{Val{Exclude}}=Val{false}) where {Exclude}
+    slidingwindow(f, data, size, size, Val{Exclude}, obsdim)
+end
+
+function slidingwindow(f::Function, data, size::Int, ::Type{Val{Exclude}}, obsdim = default_obsdim(data)) where {Exclude}
+    slidingwindow(f, data, size, size, Val{Exclude}, obsdim)
+end
+
+Base.@pure _toVal(::Type{Val{T}}) where {T} = Val{T}
+Base.@pure _toVal(T) = Val{T}
+function slidingwindow(f, data, size::Int; stride=size, excludetarget=Val{false}, obsdim=default_obsdim(data))
+    slidingwindow(f, data, size, stride, _toVal(excludetarget), convert(ObsDimension, obsdim))
 end
 
 function Base.getindex(A::LabeledSlidingWindow{TElem,TData,O,TFun,Exclude}, wi::Int) where {TElem,TData,O,TFun,Exclude}
@@ -122,6 +151,14 @@ function Base.getindex(A::LabeledSlidingWindow{TElem,TData,O,TFun,Exclude}, wi::
     X = datasubset(A.data, windowindices, A.obsdim)
     Y = datasubset(A.data, A.targetfun(offset), A.obsdim)
     X, Y
+end
+
+function getobs(A::LabeledSlidingWindow, indices::AbstractVector)
+    map(i->getobs(A,i), indices)
+end
+
+function getobs(A::LabeledSlidingWindow{<:NTuple{<:Any,Tuple}}, i::Int)
+    map(a->getobs.(a), A[i])
 end
 
 # --------------------------------------------------------------------

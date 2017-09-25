@@ -3,7 +3,7 @@ Base.size(A::DataView) = (length(A),)
 Base.endof(A::DataView) = length(A)
 getobs(A::DataView) = getobs.(A)
 getobs(A::DataView, i) = getobs(A[i])
-getobs{T<:Tuple}(A::DataView{T}) = map(x->getobs.(x), A)
+getobs{T<:Tuple}(A::DataView{T}) = map(i->getobs(A,i), 1:length(A))
 getobs{T<:Tuple}(A::DataView{T}, i::Integer) = getobs.(A[i])
 
 # for proper dispatch to trump the abstract arrays one
