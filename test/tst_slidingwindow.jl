@@ -115,6 +115,41 @@
             @test typeof(@inferred(collect(A))) <: Vector
         end
     end
+
+    println("<HEARTBEAT>")
+
+    @testset "special values" begin
+        A = @inferred slidingwindow(1:10, 2)
+        @test length(A) == 5
+        @test getobs(A) == [
+            [1, 2],
+            [3, 4],
+            [5, 6],
+            [7, 8],
+            [9, 10],
+        ]
+        A = @inferred slidingwindow(1:10, 3)
+        @test length(A) == 3
+        @test getobs(A) == [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+        ]
+        A = @inferred slidingwindow(1:10, 3, 2)
+        @test length(A) == 4
+        @test getobs(A) == [
+            [1, 2, 3],
+            [3, 4, 5],
+            [5, 6, 7],
+            [7, 8, 9],
+        ]
+        A = @inferred slidingwindow(1:10, 3, 4)
+        @test length(A) == 2
+        @test getobs(A) == [
+            [1, 2, 3],
+            [5, 6, 7],
+        ]
+    end
 end
 
 @testset "LabeledSlidingWindow" begin
@@ -171,17 +206,18 @@ end
         @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, 5, (ObsDim.Last(),ObsDim.Last())))
         @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, 5, Val{false}))
         if Int == Int64
-            @test_reference "references/labeledslidingwindow.txt" @io2str show(::IO, MIME"text/plain"(), slidingwindow(identity, 1:6, 3, 2))
+            @test_reference "references/labeledslidingwindow.txt" @io2str show(::IO, MIME"text/plain"(), slidingwindow(identity, 1:6, 3, 2, ObsDim.First()))
         end
-        A = slidingwindow(i->i,X',5,obsdim=1)
+        A = slidingwindow(i->i-1,X',5,obsdim=1)
         @test A.size == 5
         @test A.stride == 5
-        @test A.offset == 0
+        @test A.offset == 1
+        @test A.count == 29
         @test A.obsdim == LearnBase.ObsDim.First()
-        @test A == @inferred(slidingwindow(i->i,X',5,ObsDim.First()))
-        @test A == @inferred(slidingwindow(i->i,X',5,5,ObsDim.First()))
-        @test A == slidingwindow(i->i,X',5,obsdim=:first)
-        @test A == slidingwindow(i->i,X',5,stride=5,obsdim=:first)
+        @test A == @inferred(slidingwindow(i->i-1,X',5,ObsDim.First()))
+        @test A == @inferred(slidingwindow(i->i-1,X',5,5,ObsDim.First()))
+        @test A == slidingwindow(i->i-1,X',5,obsdim=:first)
+        @test A == slidingwindow(i->i-1,X',5,stride=5,obsdim=:first)
     end
 
     println("<HEARTBEAT>")
@@ -258,5 +294,65 @@ end
             @test typeof(@inferred(collect(A))) <: Vector
             # TODO: exclude target
         end
+    end
+
+    println("<HEARTBEAT>")
+
+    @testset "special values" begin
+        A = @inferred slidingwindow(i->i+2, 1:10, 2)
+        @test length(A) == 4
+        @test getobs(A) == [
+            ([1,2], 3),
+            ([3,4], 5),
+            ([5,6], 7),
+            ([7,8], 9),
+        ]
+        A = @inferred slidingwindow(i->i+2, 1:10, 2, 3)
+        @test length(A) == 3
+        @test getobs(A) == [
+            ([1,2], 3),
+            ([4,5], 6),
+            ([7,8], 9),
+        ]
+        A = @inferred slidingwindow(i->i+2:i+3, 1:10, 2)
+        @test length(A) == 4
+        @test getobs(A) == [
+            ([1,2], [3,4]),
+            ([3,4], [5,6]),
+            ([5,6], [7,8]),
+            ([7,8], [9,10]),
+        ]
+        A = @inferred slidingwindow(i->[i-2:i-1; i+1:i+2], 1:10, 1)
+        @test length(A) == 6
+        @test getobs(A) == [
+            ([3], [1, 2, 4, 5]),
+            ([4], [2, 3, 5, 6]),
+            ([5], [3, 4, 6, 7]),
+            ([6], [4, 5, 7, 8]),
+            ([7], [5, 6, 8, 9]),
+            ([8], [6, 7, 9, 10]),
+        ]
+        A = @inferred slidingwindow(i->i-1, 1:10, 2)
+        @test length(A) == 4
+        @test getobs(A) == [
+            ([3,4], 2),
+            ([5,6], 4),
+            ([7,8], 6),
+            ([9,10], 8),
+        ]
+        A = @inferred slidingwindow(i->i+1, 1:10, 3)
+        @test length(A) == 3
+        @test getobs(A) == [
+            ([1,2,3], 2),
+            ([4,5,6], 5),
+            ([7,8,9], 8),
+        ]
+        A = @inferred slidingwindow(i->i+1, 1:10, 3, Val{true})
+        @test length(A) == 3
+        @test getobs(A) == [
+            ([1,3], 2),
+            ([4,6], 5),
+            ([7,9], 8),
+        ]
     end
 end
