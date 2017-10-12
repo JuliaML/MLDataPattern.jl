@@ -32,7 +32,56 @@ end
 """
     slidingwindow(data, size, [stride], [obsdim]) -> UnlabeledSlidingWindow
 
-TODO
+Return a vector-like view of the `data` for which each element is
+a fixed size "window" of `size` adjacent observations. By default
+these windows are not overlapping. Note that only complete
+windows are included in the output, which implies that it is
+possible for excess observations to be omitted from the view.
+
+```julia-repl
+julia> A = slidingwindow(1:20, 6)
+3-element slidingwindow(::UnitRange{Int64}, 6) with element type SubArray{Int64,1,UnitRange{Int64},Tuple{UnitRange{Int64}},true}:
+ [1, 2, 3, 4, 5, 6]
+ [7, 8, 9, 10, 11, 12]
+ [13, 14, 15, 16, 17, 18]
+```
+
+Note that the values of `data` itself are not copied. Instead the
+function [`datasubset`](@ref) is called when `getindex` is
+invoked. To actually get a copy of the data at some window use
+the function [`getobs`](@ref).
+
+```julia-repl
+julia> A[1]
+6-element SubArray{Int64,1,UnitRange{Int64},Tuple{UnitRange{Int64}},true}:
+ 1
+ ⋮
+ 6
+
+julia> getobs(A, 1)
+6-element Array{Int64,1}:
+ 1
+ ⋮
+ 6
+```
+
+The optional parameter `stride` can be used to specify the
+distance between the start elements of each adjacent window.
+By default the stride is equal to the window size.
+
+```julia-repl
+julia> slidingwindow(1:20, 6, stride = 3)
+5-element slidingwindow(::UnitRange{Int64}, 6, stride = 3) with element type SubArray{Int64,1,UnitRange{Int64},Tuple{UnitRange{Int64}},true}:
+ [1, 2, 3, 4, 5, 6]
+ [4, 5, 6, 7, 8, 9]
+ [7, 8, 9, 10, 11, 12]
+ [10, 11, 12, 13, 14, 15]
+ [13, 14, 15, 16, 17, 18]
+```
+
+The optional (keyword) parameter `obsdim` allows one to specify
+which dimension denotes the observations. see `LearnBase.ObsDim`
+for more detail.
 """
 function slidingwindow(data::T, size::Int, stride::Int, obsdim::O = default_obsdim(data)) where {T,O}
     _check_windowargs(data, size, stride, obsdim)
@@ -72,7 +121,82 @@ end
 """
     slidingwindow(f, data, size, [stride], [excludetarget], [obsdim]) -> LabeledSlidingWindow
 
-TODO
+Return a vector-like view of the `data` for which each element is
+a tuple of two elements:
+
+1. A fixed size "window" of `size` adjacent observations. By
+   default these windows are not overlapping. This can be
+   changed by explicitly specifying a `stride`.
+
+2. A single target (or vector of targets) for the window. The
+   content of the target(s) is defined by the label-index
+   function `f`.
+
+The label-index function `f` is a unary function that takes the
+index of the first observation in the current window and should
+return the index (or indices) of the associated target(s) for
+that window.
+
+```julia-repl
+julia> A = slidingwindow(i->i+6, 1:20, 6)
+3-element slidingwindow(::##3#4, ::UnitRange{Int64}, 6) with element type Tuple{...}
+ ([1, 2, 3, 4, 5, 6], 7)
+ ([7, 8, 9, 10, 11, 12], 13)
+ ([13, 14, 15, 16, 17, 18], 19)
+```
+
+Note that only complete and in-bound windows are included in the
+output, which implies that it is possible for excess observations
+to be omitted from the resulting view.
+
+```julia-repl
+julia> A = slidingwindow(i->i-1, 1:20, 6)
+2-element slidingwindow(::##5#6, ::UnitRange{Int64}, 6) with element type Tuple{...}
+ ([7, 8, 9, 10, 11, 12], 6)
+ ([13, 14, 15, 16, 17, 18], 12)
+```
+
+As hinted above, it is also allowed for `f` to return a vector of
+indices. This can be useful for emulating techniques such as
+skip-gram.
+
+```julia-repl
+julia> data = split("The quick brown fox jumps over the lazy dog")
+9-element Array{SubString{String},1}:
+ "The"
+ "quick"
+ ⋮
+ "lazy"
+ "dog"
+
+julia> A = slidingwindow(i->[i-2:i-1; i+1:i+2], data, 1)
+5-element slidingwindow(::##11#12, ::Array{SubString{String},1}, 1) with element type Tuple{...}:
+ (["brown"], ["The", "quick", "fox", "jumps"])
+ (["fox"], ["quick", "brown", "jumps", "over"])
+ (["jumps"], ["brown", "fox", "over", "the"])
+ (["over"], ["fox", "jumps", "the", "lazy"])
+ (["the"], ["jumps", "over", "lazy", "dog"])
+```
+
+Should it so happen that the targets overlap with the features,
+then the affected observation(s) will be present in both. To
+change this behaviour one can set the optional parameter
+`excludetarget = true`. This will remove the target(s) from the
+feature window.
+
+```julia-repl
+julia> slidingwindow(i->i+2, data, 5, stride = 1, excludetarget = true)
+5-element slidingwindow(::##17#18, ::Array{SubString{String},1}, 5, stride = 1) with element type Tuple{...}:
+ (["The", "quick", "fox", "jumps"], "brown")
+ (["quick", "brown", "jumps", "over"], "fox")
+ (["brown", "fox", "over", "the"], "jumps")
+ (["fox", "jumps", "the", "lazy"], "over")
+ (["jumps", "over", "lazy", "dog"], "the")
+```
+
+The optional (keyword) parameter `obsdim` allows one to specify
+which dimension denotes the observations. see `LearnBase.ObsDim`
+for more detail.
 """
 function slidingwindow(f::F, data::T, size::Int, stride::Int, ::Type{Val{Exclude}}=Val{false}, obsdim::O = default_obsdim(data)) where {F,T,Exclude,O}
     _check_windowargs(data, size, stride, obsdim)
