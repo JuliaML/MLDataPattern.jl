@@ -148,9 +148,16 @@ views**, that will allow us to perform such iteration-pattern
 conveniently for data containers. In fact, they are more than
 "just" data iterators; they are proper vectors. As such, they
 also serve as a tool to "view" a data container from a specific
-aspect: As a sequence of observations, or a sequences of batches.
+aspect: As a vector of observations, or a vector of batches.
 Thus these views know how many observations they contain, and how
 to query specific parts of the data.
+
+Furthermore, we also provide a convenient way to partition a long
+sequence of data (e.g. some text or time-series) into a vector
+of smaller sequences. This is done using a sliding window
+approach that supports custom strides and even a self-labeling
+function. What that means, and how that works will be discussed
+in the next section.
 
 .. toctree::
    :maxdepth: 2

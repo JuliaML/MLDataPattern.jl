@@ -347,10 +347,10 @@ data container as a vector of equal-sized batches.
    :param Integer size: Optional. The exact number of observations
                         in each batch.
 
-   :param Integer maxsize: Optional alternative to `size`. The
-                           maximal number of observations in each
-                           batch, such that all observations get
-                           used.
+   :param Integer maxsize: \
+        Optional alternative to `size`. The maximal number of
+        observations in each batch, such that all observations
+        get used.
 
    :param Integer count: \
         Optional. The number of batches that should be used. This
@@ -484,3 +484,257 @@ per-observation basis.
 
    julia> bv[2]
    ([0.505208 0.0443222; 0.0997825 0.722906], [0.380001,0.505277])
+
+As Vector of Sequences
+-----------------------
+
+Time series data, or more generally *sequence data*, often
+requires a special type of preparation in order to work with it
+in a machine learning experiment. The big difference to "normal"
+data is that in sequence data the observations are not
+independent from each other. For example if you think of a piece
+of text as a sequence of words (i.e. each word is an
+observation), you'll notice that there is an inherent order in
+the data.
+
+.. code-block:: jlcon
+
+   julia> data = split("The quick brown fox jumps over the lazy dog")
+   9-element Array{SubString{String},1}:
+    "The"
+    "quick"
+    "brown"
+    "fox"
+    "jumps"
+    "over"
+    "the"
+    "lazy"
+    "dog"
+
+Unlabeled Windows
+~~~~~~~~~~~~~~~~~~~~~~~
+
+There are some common scenarios when working with sequence data
+such as the above. Before we think about more practical use cases
+that require labeled windows, let us quickly consider the case
+that we would like to process our sequence data in chunks of
+equally sized windows.
+
+.. function:: slidingwindow(data, size, [stride], [obsdim])
+
+   Return a vector-like view of the `data` for which each element
+   is a fixed size "window" of `size` adjacent observations. By
+   default these windows are not overlapping.
+
+   :param data: The object representing a data container.
+
+   :param Integer size: The number of observations in each window.
+
+   :param Integer stride: \
+        Optional. The step size between the starting observation
+        of susequent windows. Defaults to `size`.
+
+   :param obsdim: \
+        Optional. If it makes sense for the type of `data`, then
+        `obsdim` can be used to specify which dimension of `data`
+        denotes the observations. It can be specified in a
+        type-stable manner as a positional argument, or as a more
+        convenient keyword parameter. See :ref:`obsdim` for more
+        information.
+
+Its worth pointing out that only complete windows are included in
+the output. This implies that it is possible for excess
+observations to be omitted from the view. The following code
+snippet shows an example that partitions 22 observation into 4
+windows, where the last two observations are omitted.
+
+.. code-block:: jlcon
+
+   julia> A = slidingwindow(1:22, 4)
+   5-element slidingwindow(::UnitRange{Int64}, 4) with element type SubArray{Int64,1,UnitRange{Int64},Tuple{UnitRange{Int64}},true}:
+    [1, 2, 3, 4]
+    [5, 6, 7, 8]
+    [9, 10, 11, 12]
+    [13, 14, 15, 16]
+    [17, 18, 19, 20]
+
+Note that the values of the given data are not actually copied.
+Instead the function :func:`datasubset` is called when
+``getindex`` is invoked. To actually get a copy of the data at
+some window use the function :func:`getobs`.
+
+.. code-block:: jlcon
+
+   julia> A[2]
+   4-element SubArray{Int64,1,UnitRange{Int64},Tuple{UnitRange{Int64}},true}:
+    5
+    6
+    7
+    8
+
+   julia> getobs(A, 2)
+   4-element Array{Int64,1}:
+    5
+    6
+    7
+    8
+
+Up to this point the behaviour may be very reminiscent of a
+:func:`batchview`, but this is where the similarities end. The
+optional parameter ``stride`` can be used to specify the distance
+between the start elements of each adjacent window. By default
+the stride is equal to the window size.
+
+.. code-block:: jlcon
+
+   julia> A = slidingwindow(1:22, 4, stride=2)
+   10-element slidingwindow(::UnitRange{Int64}, 4, stride = 2) with element type SubArray{Int64,1}:
+    [1, 2, 3, 4]
+    [3, 4, 5, 6]
+    [5, 6, 7, 8]
+    [7, 8, 9, 10]
+    [9, 10, 11, 12]
+    [11, 12, 13, 14]
+    [13, 14, 15, 16]
+    [15, 16, 17, 18]
+    [17, 18, 19, 20]
+    [19, 20, 21, 22]
+
+   julia> A = slidingwindow(data, 4, stride=2)
+   3-element slidingwindow(::Array{SubString{String},1}, 4, stride = 2) with element type SubArray{...}:
+    ["The", "quick", "brown", "fox"]
+    ["brown", "fox", "jumps", "over"]
+    ["jumps", "over", "the", "lazy"]
+
+.. _sequences:
+
+Labeled Windows
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Now that we have seen the general idea of ``slidingwindow``, let
+us consider a more practical variation of it. A conceptually
+simple use case may be that we want to predict the next word in a
+sentence given all the words that came before it (e.g. for
+autocompletion).
+
+An interesting aspect of sequence prediction is that we can
+transform an unlabeled sequence into a number of labeled
+sub-sequences. Let's again use our original (unlabeled) data for
+this.
+
+.. code-block:: jlcon
+
+   julia> data = split("The quick brown fox jumps over the lazy dog")
+   9-element Array{SubString{String},1}:
+    "The"
+    "quick"
+    "brown"
+    "fox"
+    "jumps"
+    "over"
+    "the"
+    "lazy"
+    "dog"
+
+If we were to train a model that given two words should predict
+the next word, we would need to rearrange our ``data`` quite a
+bit. To make this process more convenient we provide a custom
+method for ``slidingwindow`` that expects an target-index
+function ``f`` as first parameter.
+
+.. function:: slidingwindow(f, data, size, [stride], [excludetarget], [obsdim])
+
+   Return a vector-like view of the `data` for which each element
+   is a tuple of two elements:
+
+   1. A fixed size "window" of `size` adjacent observations. By
+      default these windows are not overlapping. This can be
+      changed by explicitly specifying a `stride`.
+
+   2. A single target (or vector of targets) for the window. The
+      content of the target(s) is defined by the label-index
+      function `f`.
+
+   :param Function f: \
+        A unary function that takes the index of
+        the first observation in the current window and should
+        return the index (or indices) of the associated target(s)
+        for that window.
+
+   :param data: The object representing a data container.
+
+   :param Integer size: The number of observations in each window.
+
+   :param Integer stride: \
+        Optional. The step size between the starting observation
+        of susequent windows. Defaults to `size`.
+
+   :param Bool excludetarget: \
+        Should a target index returned by `f` also occur in the
+        window, then setting this to ``true`` will make sure that
+        such elements are removed from the window. Defaults to
+        ``false``.
+
+   :param obsdim: \
+        Optional. If it makes sense for the type of `data`, then
+        `obsdim` can be used to specify which dimension of `data`
+        denotes the observations. It can be specified in a
+        type-stable manner as a positional argument, or as a more
+        convenient keyword parameter. See :ref:`obsdim` for more
+        information.
+
+Note that only complete and in-bound windows are included in the
+output, which implies that it is possible for excess observations
+to be omitted from the resulting view.
+
+.. code-block:: jlcon
+
+   julia> A = slidingwindow(i->i+2, data, 2, stride=1)
+   7-element slidingwindow(::##9#10, ::Array{SubString{String},1}, 2, stride = 1) with element type Tuple{...}:
+    (["The", "quick"], "brown")
+    (["quick", "brown"], "fox")
+    (["brown", "fox"], "jumps")
+    (["fox", "jumps"], "over")
+    (["jumps", "over"], "the")
+    (["over", "the"], "lazy")
+    (["the", "lazy"], "dog")
+
+   julia> A = slidingwindow(i->i-1, data, 2, stride=1)
+   7-element slidingwindow(::##11#12, ::Array{SubString{String},1}, 2, stride = 1) with element type Tuple{...}:
+    (["quick", "brown"], "The")
+    (["brown", "fox"], "quick")
+    (["fox", "jumps"], "brown")
+    (["jumps", "over"], "fox")
+    (["over", "the"], "jumps")
+    (["the", "lazy"], "over")
+    (["lazy", "dog"], "the")
+
+As hinted above, it is also allowed for ``f`` to return a vector of
+indices. This can be useful for emulating techniques such as
+skip-gram.
+
+.. code-block:: jlcon
+
+   julia> A = slidingwindow(i->[i-2:i-1; i+1:i+2], data, 1)
+   5-element slidingwindow(::##11#12, ::Array{SubString{String},1}, 1) with element type Tuple{...}:
+    (["brown"], ["The", "quick", "fox", "jumps"])
+    (["fox"], ["quick", "brown", "jumps", "over"])
+    (["jumps"], ["brown", "fox", "over", "the"])
+    (["over"], ["fox", "jumps", "the", "lazy"])
+    (["the"], ["jumps", "over", "lazy", "dog"])
+
+Should it so happen that the targets overlap with the features,
+then the affected observation(s) will be present in both. To
+change this behaviour one can set the optional parameter
+``excludetarget = true``. This will remove the target(s) from the
+feature window.
+
+.. code-block:: jlcon
+
+   julia> slidingwindow(i->i+2, data, 5, stride = 1, excludetarget = true)
+   5-element slidingwindow(::##17#18, ::Array{SubString{String},1}, 5, stride = 1) with element type Tuple{...}:
+    (["The", "quick", "fox", "jumps"], "brown")
+    (["quick", "brown", "jumps", "over"], "fox")
+    (["brown", "fox", "over", "the"], "jumps")
+    (["fox", "jumps", "the", "lazy"], "over")
+    (["jumps", "over", "lazy", "dog"], "the")
