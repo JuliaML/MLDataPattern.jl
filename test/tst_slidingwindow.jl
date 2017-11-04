@@ -326,6 +326,55 @@ end
 
     println("<HEARTBEAT>")
 
+    @testset "batchview" begin
+        # number as target
+        sw = slidingwindow(i->i+5, 1:31, 5)
+        @test length(sw) == 6
+        bv = @inferred batchview(sw, 2)
+        @test_throws MethodError shuffleobs(bv)
+        @test_throws MethodError splitobs(bv)
+        @test_throws MethodError oversample(bv)
+        @test_throws MethodError undersample(bv)
+        @test_throws MethodError stratifiedobs(bv)
+        @test length(bv) == 3
+        @test nobs(bv) == 6
+        tx, ty = @inferred bv[1]
+        @test tx isa Array{<:SubArray}
+        @test ty isa Array{<:SubArray}
+        @test tx == [[1,6],[2,7],[3,8],[4,9],[5,10]]
+        @test ty == [[6,11]]
+        tx, ty = @inferred bv[2]
+        @test tx == [[11,16],[12,17],[13,18],[14,19],[15,20]]
+        @test ty == [[16,21]]
+        tx, ty = @inferred bv[3]
+        @test tx == [[21,26],[22,27],[23,28],[24,29],[25,30]]
+        @test ty == [[26,31]]
+        # also test with array as target
+        sw = slidingwindow(i->i.+(5:6), 1:32, 5)
+        @test length(sw) == 6
+        bv = @inferred batchview(sw, 2)
+        @test_throws MethodError shuffleobs(bv)
+        @test_throws MethodError splitobs(bv)
+        @test_throws MethodError oversample(bv)
+        @test_throws MethodError undersample(bv)
+        @test_throws MethodError stratifiedobs(bv)
+        @test length(bv) == 3
+        @test nobs(bv) == 6
+        tx, ty = @inferred bv[1]
+        @test tx isa Array{<:SubArray}
+        @test ty isa Array{<:SubArray}
+        @test tx == [[1,6],[2,7],[3,8],[4,9],[5,10]]
+        @test ty == [[6,11],[7,12]]
+        tx, ty = @inferred bv[2]
+        @test tx == [[11,16],[12,17],[13,18],[14,19],[15,20]]
+        @test ty == [[16,21],[17,22]]
+        tx, ty = @inferred bv[3]
+        @test tx == [[21,26],[22,27],[23,28],[24,29],[25,30]]
+        @test ty == [[26,31],[27,32]]
+    end
+
+    println("<HEARTBEAT>")
+
     @testset "special values" begin
         A = @inferred slidingwindow(i->i+2, 1:10, 2)
         @test length(A) == 4
