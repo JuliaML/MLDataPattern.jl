@@ -193,6 +193,9 @@ function stratifiedobs(f, data, p::Union{NTuple,AbstractFloat}, shuffle::Bool = 
     # The given data is always shuffled to qualify as performing
     # stratified sampling without replacement.
     data_shuf = shuffleobs(data, obsdim)
+    # FIXME: if i put the following line before `data_shuf` is
+    #        defined, it breaks type inference for `data_shuf`.
+    allowcontainer(stratifiedobs, data) || throw(MethodError(stratifiedobs, (f,data,shuffle,obsdim)))
     idx_tup = splitobs(labelmap(eachtarget(f, data_shuf, obsdim)), p)
     # Setting the parameter "shuffle = false" specifies that the
     # classes are ordered in the resulting subsets respectively.

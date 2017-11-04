@@ -177,6 +177,9 @@ end
     @test BatchView <: AbstractBatchIterator
     @test BatchView <: AbstractDataIterator
     @test batchview == BatchView
+    @test_throws MethodError oversample(BatchView(X))
+    @test_throws MethodError undersample(BatchView(X))
+    @test_throws MethodError stratifiedobs(BatchView(X))
 
     @testset "constructor" begin
         @test_throws DimensionMismatch BatchView((rand(2,10),rand(9)))

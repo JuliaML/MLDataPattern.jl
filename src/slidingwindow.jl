@@ -4,6 +4,8 @@ Base.parent(A::SlidingWindow) = A.data
 Base.length(A::SlidingWindow) = nobs(A)
 nobs(A::SlidingWindow) = A.count
 
+allowcontainer(fun, ::SlidingWindow) = true
+
 # compatibility with nested functions
 default_obsdim(A::SlidingWindow) = A.obsdim
 
@@ -301,6 +303,11 @@ end
 function Base.getindex(A::WindowBatchView, batchindices::AbstractVector)
     [A[bi] for bi in batchindices]
 end
+
+# shuffling/resampling like this is broken
+allowcontainer(fun, ::BatchView{<:Any,<:SlidingWindow}) = false
+allowcontainer(::typeof(shuffleobs), ::BatchView{<:Any,<:SlidingWindow}) = false
+allowcontainer(::typeof(splitobs), ::BatchView{<:Any,<:SlidingWindow}) = false
 
 # --------------------------------------------------------------------
 

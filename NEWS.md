@@ -15,6 +15,11 @@ Small changes:
 
 - add test dependency on `ReferenceTests.jl`.
 
+Fixes:
+
+- disallow certain functions on `DataView` that don't work the
+  way a user would expect.
+
 # v0.1.2
 
 Small changes:

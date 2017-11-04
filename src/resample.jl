@@ -91,6 +91,7 @@ oversample(f, data; shuffle=true, obsdim=default_obsdim(data)) =
     oversample(f, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
 
 function oversample(f, data, shuffle::Bool, obsdim=default_obsdim(data))
+    allowcontainer(oversample, data) || throw(MethodError(oversample, (f,data,shuffle,obsdim)))
     lm = labelmap(eachtarget(f, data, obsdim))
     maxcount = maximum(length, values(lm))
 
@@ -199,6 +200,7 @@ undersample(f, data; shuffle=false, obsdim=default_obsdim(data)) =
     undersample(f, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
 
 function undersample(f, data, shuffle::Bool, obsdim=default_obsdim(data))
+    allowcontainer(undersample, data) || throw(MethodError(undersample, (f,data,shuffle,obsdim)))
     lm = labelmap(eachtarget(f, data, obsdim))
     mincount = minimum(length, values(lm))
 

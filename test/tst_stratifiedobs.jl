@@ -79,3 +79,15 @@ end
     @test train == [:c, :a, :a, :a, :b, :b] || train == [:a, :a, :a, :c, :b, :b] || train == [:b, :b, :c, :a, :a, :a] || train == [:c, :b, :b, :a, :a, :a] || train == [:b, :b, :a, :a, :a, :c] || train == [:a, :a, :a, :b, :b, :c]
     @test test == [:c, :a, :a, :a, :b, :b] || test == [:a, :a, :a, :c, :b, :b] || test == [:b, :b, :c, :a, :a, :a] || test == [:c, :b, :b, :a, :a, :a] || test == [:b, :b, :a, :a, :a, :c] || test == [:a, :a, :a, :b, :b, :c]
 end
+
+@testset "ObsView" begin
+    ty = obsview([:a, :a, :a, :a, :a, :a, :b, :b, :b, :b])
+    train, test = getobs.(@inferred(stratifiedobs(ty, 0.5, false)))
+    @test train == [:a, :a, :a, :b, :b] || train == [:b, :b, :a, :a, :a]
+    @test test == [:a, :a, :a, :b, :b] || test == [:b, :b, :a, :a, :a]
+
+    train, test, val = getobs.(@inferred(stratifiedobs(ty, (0.5,0.3), false)))
+    @test train == [:a, :a, :a, :b, :b] || train == [:b, :b, :a, :a, :a]
+    @test test == [:a, :a, :b] || test == [:b, :a, :a]
+    @test val == [:a, :b] || val == [:b, :a]
+end

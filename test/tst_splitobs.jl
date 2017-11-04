@@ -133,3 +133,21 @@ println("<HEARTBEAT>")
     @test all(getobs(train[1])' .== train[2])
     @test all(getobs(test[1])' .== test[2])
 end
+
+@testset "ObsView" begin
+    A = ObsView(X)
+    b, c = @inferred splitobs(A, .7)
+    @test b isa ObsView
+    @test c isa ObsView
+    @test b == A[1:105]
+    @test c == A[106:end]
+end
+
+@testset "BatchView" begin
+    A = BatchView(X, 5)
+    b, c = @inferred splitobs(A, .6)
+    @test b isa BatchView
+    @test c isa BatchView
+    @test b == A[1:18]
+    @test c == A[19:end]
+end

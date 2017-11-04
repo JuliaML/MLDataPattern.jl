@@ -118,6 +118,34 @@
 
     println("<HEARTBEAT>")
 
+    @testset "batchview" begin
+        bv = batchview(slidingwindow(1:100, 5))
+        @test_throws MethodError shuffleobs(bv)
+        @test_throws MethodError splitobs(bv)
+        @test_throws MethodError oversample(bv)
+        @test_throws MethodError undersample(bv)
+        @test_throws MethodError stratifiedobs(bv)
+        for var in vars # (vars..., tuples..., Xs, ys)
+            A = slidingwindow(var, 5)
+            bv = @inferred batchview(A, 2)
+            go = @inferred getobs(bv)
+            @test go isa Array
+            @test go == bv
+            @test length(bv) == length(A) / 2
+            @test eltype(bv) <: Array{<:SubArray}
+            bs = @inferred bv[1]
+            @test length(bs) == 5
+            @test all(nobs.(bs) .== 2)
+        end
+        A = batchview(slidingwindow(1:20, 2), 5)
+        @test length(A) == 2
+        @test A[1] == [[1,3,5,7,9],[2,4,6,8,10]]
+        @test A[2] == [[11,13,15,17,19],[12,14,16,18,20]]
+        @test A[1] isa Array
+    end
+
+    println("<HEARTBEAT>")
+
     @testset "special values" begin
         A = @inferred slidingwindow(1:10, 2)
         @test length(A) == 5

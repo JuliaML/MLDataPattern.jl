@@ -84,3 +84,30 @@ end
     @test sum(y1) == 11325
     @test all(x1 .== y1)
 end
+
+@testset "ObsView" begin
+    # tests if all obs are still present and none duplicated
+    ov = @inferred shuffleobs(obsview(X1))
+    @test ov isa ObsView
+    x1 = getobs(ov)
+    @test sum(x1) == fill(11325,10)
+    # also tests that both paramter are shuffled identically
+    ov = @inferred shuffleobs(obsview((X1,X1)))
+    @test ov isa ObsView
+    x1 = getobs(ov)
+    for i = 1:length(x1)
+        @test x1[i][1] == x1[i][2]
+    end
+    for i = 1:2
+        @test sum(getindex.(x1,i)) == fill(11325,10)
+    end
+end
+
+@testset "BatchView" begin
+    # tests if all obs are still present and none duplicated
+    bv1 = batchview(X1, 30)
+    bv = @inferred shuffleobs(bv1)
+    @test length(bv) == length(bv1)
+    @test bv isa BatchView{<:SubArray,<:SubArray}
+    @test vec(sum(sum(bv),2)) == fill(11325,10)
+end

@@ -6,6 +6,9 @@ getobs(A::DataView, i) = getobs(A[i])
 getobs{T<:Tuple}(A::DataView{T}) = map(i->getobs(A,i), 1:length(A))
 getobs{T<:Tuple}(A::DataView{T}, i::Integer) = getobs.(A[i])
 
+allowcontainer(fun, ::AbstractObsView) = true
+allowcontainer(fun, ::DataView) = false
+
 # for proper dispatch to trump the abstract arrays one
 for T in (ObsDim.Constant, ObsDim.Last, Tuple)
     @eval function nobs(A::DataView, obsdim::$T)
@@ -381,6 +384,9 @@ function BatchView(data; size = -1, maxsize = -1, count = -1, obsdim = default_o
         BatchView(data, size, count, convert(LearnBase.ObsDimension,obsdim))
     end
 end
+
+allowcontainer(::typeof(shuffleobs), ::BatchView) = true
+allowcontainer(::typeof(splitobs), ::BatchView) = true
 
 """
     batchsize(data) -> Int

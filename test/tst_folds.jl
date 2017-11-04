@@ -1,3 +1,9 @@
+@test_throws MethodError shuffleobs(kfolds(X1))
+@test_throws MethodError splitobs(kfolds(X1))
+@test_throws MethodError oversample(kfolds(X1))
+@test_throws MethodError undersample(kfolds(X1))
+@test_throws MethodError stratifiedobs(kfolds(X1))
+
 @testset "kfolds with Int" begin
     @test typeof(kfolds) <: Function
     @test typeof(kfolds(10)) <: Tuple
