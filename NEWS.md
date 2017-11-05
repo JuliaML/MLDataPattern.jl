@@ -2,6 +2,11 @@
 
 - drop julia 0.5 support.
 
+New features:
+
+- added `slidingwindow` to help prepare sequence data for
+  training.
+
 Small changes:
 
 - rework how `FoldsView` is displayed.
@@ -9,6 +14,11 @@ Small changes:
 - make `BatchView` only print the "unused datapoints" warning once.
 
 - add test dependency on `ReferenceTests.jl`.
+
+Fixes:
+
+- disallow certain functions on `DataView` that don't work the
+  way a user would expect.
 
 # v0.1.2
 

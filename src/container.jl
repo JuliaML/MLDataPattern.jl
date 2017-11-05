@@ -28,6 +28,11 @@ _view(indices::Range, i::Range) = indices[i]
 _view(indices, i::Int) = indices[i] # to throw error in case
 _view(indices, i) = view(indices, i)
 
+# can be used to prevent specific data container to be used
+# in (specific) functions. For example passing a BatchView to
+# oversample or undersample should throw an error
+allowcontainer(fun, data) = true
+
 """
     nobs(data, [obsdim]) -> Int
 

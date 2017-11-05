@@ -115,13 +115,15 @@ splitobs(data; at = 0.7, obsdim = default_obsdim(data)) =
 
 # partition into 2 sets
 function splitobs(data, at::AbstractFloat, obsdim=default_obsdim(data))
+    allowcontainer(splitobs, data) || throw(MethodError(splitobs, (data,at,obsdim)))
     n = nobs(data, obsdim)
     idx1, idx2 = splitobs(n, at)
     datasubset(data, idx1, obsdim), datasubset(data, idx2, obsdim)
 end
 
 # partition into length(at)+1 sets
-function splitobs{N}(data, at::NTuple{N,AbstractFloat}, obsdim=default_obsdim(data))
+function splitobs(data, at::NTuple{N,AbstractFloat}, obsdim=default_obsdim(data)) where N
+    allowcontainer(splitobs, data) || throw(MethodError(splitobs, (data,at,obsdim)))
     n = nobs(data, obsdim)
     map(idx->datasubset(data, idx, obsdim), splitobs(n, at))
 end

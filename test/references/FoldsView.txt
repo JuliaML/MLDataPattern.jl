@@ -2,4 +2,4 @@
   data: 10-element Array{Float64,1}
   training: 8 observations/fold
   validation: 2 observations/fold
-  obsdim: last
+  obsdim: :last

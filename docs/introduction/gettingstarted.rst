@@ -400,8 +400,7 @@ into or iterated over.
 
 Similarly, the function :func:`batchview` creates a decorator
 that makes the given data container appear as a vector of equally
-sized mini-batches. For more information take a look at the
-section on :ref:`dataviews`.
+sized mini-batches.
 
 .. code-block:: jlcon
 
@@ -410,6 +409,43 @@ section on :ref:`dataviews`.
     [0.226582 0.933372; 0.504629 0.522172]
     [0.505208 0.0443222; 0.0997825 0.722906]
     [0.812814 0.11202; 0.245457 0.000341996]
+
+A third but conceptually different kind of view is provided by
+:func:`slidingwindow`. This function is particularly useful for
+preparing sequence data for various training tasks. For more
+information take a look at the section on :ref:`dataviews`.
+
+.. code-block:: jlcon
+
+   julia> data = split("The quick brown fox jumps over the lazy dog")
+   9-element Array{SubString{String},1}:
+    "The"
+    "quick"
+    "brown"
+    "fox"
+    "jumps"
+    "over"
+    "the"
+    "lazy"
+    "dog"
+
+   julia> A = slidingwindow(i->i+2, data, 2, stride=1)
+   7-element slidingwindow(::##9#10, ::Array{SubString{String},1}, 2, stride = 1) with element type Tuple{...}:
+    (["The", "quick"], "brown")
+    (["quick", "brown"], "fox")
+    (["brown", "fox"], "jumps")
+    (["fox", "jumps"], "over")
+    (["jumps", "over"], "the")
+    (["over", "the"], "lazy")
+    (["the", "lazy"], "dog")
+
+   julia> A = slidingwindow(i->[i-2:i-1; i+1:i+2], data, 1)
+   5-element slidingwindow(::##11#12, ::Array{SubString{String},1}, 1) with element type Tuple{...}:
+    (["brown"], ["The", "quick", "fox", "jumps"])
+    (["fox"], ["quick", "brown", "jumps", "over"])
+    (["jumps"], ["brown", "fox", "over", "the"])
+    (["over"], ["fox", "jumps", "the", "lazy"])
+    (["the"], ["jumps", "over", "lazy", "dog"])
 
 Aside from data containers, there is also another sub-category of
 data sources, called **data iterators**, that can not be indexed
@@ -514,6 +550,8 @@ package can be utilized to solve them.
 - :ref:`Repartition a data container using a k-folds scheme. <k_folds>`
 
 - :ref:`Iterate over my data one observation or batch at a time. <dataviews>`
+
+- :ref:`Prepare sequence data such as text for supervised learning. <sequences>`
 
 Getting Help
 -------------

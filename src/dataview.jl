@@ -3,8 +3,11 @@ Base.size(A::DataView) = (length(A),)
 Base.endof(A::DataView) = length(A)
 getobs(A::DataView) = getobs.(A)
 getobs(A::DataView, i) = getobs(A[i])
-getobs{T<:Tuple}(A::DataView{T}) = map(x->getobs.(x), A)
+getobs{T<:Tuple}(A::DataView{T}) = map(i->getobs(A,i), 1:length(A))
 getobs{T<:Tuple}(A::DataView{T}, i::Integer) = getobs.(A[i])
+
+allowcontainer(fun, ::AbstractObsView) = true
+allowcontainer(fun, ::DataView) = false
 
 # for proper dispatch to trump the abstract arrays one
 for T in (ObsDim.Constant, ObsDim.Last, Tuple)
@@ -382,6 +385,9 @@ function BatchView(data; size = -1, maxsize = -1, count = -1, obsdim = default_o
     end
 end
 
+allowcontainer(::typeof(shuffleobs), ::BatchView) = true
+allowcontainer(::typeof(splitobs), ::BatchView) = true
+
 """
     batchsize(data) -> Int
 
@@ -420,7 +426,7 @@ Base.summary(A::BatchView) = summary_build(A)
 
 # if subsetting a DataView, then DataView the subset instead.
 for fun in (:DataSubset, :datasubset), O in (ObsDimension, Tuple)
-    @eval @generated function ($fun){T<:DataView}(A::T, i, obsdim::$O)
+    @eval @generated function ($fun){T<:AbstractObsView}(A::T, i, obsdim::$O)
         quote
             @assert obsdim == A.obsdim
             ($(T.name.name))(($($fun))(parent(A), i, obsdim), obsdim)

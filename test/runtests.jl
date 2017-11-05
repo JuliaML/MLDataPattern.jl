@@ -59,6 +59,7 @@ tests = [
     "tst_shuffleobs.jl"
     "tst_splitobs.jl"
     "tst_dataview.jl"
+    "tst_slidingwindow.jl"
     "tst_targets.jl"
     "tst_stratifiedobs.jl"
     "tst_resample.jl"
