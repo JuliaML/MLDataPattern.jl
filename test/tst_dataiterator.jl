@@ -1,102 +1,131 @@
-@testset "RandomObs" begin
-    @test RandomObs <: LearnBase.DataIterator
-    @test RandomObs <: LearnBase.ObsIterator
-    @test RandomObs <: LearnBase.AbstractDataIterator
-    @test RandomObs <: LearnBase.AbstractObsIterator
+@testset "RandomObs (and overlaps with BalancedObs)" begin
+    for TIter in (RandomObs, BalancedObs)
+        @test TIter <: LearnBase.DataIterator
+        @test TIter <: LearnBase.ObsIterator
+        @test TIter <: LearnBase.AbstractDataIterator
+        @test TIter <: LearnBase.AbstractObsIterator
+    end
     @test_reference "references/RandomObs1.txt" RandomObs(X)
     @test_reference "references/RandomObs2.txt" RandomObs(X, 10)
+    @test_reference "references/BalancedObs1.txt" BalancedObs(X)
+    @test_reference "references/BalancedObs2.txt" BalancedObs(X, 10)
     if  Int == Int64
         @test_reference "references/RandomObs3.txt" [RandomObs(X)]
+        @test_reference "references/BalancedObs3.txt" [BalancedObs(X)]
     end
 
-    @testset "constructor" begin
-        for var in (vars..., tuples..., Xs, ys)
-            A = @inferred RandomObs(var)
-            @test_throws MethodError collect(A)
-            @test typeof(A) <: RandomObs
-            @test @inferred(nobs(A)) == 150
-            @test_throws MethodError length(A)
-            @test typeof(@inferred(first(A))) == typeof(datasubset(var, 1))
-            A = @inferred RandomObs(var, 100)
-            @test typeof(A) <: RandomObs
-            @test @inferred(nobs(A)) == 150
-            @test @inferred(length(A)) == 100
-            @test typeof(@inferred(first(A))) == typeof(datasubset(var, 1))
-            @test eltype(@inferred(collect(A))) == typeof(datasubset(var, 1))
-            B = RandomObs(var, count = 100)
-            @test typeof(B) == typeof(A)
+    for TIter in (RandomObs, BalancedObs)
+        @testset "constructor for $TIter" begin
+            for var in (vars..., tuples..., Xs, ys)
+                A = @inferred TIter(var)
+                @test_throws MethodError collect(A)
+                @test typeof(A) <: TIter
+                @test @inferred(nobs(A)) == 150
+                @test_throws MethodError length(A)
+                @test typeof(@inferred(first(A))) == typeof(datasubset(var, 1))
+                A = @inferred TIter(var, 100)
+                @test typeof(A) <: TIter
+                @test @inferred(nobs(A)) == 150
+                @test @inferred(length(A)) == 100
+                @test typeof(@inferred(first(A))) == typeof(datasubset(var, 1))
+                @test eltype(@inferred(collect(A))) == typeof(datasubset(var, 1))
+                B = TIter(var, count = 100)
+                @test typeof(B) == typeof(A)
+                @test A.count == B.count
+            end
+            for var in (X,XX,XXX)
+                A = @inferred TIter(var, 100)
+                @test size(getobs(first(A))) == size(getobs(datasubset(var, 1)))
+            end
+        end
+    end
+
+    for TIter in (RandomObs, BalancedObs)
+        @testset "DataSubset: $TIter" begin
+            for raw in (vars..., tuples..., Xs, ys)
+                var = DataSubset(raw, 1:90)
+                A = @inferred TIter(var)
+                @test_throws MethodError collect(A)
+                @test typeof(A) <: TIter
+                @test @inferred(nobs(A)) == 90
+                @test_throws MethodError length(A)
+                @test_throws MethodError getobs(A)
+                @test_throws MethodError getobs(A, 1)
+                @test typeof(@inferred(first(A))) == typeof(datasubset(var, 1))
+                A = @inferred TIter(var, 100)
+                @test typeof(A) <: TIter
+                @test @inferred(nobs(A)) == 90
+                @test @inferred(length(A)) == 100
+                @test_throws MethodError getobs(A, 1)
+                @test typeof(@inferred(first(A))) == typeof(datasubset(var, 1))
+                @test eltype(@inferred(collect(A))) == typeof(datasubset(var, 1))
+                @test typeof(@inferred(getobs(A))) == typeof(getobs.(collect(A)))
+            end
+        end
+    end
+
+    for TIter in (RandomObs, BalancedObs)
+        @testset "various obsdim: $TIter" begin
+            A = @inferred TIter(X', ObsDim.First())
+            B = TIter(X', obsdim = 1)
+            @test A.data == B.data
+            @test A.obsdim == B.obsdim
             @test A.count == B.count
-        end
-        for var in (X,XX,XXX)
-            A = @inferred RandomObs(var, 100)
-            @test size(getobs(first(A))) == size(getobs(datasubset(var, 1)))
+            A = @inferred TIter(X', 10, ObsDim.First())
+            B = TIter(X', 10, obsdim = 1)
+            C = TIter(X', count = 10, obsdim = 1)
+            @test A.data == B.data == C.data
+            @test A.obsdim == B.obsdim == C.obsdim
+            @test A.count == B.count == C.count
+            @test typeof(@inferred(first(A))) == typeof(datasubset(X', 1, ObsDim.First()))
+            @test eltype(@inferred(collect(A))) == typeof(datasubset(X', 1, ObsDim.First()))
+            @test size(getobs(first(A))) == size(getobs(datasubset(X', 1, ObsDim.First())))
+            A = @inferred TIter((X',X'), 10, ObsDim.First())
+            @test typeof(@inferred(first(A))) == typeof(datasubset((X',X'), 1, ObsDim.First()))
+            @test eltype(@inferred(collect(A))) == typeof(datasubset((X',X'), 1, ObsDim.First()))
+            A = @inferred TIter((X',X), 10, (ObsDim.First(),ObsDim.Last()))
+            @test typeof(@inferred(first(A))) == typeof(datasubset((X',X), 1, (ObsDim.First(),ObsDim.Last())))
+            @test eltype(@inferred(collect(A))) == typeof(datasubset((X',X), 1, (ObsDim.First(),ObsDim.Last())))
+            A = @inferred TIter(datasubset(X', ObsDim.First()))
         end
     end
 
-    @testset "DataSubset" begin
-        for raw in (vars..., tuples..., Xs, ys)
-            var = DataSubset(raw, 1:90)
-            A = @inferred RandomObs(var)
+    for TIter in (RandomObs, BalancedObs)
+        @testset "custom types: TIter" begin
+            @test_throws MethodError TIter(EmptyType())
+            @test_throws MethodError TIter(EmptyType(), 10)
+            @test_throws MethodError TIter(EmptyType(), obsdim=1)
+            @test_throws MethodError TIter(EmptyType(), 10, obsdim=1)
+            A = @inferred TIter(CustomType())
             @test_throws MethodError collect(A)
-            @test typeof(A) <: RandomObs
-            @test @inferred(nobs(A)) == 90
+            @test typeof(A) <: TIter
+            @test @inferred(nobs(A)) == 100
             @test_throws MethodError length(A)
-            @test_throws MethodError getobs(A)
-            @test_throws MethodError getobs(A, 1)
-            @test typeof(@inferred(first(A))) == typeof(datasubset(var, 1))
-            A = @inferred RandomObs(var, 100)
-            @test typeof(A) <: RandomObs
-            @test @inferred(nobs(A)) == 90
-            @test @inferred(length(A)) == 100
-            @test_throws MethodError getobs(A, 1)
-            @test typeof(@inferred(first(A))) == typeof(datasubset(var, 1))
-            @test eltype(@inferred(collect(A))) == typeof(datasubset(var, 1))
-            @test typeof(@inferred(getobs(A))) == typeof(getobs.(collect(A)))
+            @test typeof(@inferred(first(A))) == typeof(datasubset(CustomType(), 1))
+            A = @inferred TIter(CustomType(), 500)
+            @test typeof(A) <: TIter
+            @test @inferred(nobs(A)) == 100
+            @test @inferred(length(A)) == 500
+            @test typeof(@inferred(first(A))) == typeof(datasubset(CustomType(), 1))
+            @test eltype(@inferred(collect(A))) == typeof(datasubset(CustomType(), 1))
+            @test all(getobs.(collect(A)) .<= 100)
         end
     end
+end
 
-    @testset "various obsdim" begin
-        A = @inferred RandomObs(X', ObsDim.First())
-        B = RandomObs(X', obsdim = 1)
-        @test A.data == B.data
-        @test A.obsdim == B.obsdim
-        @test A.count == B.count
-        A = @inferred RandomObs(X', 10, ObsDim.First())
-        B = RandomObs(X', 10, obsdim = 1)
-        C = RandomObs(X', count = 10, obsdim = 1)
-        @test A.data == B.data == C.data
-        @test A.obsdim == B.obsdim == C.obsdim
-        @test A.count == B.count == C.count
-        @test typeof(@inferred(first(A))) == typeof(datasubset(X', 1, ObsDim.First()))
-        @test eltype(@inferred(collect(A))) == typeof(datasubset(X', 1, ObsDim.First()))
-        @test size(getobs(first(A))) == size(getobs(datasubset(X', 1, ObsDim.First())))
-        A = @inferred RandomObs((X',X'), 10, ObsDim.First())
-        @test typeof(@inferred(first(A))) == typeof(datasubset((X',X'), 1, ObsDim.First()))
-        @test eltype(@inferred(collect(A))) == typeof(datasubset((X',X'), 1, ObsDim.First()))
-        A = @inferred RandomObs((X',X), 10, (ObsDim.First(),ObsDim.Last()))
-        @test typeof(@inferred(first(A))) == typeof(datasubset((X',X), 1, (ObsDim.First(),ObsDim.Last())))
-        @test eltype(@inferred(collect(A))) == typeof(datasubset((X',X), 1, (ObsDim.First(),ObsDim.Last())))
-        A = @inferred RandomObs(datasubset(X', ObsDim.First()))
-    end
+@testset "BalancedObs" begin
+    @testset "check balancing" begin
+        A = @inferred BalancedObs((1:10,[:a,:b,:a,:a,:a,:a,:a,:a,:b,:a]), 100)
+        @test A.labelmap == Dict(:a => [1,3,4,5,6,7,8,10], :b => [2,9])
+        val = @inferred(map(getobs, A))
+        freq = labelfreq(getindex.(val, 2))
+        @test freq[:a] > 35
+        @test freq[:b] > 35
 
-    @testset "custom types" begin
-        @test_throws MethodError RandomObs(EmptyType())
-        @test_throws MethodError RandomObs(EmptyType(), 10)
-        @test_throws MethodError RandomObs(EmptyType(), obsdim=1)
-        @test_throws MethodError RandomObs(EmptyType(), 10, obsdim=1)
-        A = @inferred RandomObs(CustomType())
-        @test_throws MethodError collect(A)
-        @test typeof(A) <: RandomObs
-        @test @inferred(nobs(A)) == 100
-        @test_throws MethodError length(A)
-        @test typeof(@inferred(first(A))) == typeof(datasubset(CustomType(), 1))
-        A = @inferred RandomObs(CustomType(), 500)
-        @test typeof(A) <: RandomObs
-        @test @inferred(nobs(A)) == 100
-        @test @inferred(length(A)) == 500
-        @test typeof(@inferred(first(A))) == typeof(datasubset(CustomType(), 1))
-        @test eltype(@inferred(collect(A))) == typeof(datasubset(CustomType(), 1))
-        @test all(getobs.(collect(A)) .<= 100)
+        A = @inferred BalancedObs(i->i>1, 1:10, 100)
+        @test A.labelmap == Dict(false => [1], true => [2,3,4,5,6,7,8,9,10])
+        val = @inferred(map(getobs, A))
+        @test sum(val .> 1) > 35
     end
 end
 

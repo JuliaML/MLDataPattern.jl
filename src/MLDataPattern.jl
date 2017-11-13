@@ -52,6 +52,7 @@ export
     leaveout,
 
     RandomObs,
+    BalancedObs,
     RandomBatches,
     BufferGetObs,
     eachobs,

@@ -1,3 +1,11 @@
+# v0.3.0
+
+New features:
+
+- added `BalancedObs` iterator to allow for balanced sampling
+  from labeled data container that with skewed label
+  distributions.
+
 # v0.2.0
 
 - drop julia 0.5 support.

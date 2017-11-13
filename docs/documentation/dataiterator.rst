@@ -178,6 +178,27 @@ equal length and ordering.
     (5.0,:e)
     (2.0,:b)
 
+In case of skewed class distributions we offer an alternative
+iterator called :class:`BalancedObs`, which samples from each
+label uniformly.
+
+.. code-block:: jlcon
+
+   julia> y = [:a, :a, :a, :a, :a, :a, :a, :a, :b, :b];
+
+   julia> iter = BalancedObs((1:10, y), count = 6)
+   BalancedObs(::Tuple{UnitRange{Int64},Array{Symbol,1}}, 6, (ObsDim.Last(), ObsDim.Last()))
+    Iterator providing 6 observations
+
+   julia> collect(iter)
+   6-element Array{Tuple{SubArray{Int64,0,UnitRange{Int64},Tuple{Int64},false},SubArray{Symbol,0,Array{Symbol,1},Tuple{Int64},false}},1}:
+    (10, :b)
+    (4, :a)
+    (9, :b)
+    (7, :a)
+    (8, :a)
+    (9, :b)
+
 Randomly sample Mini-Batches
 ------------------------------
 
