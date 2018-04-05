@@ -28,13 +28,20 @@ lett = ["a","b","b","c","c","c","d","d","d","d","d"]
         @testset "Vector of $(eltype(vals)); shuffle=true" begin
             for res in (
                     @inferred(oversample(vals)),
+                    @inferred(oversample(vals, 1)),
+                    @inferred(oversample(vals, 1, ObsDim.First())),
+                    @inferred(oversample(vals, 1, true)),
+                    @inferred(oversample(vals, 1, true, ObsDim.First())),
                     @inferred(oversample(vals, true)),
                     @inferred(oversample(vals, true, ObsDim.First())),
                     @inferred(oversample(identity, vals)),
                     @inferred(oversample(identity, vals, true)),
+                    @inferred(oversample(identity, vals, 1)),
+                    @inferred(oversample(identity, vals, 1, true)),
                     @inferred(oversample(identity, vals, true, ObsDim.First())),
-                    oversample(vals, shuffle=true, obsdim=1),
-                    oversample(identity, vals, shuffle=true, obsdim=1)
+                    @inferred(oversample(identity, vals, 1, true, ObsDim.First())),
+                    oversample(vals, fraction=1, shuffle=true, obsdim=1),
+                    oversample(identity, vals, fraction=1, shuffle=true, obsdim=1)
                 )
                 @test typeof(res) <: SubArray{eltype(vals),1}
                 @test length(res) == 20
@@ -50,11 +57,16 @@ lett = ["a","b","b","c","c","c","d","d","d","d","d"]
         @testset "Vector of $(eltype(vals)); shuffle=false" begin
             for res in (
                     @inferred(oversample(vals, false)),
+                    @inferred(oversample(vals, 1, false)),
                     @inferred(oversample(vals, false, ObsDim.First())),
+                    @inferred(oversample(vals, 1, false, ObsDim.First())),
                     @inferred(oversample(identity, vals, false)),
+                    @inferred(oversample(identity, vals, 1, false)),
                     @inferred(oversample(identity, vals, false, ObsDim.First())),
+                    @inferred(oversample(identity, vals, 1, false, ObsDim.First())),
                     oversample(vals, shuffle=false, obsdim=1),
-                    oversample(identity, vals, shuffle=false, obsdim=1)
+                    oversample(vals, fraction=1, shuffle=false, obsdim=1),
+                    oversample(identity, vals, fraction=1, shuffle=false, obsdim=1)
                 )
                 @test typeof(res) <: SubArray{eltype(vals),1}
                 @test length(res) == 20
@@ -70,12 +82,26 @@ lett = ["a","b","b","c","c","c","d","d","d","d","d"]
     end
 
     @testset "Basic" begin
-        n_src = 200
-        src = rand([1, 2,2, 3,3,3, 4,4,4,4], n_src)
+        #n_src = 200
+        src = [1, 2,2,2, 3,3,3,3,3, 4,4,4,4,4,4,4,4]
         oversampled = oversample(src)
         @test all(counts(oversampled).==counts(oversampled)[1])
         @test all(x ∈ oversampled for x in unique(src))
-        @test length(oversampled) > n_src
+        @test length(oversampled) > length(src)
+        oversampled = oversample(src, 0.5)
+        @test countmap(oversampled, alg = :dict) == Dict(4=>8,2=>4,3=>5,1=>4)
+        for oversampled in (
+                @inferred(oversample(src, 0.2)),
+                @inferred(oversample(src, 0.2, true)),
+                @inferred(oversample(src, 0.2, false)),
+                oversample(src, fraction=0.2),
+                @inferred(oversample(identity, src, 0.2)),
+                @inferred(oversample(identity, src, 0.2, false)),
+                oversample(identity, src, fraction=0.2),
+            )
+            @test all(counts(oversampled) .>= 2)
+            @test any(counts(oversampled) .<= 3)
+        end
     end
 
     @testset "ObsView" begin

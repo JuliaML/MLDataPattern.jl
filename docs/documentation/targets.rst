@@ -1030,14 +1030,14 @@ the smaller classes instead. To that end, we provide the function
 apparent size of the given data container, it does use the same
 exact observations multiple times.
 
-.. function:: oversample([fun], data, [shuffle], [obsdim])
+.. function:: oversample([fun], data, [fraction], [shuffle], [obsdim])
 
-   Generates a class-balanced version of `data` by repeatedly
-   sampling existing observations in such a way that the
-   resulting number of observations will be the same number for
-   every class. This way, all classes will have as many
-   observations in the resulting data subset as the largest class
-   has in the given (i.e. original) `data` container.
+   Generate a re-balanced version of `data` by repeatedly
+   sampling existing observations in such a way that every class
+   will have at least `fraction` times the number observations of
+   the largest class. This way, all classes will have a minimum
+   number of observations in the resulting data set relative to
+   what largest class has in the given (i.e. original) `data`.
 
    :param fun: \
         Optional. A callable object (usually a function) that
@@ -1046,6 +1046,12 @@ exact observations multiple times.
         observation.
 
    :param data: The object representing a labeled data container.
+
+   :param Real fraction: \
+        Optional. Minimum number of observations (as a fraction
+        relative to the largest class) that every class should
+        have. Defaults to ``1``, which implies completely
+        balanced.
 
    :param bool shuffle: \
         Optional. Determines if the resulting data will be
@@ -1061,9 +1067,9 @@ exact observations multiple times.
         convenient keyword parameter. See :ref:`obsdim` for more
         information.
 
-   :return: An up-sampled, class-balanced version of `data` in the
-            form of a lazy data subset. No data is copied until
-            :func:`getobs` is called.
+   :return: An up-sampled version of `data` in the form of a lazy
+            data subset. No data is copied until :func:`getobs`
+            is called.
 
 Let us again consider the toy data set from before, which
 consists of a feature matrix ``X`` and a corresponding target

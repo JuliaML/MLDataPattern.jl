@@ -1,12 +1,17 @@
 """
-    oversample([f], data, [shuffle = true], [obsdim])
+    oversample([f], data, [fraction = 1], [shuffle = true], [obsdim])
 
-Generate a class-balanced version of `data` by repeatedly
-sampling existing observations in such a way that the resulting
-number of observations will be the same number for every class.
-This way, all classes will have as many observations in the
-resulting data set as the largest class has in the given
-(original) `data`.
+Generate a re-balanced version of `data` by repeatedly sampling
+existing observations in such a way that every class will have at
+least `fraction` times the number observations of the largest
+class. This way, all classes will have a minimum number of
+observations in the resulting data set relative to what largest
+class has in the given (original) `data`.
+
+As an example, by default (i.e. with `fraction = 1`) the
+resulting dataset will be near perfectly balanced. On the other
+hand, with `fraction = 0.5` every class in the resulting data
+with have at least 50% as many observations as the largest class.
 
 The convenience parameter `shuffle` determines if the
 resulting data will be shuffled after its creation; if it is not
@@ -81,31 +86,44 @@ see [`DataSubset`](@ref) for more information on data subsets.
 
 see also [`undersample`](@ref) and [`stratifiedobs`](@ref).
 """
-oversample(data; shuffle=true, obsdim=default_obsdim(data)) =
-    oversample(identity, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
+oversample(data; fraction=1, shuffle=true, obsdim=default_obsdim(data)) =
+    oversample(identity, data, fraction, shuffle, convert(LearnBase.ObsDimension,obsdim))
 
 oversample(data, shuffle::Bool, obsdim=default_obsdim(data)) =
     oversample(identity, data, shuffle, obsdim)
 
-oversample(f, data; shuffle=true, obsdim=default_obsdim(data)) =
-    oversample(f, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
+oversample(data, fraction::Real, obsdim=default_obsdim(data)) =
+    oversample(identity, data, fraction, true, obsdim)
 
-function oversample(f, data, shuffle::Bool, obsdim=default_obsdim(data))
+oversample(data, fraction::Real, shuffle::Bool, obsdim=default_obsdim(data)) =
+    oversample(identity, data, fraction, shuffle, obsdim)
+
+oversample(f, data; fraction=1, shuffle=true, obsdim=default_obsdim(data)) =
+    oversample(f, data, fraction, shuffle, convert(LearnBase.ObsDimension,obsdim))
+
+oversample(f, data, shuffle::Bool, obsdim=default_obsdim(data)) =
+    oversample(identity, data, 1, shuffle, obsdim)
+
+function oversample(f, data, fraction::Real, shuffle::Bool=true, obsdim=default_obsdim(data))
     allowcontainer(oversample, data) || throw(MethodError(oversample, (f,data,shuffle,obsdim)))
     lm = labelmap(eachtarget(f, data, obsdim))
+
     maxcount = maximum(length, values(lm))
+    fraccount = round(Int, fraction * maxcount)
 
     # firstly we will start by keeping everything
     inds = collect(1:nobs(data, obsdim))
     sizehint!(inds, nlabel(lm)*maxcount)
 
     for (lbl, inds_for_lbl) in lm
-        num_extra_needed = maxcount - length(inds_for_lbl)
+        num_extra_needed = fraccount - length(inds_for_lbl)
         while num_extra_needed > length(inds_for_lbl)
-            num_extra_needed-=length(inds_for_lbl)
+            num_extra_needed -= length(inds_for_lbl)
             append!(inds, inds_for_lbl)
         end
-        append!(inds, sample(inds_for_lbl, num_extra_needed; replace=false))
+        if num_extra_needed > 0
+            append!(inds, sample(inds_for_lbl, num_extra_needed; replace=false))
+        end
     end
 
     shuffle && shuffle!(inds)
