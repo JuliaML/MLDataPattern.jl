@@ -102,14 +102,14 @@ see also
 [`kfolds`](@ref), [`leaveout`](@ref), [`splitobs`](@ref),
 [`DataSubset`](@ref)
 """
-immutable FoldsView{T,D,O,A1<:AbstractArray,A2<:AbstractArray} <: DataView{T,D}
+struct FoldsView{T,D,O,A1<:AbstractArray,A2<:AbstractArray} <: DataView{T,D}
     data::D
     train_indices::A1
     val_indices::A2
     obsdim::O
 
-    function (::Type{FoldsView{T,D,O,A1,A2}}){T,D,O,A1<:AbstractArray,A2<:AbstractArray}(
-            data::D, train_indices::A1, val_indices::A2, obsdim::O)
+    function FoldsView{T,D,O,A1,A2}(
+            data::D, train_indices::A1, val_indices::A2, obsdim::O) where {T,D,O,A1<:AbstractArray,A2<:AbstractArray}
         n = nobs(data, obsdim)
         (eltype(train_indices) <: AbstractArray{Int}) || throw(ArgumentError("The parameter \"train_indices\" must be an array of integer arrays"))
         (eltype(val_indices)  <: AbstractArray{Int}) || throw(ArgumentError("The parameter \"val_indices\" must be an array of integer arrays"))
@@ -119,7 +119,7 @@ immutable FoldsView{T,D,O,A1<:AbstractArray,A2<:AbstractArray} <: DataView{T,D}
     end
 end
 
-function FoldsView{D,O,A1<:AbstractArray,A2<:AbstractArray}(data::D, train_indices::A1, val_indices::A2, obsdim::O)
+function FoldsView(data::D, train_indices::A1, val_indices::A2, obsdim::O) where {D,O,A1<:AbstractArray,A2<:AbstractArray}
     n = nobs(data, obsdim)
     # TODO: Move this back into the inner constructor after the
     #       "T = typeof(...)" line below is removed
@@ -134,7 +134,7 @@ end
 FoldsView(data, train_indices::AbstractArray, val_indices::AbstractArray; obsdim = default_obsdim(data)) =
     FoldsView(data, train_indices, val_indices, convert(LearnBase.ObsDimension,obsdim))
 
-function FoldsView{T<:DataView}(data::T, train_indices::AbstractArray, val_indices::AbstractArray, obsdim)
+function FoldsView(data::T, train_indices::AbstractArray, val_indices::AbstractArray, obsdim) where T<:DataView
     @assert obsdim == data.obsdim
     warn("Trying to nest a ", T.name, " into an FoldsView, which is not supported. Returning FoldsView(parent(_)) instead")
     FoldsView(parent(data), train_indices, val_indices, obsdim)
