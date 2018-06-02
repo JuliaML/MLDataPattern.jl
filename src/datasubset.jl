@@ -164,12 +164,12 @@ see also
 [`splitobs`](@ref), [`shuffleobs`](@ref),
 [`KFolds`](@ref), [`BatchView`](@ref), [`ObsView`](@ref),
 """
-immutable DataSubset{T, I<:Union{Int,AbstractVector}, O<:ObsDimension}
+struct DataSubset{T, I<:Union{Int,AbstractVector}, O<:ObsDimension}
     data::T
     indices::I
     obsdim::O
 
-    function (::Type{DataSubset{T,I,O}}){T,I,O}(data::T, indices::I, obsdim::O)
+    function DataSubset{T,I,O}(data::T, indices::I, obsdim::O) where {T,I,O}
         if T <: Tuple
             error("inner constructor should not be called using a Tuple")
         end
@@ -179,7 +179,7 @@ immutable DataSubset{T, I<:Union{Int,AbstractVector}, O<:ObsDimension}
     end
 end
 
-DataSubset{T,I,O}(data::T, indices::I, obsdim::O) =
+DataSubset(data::T, indices::I, obsdim::O) where {T,I,O} =
     DataSubset{T,I,O}(data, indices, obsdim)
 
 # don't nest subsets
@@ -357,7 +357,7 @@ datasubset(A::AbstractArray, idx, obsdim::ObsDim.Undefined) =
 datasubset(A::AbstractSparseArray, idx, obsdim::ObsDimension) =
     DataSubset(A, idx, obsdim)
 
-@generated function datasubset{T,N}(A::AbstractArray{T,N}, idx, obsdim::ObsDimension)
+@generated function datasubset(A::AbstractArray{T,N}, idx, obsdim::ObsDimension) where {T,N}
     @assert N > 0
     if N == 1 && idx <: Integer
         :(view(A, idx))

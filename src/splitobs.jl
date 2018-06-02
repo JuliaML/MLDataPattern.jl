@@ -25,7 +25,7 @@ end
 _ispos(x) = x > 0
 # partition into length(at)+1 sets
 # we use @generated because we compute "N+1"
-@generated function splitobs{N}(n::Int, at::NTuple{N,AbstractFloat})
+@generated function splitobs(n::Int, at::NTuple{N,AbstractFloat}) where N
     quote
         (all(map(_ispos, at)) && sum(at) < 1) || throw(ArgumentError("all elements in \"at\" must be positive and their sum must be smaller than 1"))
         nleft = n

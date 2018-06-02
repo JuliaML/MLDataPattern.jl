@@ -144,7 +144,7 @@ gettarget
 @inline _gettarget(f, data) = gettarget(f, getobs_targetfun(data))
 
 # no nobs check because this should be a single observation
-@inline _gettarget{N}(f, tup::NTuple{N,Any}) = gettarget(f, getobs_targetfun(tup[N]))
+@inline _gettarget(f, tup::NTuple{N,Any}) where {N} = gettarget(f, getobs_targetfun(tup[N]))
 
 # gettarget is intended to be defined by the user
 @inline gettarget(data) = data
@@ -155,7 +155,7 @@ gettarget
 getobs_targetfun(data) = getobs(data)
 getobs_targetfun(tup::Tuple) = map(getobs_targetfun, tup)
 getobs_targetfun(A::AbstractArray) = A
-getobs_targetfun{T}(A::AbstractArray{T,0}) = A[1]
+getobs_targetfun(A::AbstractArray{T,0}) where {T} = A[1]
 
 # --------------------------------------------------------------------
 # gettargets (plural)
@@ -322,12 +322,12 @@ targets(f, data; obsdim=default_obsdim(data)) =
 # should always be the one without an "_"
 # i.e. "targets" interprets tuple, while "_targets" does not
 # that means that "targets((X,(Y1,Y2)))" --> "(Y1,Y2)", and NOT "Y2"
-function targets{N}(f, tup::NTuple{N,Any}, obsdim::ObsDimension)
+function targets(f, tup::NTuple{N,Any}, obsdim::ObsDimension) where N
     _check_nobs(tup, obsdim)
     _targets(f, tup[N], obsdim)
 end
 
-function targets{N}(f, tup::NTuple{N,Any}, obsdim::Tuple)
+function targets(f, tup::NTuple{N,Any}, obsdim::Tuple) where N
     _check_nobs(tup, obsdim)
     _targets(f, tup[N], obsdim[N])
 end
@@ -371,12 +371,12 @@ eachtarget(f, data; obsdim=default_obsdim(data)) =
 eachtarget(f::typeof(identity), data, obsdim) =
     (_gettargets(data, i, obsdim) for i in 1:nobs(data,obsdim))
 
-function eachtarget{N}(f::typeof(identity), tup::NTuple{N,Any}, obsdim)
+function eachtarget(f::typeof(identity), tup::NTuple{N,Any}, obsdim) where N
     _check_nobs(tup, obsdim)
     (_gettargets(tup[N], i, obsdim) for i in 1:nobs(tup[N],obsdim))
 end
 
-function eachtarget{N}(f::typeof(identity), tup::NTuple{N,Any}, obsdim::Tuple)
+function eachtarget(f::typeof(identity), tup::NTuple{N,Any}, obsdim::Tuple) where N
     _check_nobs(tup, obsdim)
     (_gettargets(tup[N], i, obsdim[N]) for i in 1:nobs(tup[N],obsdim[N]))
 end

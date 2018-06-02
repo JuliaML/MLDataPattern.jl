@@ -95,7 +95,7 @@ nobs{T}(A::AbstractArray{T,0}, ::ObsDim.Last)::Int = 1
 getobs(A::Array, ::ObsDimension=default_obsdim(A)) = A
 getobs(A::AbstractSparseArray, ::ObsDimension=default_obsdim(A)) = A
 getobs(A::SubArray, ::ObsDimension=default_obsdim(A)) = copy(A)
-getobs{T}(A::SubArray{T,0}, ::ObsDimension=default_obsdim(A)) = A[1]
+getobs(A::SubArray{T,0}, ::ObsDimension=default_obsdim(A)) where {T} = A[1]
 getobs(A::AbstractArray, ::ObsDimension=default_obsdim(A)) = collect(A)
 
 """
@@ -120,14 +120,14 @@ getobs!(buffer, A::AbstractSparseArray) = getobs(A)
 getobs!(buffer, A::AbstractArray, idx, obsdim) = getobs!(buffer, datasubset(A, idx, obsdim))
 getobs!(buffer, A::AbstractArray) = copy!(buffer, A)
 
-getobs!{T}(buffer, A::SubArray{T,0}) = A[1]
+getobs!(buffer, A::SubArray{T,0}) where {T} = A[1]
 
 # catch the undefined setting for consistency.
 # should never happen by accident
 getobs(A::AbstractArray, idx, obsdim::ObsDim.Undefined) =
     throw(MethodError(getobs, (A, idx, obsdim)))
 
-@generated function getobs{T,N}(A::AbstractArray{T,N}, idx, obsdim::ObsDimension)
+@generated function getobs(A::AbstractArray{T,N}, idx, obsdim::ObsDimension) where {T,N}
     if N <= 1 && idx <: Integer
         :(A[idx])
     elseif N == 0

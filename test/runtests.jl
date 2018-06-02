@@ -26,24 +26,24 @@ ys = sprand(150,.5)
 X1 = hcat((1:150 for i = 1:10)...)'
 Y1 = collect(1:150)
 
-immutable EmptyType end
+struct EmptyType end
 
-immutable CustomType end
+struct CustomType end
 LearnBase.nobs(::CustomType) = 100
 LearnBase.getobs(::CustomType, i::Int) = i
 LearnBase.getobs(::CustomType, i::AbstractVector) = collect(i)
 LearnBase.gettargets(::CustomType, i::Int) = "obs $i"
 LearnBase.gettargets(::CustomType, i::AbstractVector) = "batch $i"
 
-immutable CustomStorage end
-immutable CustomObs{T}; data::T end
+struct CustomStorage end
+struct CustomObs{T}; data::T end
 LearnBase.nobs(::CustomStorage) = 2
 LearnBase.getobs(::CustomStorage, i) = CustomObs(i)
 LearnBase.gettarget(str::String, obs::CustomObs) = "$str - obs $(obs.data)"
 LearnBase.gettarget(obs::CustomObs) = "obs $(obs.data)"
 
-immutable ObsDimTriggeredException <: Exception end
-immutable MetaDataStorage end
+struct ObsDimTriggeredException <: Exception end
+struct MetaDataStorage end
 LearnBase.nobs(::MetaDataStorage) = 3
 LearnBase.getobs(::MetaDataStorage, i) = throw(ObsDimTriggeredException())
 LearnBase.gettargets(::MetaDataStorage) = "full"

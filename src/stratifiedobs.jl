@@ -1,7 +1,7 @@
-splitobs{T,I<:Integer}(lm::Dict{T,Vector{I}}; at = 0.7) =
+splitobs(lm::Dict{T,Vector{I}}; at = 0.7) where {T,I<:Integer} =
     splitobs(lm, at)
 
-function splitobs{T,I<:Integer}(lm::Dict{T,Vector{I}}, at::AbstractFloat)
+function splitobs(lm::Dict{T,Vector{I}}, at::AbstractFloat) where {T,I<:Integer}
     0 < at < 1 || throw(ArgumentError("the parameter \"at\" must be in interval (0, 1)"))
     n = mapreduce(length, +, values(lm))
     k = nlabel(lm)
@@ -23,7 +23,7 @@ function splitobs{T,I<:Integer}(lm::Dict{T,Vector{I}}, at::AbstractFloat)
     idx1, idx2
 end
 
-@generated function splitobs{T,I<:Integer,N}(lm::Dict{T,Vector{I}}, at::NTuple{N,AbstractFloat})
+@generated function splitobs(lm::Dict{T,Vector{I}}, at::NTuple{N,AbstractFloat}) where {T,I<:Integer,N}
     quote
         (all(map(_ispos, at)) && sum(at) < 1) || throw(ArgumentError("all elements in \"at\" must be positive and their sum must be smaller than 1"))
         n = mapreduce(length, +, values(lm))
@@ -185,7 +185,7 @@ function stratifiedobs(data, p::AbstractFloat, args...)
     stratifiedobs(identity, data, p, args...)
 end
 
-function stratifiedobs{N}(data, p::NTuple{N,AbstractFloat}, args...)
+function stratifiedobs(data, p::NTuple{N,AbstractFloat}, args...) where N
     stratifiedobs(identity, data, p, args...)
 end
 

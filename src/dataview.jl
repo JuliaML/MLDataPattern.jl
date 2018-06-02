@@ -1,10 +1,10 @@
-@compat Compat.IndexStyle{T<:DataView}(::Type{T}) = IndexLinear()
+Compat.IndexStyle(::Type{T}) where {T<:DataView} = IndexLinear()
 Base.size(A::DataView) = (length(A),)
 Base.endof(A::DataView) = length(A)
 getobs(A::DataView) = getobs.(A)
 getobs(A::DataView, i) = getobs(A[i])
-getobs{T<:Tuple}(A::DataView{T}) = map(i->getobs(A,i), 1:length(A))
-getobs{T<:Tuple}(A::DataView{T}, i::Integer) = getobs.(A[i])
+getobs(A::DataView{T}) where {T<:Tuple} = map(i->getobs(A,i), 1:length(A))
+getobs(A::DataView{T}, i::Integer) where {T<:Tuple} = getobs.(A[i])
 
 allowcontainer(fun, ::AbstractObsView) = true
 allowcontainer(fun, ::DataView) = false
@@ -115,17 +115,17 @@ see also
 [`eachobs`](@ref), [`BatchView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
-immutable ObsView{TElem,TData,O} <: AbstractObsView{TElem,TData}
+struct ObsView{TElem,TData,O} <: AbstractObsView{TElem,TData}
     data::TData
     obsdim::O
 end
 
-function ObsView{T,O}(data::T, obsdim::O)
+function ObsView(data::T, obsdim::O) where {T,O}
     E = typeof(datasubset(data, 1, obsdim))
     ObsView{E,T,O}(data,obsdim)
 end
 
-function ObsView{T<:DataView}(A::T, obsdim)
+function ObsView(A::T, obsdim) where T<:DataView
     @assert obsdim == A.obsdim
     warn("Trying to nest a ", T.name, " into an ObsView, which is not supported. Returning ObsView(parent(_)) instead")
     ObsView(parent(A), obsdim)
@@ -349,20 +349,20 @@ see also
 [`eachbatch`](@ref), [`ObsView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
-immutable BatchView{TElem,TData,O} <: AbstractBatchView{TElem,TData}
+struct BatchView{TElem,TData,O} <: AbstractBatchView{TElem,TData}
     data::TData
     size::Int
     count::Int
     obsdim::O
 end
 
-function BatchView{T,O}(data::T, size::Int, count::Int, obsdim::O = default_obsdim(data), upto::Bool = false)
+function BatchView(data::T, size::Int, count::Int, obsdim::O = default_obsdim(data), upto::Bool = false) where {T,O}
     nsize, ncount = _compute_batch_settings(data, size, count, obsdim, upto)
     E = typeof(datasubset(data, 1:nsize, obsdim))
     BatchView{E,T,O}(data, nsize, ncount, obsdim)
 end
 
-function BatchView{T,O<:Union{Tuple,ObsDimension}}(data::T, size::Int, obsdim::O = default_obsdim(data), upto::Bool = false)
+function BatchView(data::T, size::Int, obsdim::O = default_obsdim(data), upto::Bool = false) where {T,O<:Union{Tuple,ObsDimension}}
     BatchView(data, size, -1, obsdim, upto)
 end
 
@@ -426,7 +426,7 @@ Base.summary(A::BatchView) = summary_build(A)
 
 # if subsetting a DataView, then DataView the subset instead.
 for fun in (:DataSubset, :datasubset), O in (ObsDimension, Tuple)
-    @eval @generated function ($fun){T<:AbstractObsView}(A::T, i, obsdim::$O)
+    @eval @generated function ($fun)(A::T, i, obsdim::$O) where T<:AbstractObsView
         quote
             @assert obsdim == A.obsdim
             ($(T.name.name))(($($fun))(parent(A), i, obsdim), obsdim)
