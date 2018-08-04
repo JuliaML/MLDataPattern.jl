@@ -1,6 +1,5 @@
-julia 0.6
-StatsBase 0.13
-LearnBase 0.1.5 0.2.0
+julia 0.7-beta2
+StatsBase 0.24.0
+LearnBase 0.2.0 0.3.0
 MLLabelUtils 0.0.3
 ShowItLikeYouBuildIt
-Compat 0.19
