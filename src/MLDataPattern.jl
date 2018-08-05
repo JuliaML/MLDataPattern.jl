@@ -1,11 +1,10 @@
-__precompile__()
 module MLDataPattern
 
+using SparseArrays
 using StatsBase
 using LearnBase
 using MLLabelUtils
 using ShowItLikeYouBuildIt
-using Compat
 
 using LearnBase: ObsDimension
 import LearnBase: nobs, getobs, getobs!, gettarget, gettargets, targets, datasubset, default_obsdim

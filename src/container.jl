@@ -23,8 +23,8 @@ nobs(data, ::ObsDim.Undefined)::Int = nobs(data)
 getobs(data, idx, ::ObsDim.Undefined) = getobs(data, idx)
 
 # to accumulate indices as views instead of copies
-_view(indices::Range, i::Int) = indices[i]
-_view(indices::Range, i::Range) = indices[i]
+_view(indices::AbstractRange, i::Int) = indices[i]
+_view(indices::AbstractRange, i::AbstractRange) = indices[i]
 _view(indices, i::Int) = indices[i] # to throw error in case
 _view(indices, i) = view(indices, i)
 
@@ -88,9 +88,9 @@ end
 # --------------------------------------------------------------------
 # Arrays
 
-nobs{DIM}(A::AbstractArray, ::ObsDim.Constant{DIM})::Int = size(A, DIM)
-nobs{T,N}(A::AbstractArray{T,N}, ::ObsDim.Last)::Int = size(A, N)
-nobs{T}(A::AbstractArray{T,0}, ::ObsDim.Last)::Int = 1
+nobs(A::AbstractArray, ::ObsDim.Constant{DIM}) where {DIM} = size(A, DIM)::Int
+nobs(A::AbstractArray{T,N}, ::ObsDim.Last) where {T,N} = size(A, N)::Int
+nobs(A::AbstractArray{T,0}, ::ObsDim.Last) where {T} = 1
 
 getobs(A::Array, ::ObsDimension=default_obsdim(A)) = A
 getobs(A::AbstractSparseArray, ::ObsDimension=default_obsdim(A)) = A

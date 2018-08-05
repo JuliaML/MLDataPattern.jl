@@ -1,4 +1,4 @@
-Compat.IndexStyle(::Type{T}) where {T<:DataView} = IndexLinear()
+IndexStyle(::Type{T}) where {T<:DataView} = IndexLinear()
 Base.size(A::DataView) = (length(A),)
 Base.endof(A::DataView) = length(A)
 getobs(A::DataView) = getobs.(A)

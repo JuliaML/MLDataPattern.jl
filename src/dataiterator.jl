@@ -10,7 +10,7 @@ _length_str(iter, ::Base.HasShape)  = "$(length(iter)), "
 _length_str(iter, ::Base.IsInfinite) = ""
 _length_str(iter, ::Base.SizeUnknown) = ""
 
-Base.iteratoreltype(::Type{T}) where {T<:DataIterator} = Base.HasEltype()
+Base.IteratorEltype(::Type{T}) where {T<:DataIterator} = Base.HasEltype()
 Base.eltype(::Type{DataIterator{E,T}}) where {E,T} = E
 
 # There is no contract that says these methods will work
@@ -151,7 +151,7 @@ RandomObs(data::T, count::Int; obsdim = default_obsdim(data)) where {T} =
     RandomObs(data, count, convert(LearnBase.ObsDimension,obsdim))
 
 # convenience constructor.
-RandomObs(data, ::Void, obsdim) = RandomObs(data, obsdim)
+RandomObs(data, ::Nothing, obsdim) = RandomObs(data, obsdim)
 function RandomObs(data; count = nothing, obsdim = default_obsdim(data))
     RandomObs(data, count, convert(LearnBase.ObsDimension,obsdim))
 end
@@ -164,7 +164,7 @@ function Base.next(iter::RandomObs, idx)
 end
 
 Base.eltype(::Type{RandomObs{E,T,O,I}}) where {E,T,O,I} = E
-Base.iteratorsize(::Type{RandomObs{E,T,O,I}}) where {E,T,O,I} = I()
+Base.IteratorSize(::Type{RandomObs{E,T,O,I}}) where {E,T,O,I} = I()
 Base.length(iter::RandomObs{E,T,O,Base.HasLength}) where {E,T,O} = iter.count
 nobs(iter::RandomObs) = nobs(iter.data, iter.obsdim)
 
@@ -294,8 +294,8 @@ BalancedObs(f::Function, data, count::Int; obsdim = default_obsdim(data)) =
     BalancedObs(f, data, count, convert(LearnBase.ObsDimension,obsdim))
 
 # convenience constructor.
-BalancedObs(data, ::Void, obsdim) = BalancedObs(data, obsdim)
-BalancedObs(f::Function, data, ::Void, obsdim) = BalancedObs(f, data, obsdim)
+BalancedObs(data, ::Nothing, obsdim) = BalancedObs(data, obsdim)
+BalancedObs(f::Function, data, ::Nothing, obsdim) = BalancedObs(f, data, obsdim)
 function BalancedObs(data; count = nothing, obsdim = default_obsdim(data))
     BalancedObs(data, count, convert(LearnBase.ObsDimension,obsdim))
 end
@@ -314,7 +314,7 @@ function Base.next(iter::BalancedObs, idx)
 end
 
 Base.eltype(::Type{BalancedObs{E,T,L,O,I}}) where {E,T,L,O,I} = E
-Base.iteratorsize(::Type{BalancedObs{E,T,L,O,I}}) where {E,T,L,O,I} = I()
+Base.IteratorSize(::Type{BalancedObs{E,T,L,O,I}}) where {E,T,L,O,I} = I()
 Base.length(iter::BalancedObs{E,T,L,O,Base.HasLength}) where {E,T,L,O} = iter.count
 nobs(iter::BalancedObs) = nobs(iter.data, iter.obsdim)
 
@@ -436,7 +436,7 @@ RandomBatches(data::T, size::Int, count::Int; obsdim = default_obsdim(data)) whe
     RandomBatches(data, size, count, convert(LearnBase.ObsDimension,obsdim))
 
 # convenience constructor.
-RandomBatches(data::T, size::Int, ::Void, obsdim) where {T} =
+RandomBatches(data::T, size::Int, ::Nothing, obsdim) where {T} =
     RandomBatches(data, size, obsdim)
 
 function RandomBatches(data::T; size::Int = -1, count = nothing, obsdim = default_obsdim(data)) where T
@@ -456,7 +456,7 @@ function Base.next(iter::RandomBatches, idx)
 end
 
 Base.eltype(::Type{RandomBatches{E,T,O,I}}) where {E,T,O,I} = E
-Base.iteratorsize(::Type{RandomBatches{E,T,O,I}}) where {E,T,O,I} = I()
+Base.IteratorSize(::Type{RandomBatches{E,T,O,I}}) where {E,T,O,I} = I()
 Base.length(iter::RandomBatches{E,T,O,Base.HasLength}) where {E,T,O} = iter.count
 nobs(iter::RandomBatches) = nobs(iter.data, iter.obsdim)
 batchsize(iter::RandomBatches) = iter.size
@@ -525,7 +525,7 @@ function Base.next(b::BufferGetObs{T}, idx) where T<:Tuple
 end
 
 Base.eltype(::Type{BufferGetObs{E,T}}) where {E,T} = E
-Base.iteratorsize(::Type{BufferGetObs{E,T}}) where {E,T} = Base.iteratorsize(T)
+Base.IteratorSize(::Type{BufferGetObs{E,T}}) where {E,T} = Base.IteratorSize(T)
 Base.length(b::BufferGetObs) = length(b.iter)
 Base.size(b::BufferGetObs, I...) = size(b.iter, I...)
 nobs(b::BufferGetObs) = nobs(b.iter)
