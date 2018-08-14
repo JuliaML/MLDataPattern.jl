@@ -23,7 +23,7 @@
         end
         for var in tuples
             A = @inferred(ObsView(var))
-            @test A.obsdim == (fill(ObsDim.Last(),length(var))...)
+            @test A.obsdim == (fill(ObsDim.Last(),length(var))...,)
         end
         for var in (vars..., tuples..., Xs, ys)
             A = ObsView(var)
@@ -51,8 +51,8 @@
         end
         for tup in tuples
             @test typeof(@inferred(ObsView(tup))) <: ObsView
-            @test typeof(@inferred(ObsView(tup,(fill(ObsDim.Last(),length(tup))...)))) <: ObsView
-            @test typeof(@inferred(ObsView(tup,(fill(ObsDim.Last(),length(tup))...)))) <: ObsView
+            @test typeof(@inferred(ObsView(tup,(fill(ObsDim.Last(),length(tup))...,)))) <: ObsView
+            @test typeof(@inferred(ObsView(tup,(fill(ObsDim.Last(),length(tup))...,)))) <: ObsView
             @test_throws Exception @inferred(ObsView(tup, obsdim=:last))
         end
         @test typeof(@inferred(ObsView(CustomType()))) <: ObsView

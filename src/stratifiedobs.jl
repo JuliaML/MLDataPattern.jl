@@ -121,7 +121,7 @@ julia> X = [1 0; 1 0; 1 0; 1 0; 0 1; 0 1]
  0  1
  0  1
 
-julia> train, test = stratifiedobs(indmax, X, p = 0.5, obsdim = 1)
+julia> train, test = stratifiedobs(argmax, X, p = 0.5, obsdim = 1)
 ([1 0; 1 0; 0 1], [0 1; 1 0; 1 0])
 ```
 

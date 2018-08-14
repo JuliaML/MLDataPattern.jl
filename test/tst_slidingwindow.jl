@@ -67,8 +67,8 @@
             @test_throws ErrorException @inferred(slidingwindow(var, 5, obsdim=:last))
         end
         for tup in tuples
-            @test typeof(@inferred(slidingwindow(tup,5,(fill(ObsDim.Last(),length(tup))...)))) <: MLDataPattern.UnlabeledSlidingWindow
-            @test typeof(@inferred(slidingwindow(tup,5,3,(fill(ObsDim.Last(),length(tup))...)))) <: MLDataPattern.UnlabeledSlidingWindow
+            @test typeof(@inferred(slidingwindow(tup,5,(fill(ObsDim.Last(),length(tup))...,)))) <: MLDataPattern.UnlabeledSlidingWindow
+            @test typeof(@inferred(slidingwindow(tup,5,3,(fill(ObsDim.Last(),length(tup))...,)))) <: MLDataPattern.UnlabeledSlidingWindow
         end
         @test typeof(@inferred(slidingwindow(CustomType(),5))) <: MLDataPattern.UnlabeledSlidingWindow
         @test typeof(@inferred(slidingwindow(CustomType(), 5, ObsDim.Undefined()))) <: MLDataPattern.UnlabeledSlidingWindow
@@ -261,8 +261,8 @@ end
             @test_throws ErrorException @inferred(slidingwindow(identity, var, 5, obsdim=:last))
         end
         for tup in tuples
-            @test typeof(@inferred(slidingwindow(identity,tup,5,(fill(ObsDim.Last(),length(tup))...)))) <: MLDataPattern.LabeledSlidingWindow
-            @test typeof(@inferred(slidingwindow(identity,tup,5,3,(fill(ObsDim.Last(),length(tup))...)))) <: MLDataPattern.LabeledSlidingWindow
+            @test typeof(@inferred(slidingwindow(identity,tup,5,(fill(ObsDim.Last(),length(tup))...,)))) <: MLDataPattern.LabeledSlidingWindow
+            @test typeof(@inferred(slidingwindow(identity,tup,5,3,(fill(ObsDim.Last(),length(tup))...,)))) <: MLDataPattern.LabeledSlidingWindow
         end
         @test typeof(@inferred(slidingwindow(identity,CustomType(),5))) <: MLDataPattern.LabeledSlidingWindow
         @test typeof(@inferred(slidingwindow(identity,CustomType(), 5, ObsDim.Undefined()))) <: MLDataPattern.LabeledSlidingWindow

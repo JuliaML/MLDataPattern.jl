@@ -72,7 +72,7 @@
                 @test @inferred(getobs(subset)) == getobs(var, idx)
                 @test @inferred(DataSubset(subset)) === subset
                 @test @inferred(subset[1]) == DataSubset(var, idx[1])
-                if typeof(idx) <: Range
+                if typeof(idx) <: AbstractRange
                     @test typeof(@inferred(subset[1:1])) == typeof(DataSubset(var, idx[1:1]))
                     @test nobs(subset[1:1]) == nobs(DataSubset(var, idx[1:1]))
                 else

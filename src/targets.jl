@@ -282,7 +282,7 @@ each observation in `data` and the results will be returned as a
 vector.
 
 ```julia
-julia> targets(indmax, [1 0 1; 0 1 0])
+julia> targets(argmax, [1 0 1; 0 1 0])
 3-element Array{Int64,1}:
  1
  2
@@ -294,7 +294,7 @@ dimension denotes the observations, if that concept makes sense
 for the type of `data`. See `?ObsDim` for more information.
 
 ```julia
-julia> targets(indmax, [1 0; 0 1; 1 0], obsdim=1)
+julia> targets(argmax, [1 0; 0 1; 1 0], obsdim=1)
 3-element Array{Int64,1}:
  1
  2
