@@ -1,14 +1,14 @@
 @test_throws DimensionMismatch stratifiedobs((X, rand(149)))
 @test_throws DimensionMismatch stratifiedobs((X, rand(149)), obsdim=:last)
 
-srand(1335)
+Random.seed!(1335)
 
 ty = [:a, :a, :a, :a, :a, :a, :b, :b, :b, :b]
 @test sort.(splitobs(labelmap(ty), at = 0.5)) == ([1,2,3,7,8],[4,5,6,9,10])
 
 @testset "Type Stability" begin
     for var in vars
-        srand(1335)
+        Random.seed!(1335)
         @test_throws ArgumentError stratifiedobs(var, 0.)
         @test_throws ArgumentError stratifiedobs(var, 1.)
         @test_throws ArgumentError stratifiedobs(var, (0.2,0.0))
@@ -24,7 +24,7 @@ ty = [:a, :a, :a, :a, :a, :a, :b, :b, :b, :b]
         @test eltype(@inferred(stratifiedobs(var, 0.5, true, ObsDim.First()))) <: SubArray
     end
     for tup in tuples
-        srand(1335)
+        Random.seed!(1335)
         @test_throws ArgumentError stratifiedobs(tup, 0.)
         @test_throws ArgumentError stratifiedobs(tup, 1.)
         @test_throws ArgumentError stratifiedobs(tup, (0.2,0.0))
@@ -41,7 +41,7 @@ end
 
 println("<HEARTBEAT>")
 
-srand(1335)
+Random.seed!(1335)
 @testset "SparseArray" begin
     @test nobs.(stratifiedobs(round, ys)) == (105,45)
     @test nobs.(stratifiedobs(round, ys, p=0.7)) == (105,45)

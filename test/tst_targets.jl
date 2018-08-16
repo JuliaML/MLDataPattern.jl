@@ -28,13 +28,13 @@ end
         @test @inferred(MLDataPattern._gettarget(identity, y)) === y
         @test @inferred(MLDataPattern._gettarget(identity, X)) === X
         @test @inferred(MLDataPattern._gettarget(x->x[1]>x[2], [2,1]))
-        @test @inferred(MLDataPattern._gettarget(indmax, [2,3,1])) === 2
+        @test @inferred(MLDataPattern._gettarget(argmax, [2,3,1])) === 2
     end
 
     @testset "SubArray" begin
         tmp = [2,3,1]
         tmpv = view(tmp, :)
-        @test @inferred(MLDataPattern._gettarget(indmax, tmpv)) === 2
+        @test @inferred(MLDataPattern._gettarget(argmax, tmpv)) === 2
         @test @inferred(MLDataPattern._gettarget(identity, yv)) === yv
     end
 
@@ -116,13 +116,13 @@ println("<HEARTBEAT>")
         @test @inferred(MLDataPattern.gettarget(X)) === X
         @test @inferred(MLDataPattern.gettarget(identity, X)) === X
         @test @inferred(MLDataPattern.gettarget(x->x[1]>x[2], [2,1]))
-        @test @inferred(MLDataPattern.gettarget(indmax, [2,3,1])) === 2
+        @test @inferred(MLDataPattern.gettarget(argmax, [2,3,1])) === 2
     end
 
     @testset "SubArray" begin
         tmp = [2,3,1]
         tmpv = view(tmp, :)
-        @test @inferred(MLDataPattern.gettarget(indmax, tmpv)) === 2
+        @test @inferred(MLDataPattern.gettarget(argmax, tmpv)) === 2
         @test @inferred(MLDataPattern.gettarget(yv)) === yv
         @test @inferred(MLDataPattern.gettarget(identity, yv)) === yv
     end
