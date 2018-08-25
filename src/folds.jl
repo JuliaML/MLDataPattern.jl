@@ -136,7 +136,7 @@ FoldsView(data, train_indices::AbstractArray, val_indices::AbstractArray; obsdim
 
 function FoldsView(data::T, train_indices::AbstractArray, val_indices::AbstractArray, obsdim) where T<:DataView
     @assert obsdim == data.obsdim
-    warn("Trying to nest a ", T.name, " into an FoldsView, which is not supported. Returning FoldsView(parent(_)) instead")
+    @warn string("Trying to nest a ", T.name, " into an FoldsView, which is not supported. Returning FoldsView(parent(_)) instead")
     FoldsView(parent(data), train_indices, val_indices, obsdim)
 end
 

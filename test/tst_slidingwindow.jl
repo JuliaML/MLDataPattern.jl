@@ -230,9 +230,9 @@ end
             @test @inferred(parent(A)) === var
         end
         @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, (ObsDim.Last(),ObsDim.Last())))
-        @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, Val{false}))
+        @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, Val(false)))
         @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, 5, (ObsDim.Last(),ObsDim.Last())))
-        @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, 5, Val{false}))
+        @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, 5, Val(false)))
         if Int == Int64
             @test_reference "references/labeledslidingwindow.txt" @io2str show(::IO, MIME"text/plain"(), slidingwindow(identity, 1:6, 3, 2, ObsDim.First()))
         end
@@ -424,7 +424,7 @@ end
             ([4,5,6], 5),
             ([7,8,9], 8),
         ]
-        A = @inferred slidingwindow(i->i+1, 1:10, 3, Val{true})
+        A = @inferred slidingwindow(i->i+1, 1:10, 3, Val(true))
         @test length(A) == 3
         @test getobs(A) == [
             ([1,3], 2),

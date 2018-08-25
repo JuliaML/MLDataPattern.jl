@@ -1,15 +1,14 @@
 module MLDataPattern
-
-using SparseArrays
 using StatsBase
 using LearnBase
 using MLLabelUtils
-using ShowItLikeYouBuildIt
 
 using LearnBase: ObsDimension
 import LearnBase: nobs, getobs, getobs!, gettarget, gettargets, targets, datasubset, default_obsdim
 
 using Base.Cartesian
+using Random
+using SparseArrays
 
 export
 

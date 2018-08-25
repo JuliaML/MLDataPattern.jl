@@ -111,7 +111,7 @@ end
         @test @inferred(getobs(X, 3:10)) == getobs(X', 3:10, obsdim = 1)'
         for i in (2, 2:20, [2,1,4])
             @test_throws ErrorException @inferred(getobs(XX, i, obsdim = 1))
-            @test_throws ErrorException @inferred(getobs(XX, i, obsdim = :last))
+            @test @inferred(getobs(XX, i, obsdim = :last) == getindex(XX,:,:,i))
             @test @inferred(getobs(XX, i, ObsDim.First())) == getindex(XX,i,:,:)
             @test @inferred(getobs(XX, i, ObsDim.Constant(2))) == getindex(XX,:,i,:)
             @test @inferred(getobs(XX, i, ObsDim.Last())) == getindex(XX,:,:,i)
@@ -158,7 +158,7 @@ end
             @test_throws DimensionMismatch getobs(Xs, i, obsdim = 12)
             @test @inferred(getobs(Xs,i)) == Xs[:,i]
             @test @inferred(getobs(ys,i)) == ys[i]
-            @test_throws ErrorException @inferred(getobs(ys, i, obsdim = :last))
+            @test @inferred(getobs(ys, i, obsdim = :last)) == ys[i]
             @test getobs(ys, i, obsdim = :last) == ys[i]
             @test getobs(ys, i, obsdim = :first) == ys[i]
         end
@@ -169,7 +169,7 @@ end
         # bounds checking correctly
         @test_throws BoundsError getobs((X,y), 151)
         # special case empty tuple
-        @test_throws ErrorException @inferred(getobs((), 10, obsdim = 1))
+        @test @inferred(getobs((), 10, obsdim = 1)) === ()
         @test getobs((), obsdim=2) === ()
         @test @inferred(getobs(())) === ()
         @test @inferred(getobs((), ObsDim.Last())) === ()
@@ -224,7 +224,7 @@ end
             @test all(x1 .== z1)
         end
         @test @inferred(getobs((X,y), 2)) == (X[:,2], y[2])
-        @test_throws ErrorException @inferred(getobs((X,y), 2, obsdim=:last))
+        @test @inferred(getobs((X,y), 2, obsdim=:last)) == (X[:,2], y[2])
         @test_throws ErrorException @inferred(getobs((X,y), 2, obsdim=(:last,:first)))
         @test getobs((X,y), 2, obsdim=:last) == (X[:,2], y[2])
         @test getobs((X,y), 2, obsdim=(:last,:first)) == (X[:,2], y[2])

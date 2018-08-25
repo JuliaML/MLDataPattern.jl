@@ -1,3 +1,3 @@
-2-element slidingwindow(::UnitRange{Int64}, 3, stride = 2) with element type SubArray{Int64,1,UnitRange{Int64},Tuple{UnitRange{Int64}},true}:
+2-element slidingwindow(::UnitRange{Int64}, 3, stride = 2) with eltype SubArray:
  [1, 2, 3]
  [3, 4, 5]

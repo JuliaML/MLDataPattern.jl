@@ -194,10 +194,10 @@ println("<HEARTBEAT>")
             @test typeof(train) <: SubArray
             @test typeof(test) <: SubArray
 
-            @test length(setdiff(train.indexes[ndims(train)], test.indexes[ndims(test)])) == 135
-            @test length(setdiff(test.indexes[ndims(test)], train.indexes[ndims(train)])) == 15
-            append!(all_train_indices, train.indexes[ndims(train)])
-            append!(all_test_indices, test.indexes[ndims(test)])
+            @test length(setdiff(train.indices[ndims(train)], test.indices[ndims(test)])) == 135
+            @test length(setdiff(test.indices[ndims(test)], train.indices[ndims(train)])) == 15
+            append!(all_train_indices, train.indices[ndims(train)])
+            append!(all_test_indices, test.indices[ndims(test)])
         end
         @test length(unique(all_train_indices)) == 150
         @test length(unique(all_test_indices)) == 150

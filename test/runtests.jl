@@ -4,9 +4,13 @@ using LearnBase
 using MLLabelUtils
 using MLDataPattern
 using ReferenceTests
+using Random
+using SparseArrays
 
 # --------------------------------------------------------------------
 # create some test data
+
+showcompact(io, x) = show(IOContext(io, :compact => true), x)
 
 Random.seed!(1335)
 X = rand(4, 150)
