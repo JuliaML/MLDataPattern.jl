@@ -1,3 +1,13 @@
+# v0.5.0
+
+Update to 0.7 and 1.0
+
+# v0.4.0
+
+New features:
+
+- add `fraction` parameter to `oversample`
+
 # v0.3.0
 
 New features:
