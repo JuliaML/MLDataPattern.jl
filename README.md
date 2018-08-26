@@ -7,7 +7,7 @@ support of custom user-defined data structures.*
 
 | **Package Status** | **Package Evaluator** | **Build Status**  |
 |:------------------:|:---------------------:|:-----------------:|
-| [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE.md) [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg?style=flat)](http://mldatapatternjl.readthedocs.io/en/latest/?badge=latest) | [![MLDataPattern](http://pkg.julialang.org/badges/MLDataPattern_0.5.svg)](http://pkg.julialang.org/?pkg=MLDataPattern) [![MLDataPattern](http://pkg.julialang.org/badges/MLDataPattern_0.6.svg)](http://pkg.julialang.org/?pkg=MLDataPattern) | [![Build Status](https://travis-ci.org/JuliaML/MLDataPattern.jl.svg?branch=master)](https://travis-ci.org/JuliaML/MLDataPattern.jl) [![Build status](https://ci.appveyor.com/api/projects/status/c24s6qvmyybcpgt7?svg=true)](https://ci.appveyor.com/project/Evizero/mldatapattern-jl) [![Coverage Status](https://coveralls.io/repos/github/JuliaML/MLDataPattern.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaML/MLDataPattern.jl?branch=master) |
+| [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE.md) [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg?style=flat)](http://mldatapatternjl.readthedocs.io/en/latest/?badge=latest) | [![MLDataPattern](http://pkg.julialang.org/badges/MLDataPattern_0.6.svg)](http://pkg.julialang.org/?pkg=MLDataPattern) [![MLDataPattern](http://pkg.julialang.org/badges/MLDataPattern_0.7.svg)](http://pkg.julialang.org/?pkg=MLDataPattern) | [![Build Status](https://travis-ci.org/JuliaML/MLDataPattern.jl.svg?branch=master)](https://travis-ci.org/JuliaML/MLDataPattern.jl) [![Build status](https://ci.appveyor.com/api/projects/status/c24s6qvmyybcpgt7?svg=true)](https://ci.appveyor.com/project/Evizero/mldatapattern-jl) [![Coverage Status](https://coveralls.io/repos/github/JuliaML/MLDataPattern.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaML/MLDataPattern.jl?branch=master) |
 
 ## Introduction
 
@@ -111,15 +111,8 @@ as usual. Just start up Julia and type the following code snippet
 into the REPL. It makes use of the native Julia package manger.
 
 ```julia
+import Pkg
 Pkg.add("MLDataPattern")
-```
-
-Additionally, for example if you encounter any sudden issues, or
-in the case you would like to contribute to the package, you can
-manually choose to be on the latest (untagged) version.
-
-```Julia
-Pkg.checkout("MLDataPattern")
 ```
 
 ## License
