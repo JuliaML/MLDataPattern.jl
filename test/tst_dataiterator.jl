@@ -361,12 +361,12 @@ end
         @test size(A.buffer) == (4,)
         @test typeof(A.buffer) <: Array{Float64,1}
         @test length(A) == 10
-        @test Base.iteratorsize(A) == Base.HasLength()
+        @test Base.IteratorSize(A) == Base.HasLength()
         A = BufferGetObs(RandomObs(X))
         @test size(A.buffer) == (4,)
         @test typeof(A.buffer) <: Array{Float64,1}
         @test_throws MethodError length(A)
-        @test Base.iteratorsize(A) == Base.IsInfinite()
+        @test Base.IteratorSize(A) == Base.IsInfinite()
 
         for var in (X,Y,XX,XXX,(X,Y),(XX,X),(XXX,XX,X))
             A = @inferred BufferGetObs(RandomObs(var,10))
@@ -390,12 +390,12 @@ end
         @test size(A.buffer) == (4,15)
         @test typeof(A.buffer) <: Array{Float64,2}
         @test length(A) == 10
-        @test Base.iteratorsize(A) == Base.HasLength()
+        @test Base.IteratorSize(A) == Base.HasLength()
         A = BufferGetObs(RandomBatches(X, 15))
         @test size(A.buffer) == (4,15)
         @test typeof(A.buffer) <: Array{Float64,2}
         @test_throws MethodError length(A)
-        @test Base.iteratorsize(A) == Base.IsInfinite()
+        @test Base.IteratorSize(A) == Base.IsInfinite()
 
         for var in (X,Y,XX,XXX,(X,Y),(XX,X),(XXX,XX,X))
             A = @inferred BufferGetObs(RandomBatches(var,15,10))

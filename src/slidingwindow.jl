@@ -200,7 +200,7 @@ The optional (keyword) parameter `obsdim` allows one to specify
 which dimension denotes the observations. see `LearnBase.ObsDim`
 for more detail.
 """
-function slidingwindow(f::F, data::T, size::Int, stride::Int, ::Type{Val{Exclude}}=Val{false}, obsdim::O = default_obsdim(data)) where {F,T,Exclude,O}
+function slidingwindow(f::F, data::T, size::Int, stride::Int, ::Val{Exclude}=Val(false), obsdim::O = default_obsdim(data)) where {F,T,Exclude,O}
     _check_windowargs(data, size, stride, obsdim)
     count = floor(Int, (nobs(data,obsdim) - size + stride) / stride)
     # limit back of sequence until it contains target
@@ -222,21 +222,21 @@ function slidingwindow(f::F, data::T, size::Int, stride::Int, ::Type{Val{Exclude
     LabeledSlidingWindow{E,T,O,F,Exclude}(data, f, size, stride, count, offset, obsdim)
 end
 
-function slidingwindow(f, data, size::Int, stride::Int, obsdim::Union{ObsDimension,Tuple}, ::Type{Val{Exclude}}=Val{false}) where {Exclude}
-    slidingwindow(f, data, size, stride, Val{Exclude}, obsdim)
+function slidingwindow(f, data, size::Int, stride::Int, obsdim::Union{ObsDimension,Tuple}, ::Val{Exclude}=Val(false)) where {Exclude}
+    slidingwindow(f, data, size, stride, Val(Exclude), obsdim)
 end
 
-function slidingwindow(f::Function, data, size::Int, obsdim::Union{ObsDimension,Tuple}, ::Type{Val{Exclude}}=Val{false}) where {Exclude}
-    slidingwindow(f, data, size, size, Val{Exclude}, obsdim)
+function slidingwindow(f::Function, data, size::Int, obsdim::Union{ObsDimension,Tuple}, ::Val{Exclude}=Val(false)) where {Exclude}
+    slidingwindow(f, data, size, size, Val(Exclude), obsdim)
 end
 
-function slidingwindow(f::Function, data, size::Int, ::Type{Val{Exclude}}, obsdim = default_obsdim(data)) where {Exclude}
-    slidingwindow(f, data, size, size, Val{Exclude}, obsdim)
+function slidingwindow(f::Function, data, size::Int, ::Val{Exclude}, obsdim = default_obsdim(data)) where {Exclude}
+    slidingwindow(f, data, size, size, Val(Exclude), obsdim)
 end
 
-Base.@pure _toVal(::Type{Val{T}}) where {T} = Val{T}
-Base.@pure _toVal(T) = Val{T}
-function slidingwindow(f, data, size::Int; stride=size, excludetarget=Val{false}, obsdim=default_obsdim(data))
+Base.@pure _toVal(::Val{T}) where {T} = Val(T)
+Base.@pure _toVal(T) = Val(T)
+function slidingwindow(f, data, size::Int; stride=size, excludetarget=Val(false), obsdim=default_obsdim(data))
     slidingwindow(f, data, size, stride, _toVal(excludetarget), convert(ObsDimension, obsdim))
 end
 
@@ -258,18 +258,18 @@ function getobs(A::LabeledSlidingWindow, indices::AbstractVector)
 end
 
 function getobs(A::LabeledSlidingWindow{<:NTuple{<:Any,Tuple}}, i::Int)
-    map(a->getobs.(a), A[i])
+    map(a->map(getobs,a), A[i])
 end
 
 # --------------------------------------------------------------------
 
-function ShowItLikeYouBuildIt.showarg(io::IO, A::SlidingWindow)
+function Base.showarg(io::IO, A::SlidingWindow, toplevel)
     print(io, "slidingwindow(")
     if A isa LabeledSlidingWindow
-        showarg(io, A.targetfun)
+        Base.showarg(io, A.targetfun, false)
         print(io, ", ")
     end
-    showarg(io, parent(A))
+    Base.showarg(io, parent(A), false)
     print(io, ", ")
     print(io, A.size)
     if A.stride != A.size
@@ -281,9 +281,8 @@ function ShowItLikeYouBuildIt.showarg(io::IO, A::SlidingWindow)
         print(io, "obsdim = ", obsdim_string(A.obsdim))
     end
     print(io, ')')
+    toplevel && print(io, " with eltype ", nameof(eltype(A)))
 end
-
-Base.summary(A::SlidingWindow) = summary_build(A)
 
 # --------------------------------------------------------------------
 # batches of sliding windows

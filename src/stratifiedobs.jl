@@ -199,6 +199,6 @@ function stratifiedobs(f, data, p::Union{NTuple,AbstractFloat}, shuffle::Bool = 
     idx_tup = splitobs(labelmap(eachtarget(f, data_shuf, obsdim)), p)
     # Setting the parameter "shuffle = false" specifies that the
     # classes are ordered in the resulting subsets respectively.
-    shuffle && foreach(shuffle!, idx_tup)
+    shuffle && foreach(x->isempty(x) || shuffle!(x), idx_tup)
     map(idx -> datasubset(data_shuf, idx, obsdim), idx_tup)
 end

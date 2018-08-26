@@ -199,11 +199,11 @@ end
 function Base.summary(subset::DataSubset)
     io = IOBuffer()
     print(io, typeof(subset).name.name, "(")
-    showarg(io, subset.data)
+    Base.showarg(io, subset.data, false)
     print(io, ", ")
-    showarg(io, subset.indices)
+    Base.showarg(io, subset.indices, false)
     print(io, ", ")
-    print(io, replace(string(subset.obsdim), "LearnBase.", ""))
+    print(io, replace(string(subset.obsdim), "LearnBase." => ""))
     print(io, ')')
     first(readlines(seek(io,0)))
 end
@@ -219,7 +219,7 @@ end
 
 Base.length(subset::DataSubset) = length(subset.indices)
 
-Base.endof(subset::DataSubset) = length(subset)
+Base.lastindex(subset::DataSubset) = length(subset)
 
 Base.getindex(subset::DataSubset, idx) =
     DataSubset(subset.data, _view(subset.indices, idx), subset.obsdim)

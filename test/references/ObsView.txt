@@ -1,4 +1,4 @@
-6-element obsview(::UnitRange{Int64}, ObsDim.Last()) with element type SubArray{Int64,0,UnitRange{Int64},Tuple{Int64},false}:
+6-element obsview(::UnitRange{Int64}, ObsDim.Last()) with eltype SubArray:
  1
  2
  3

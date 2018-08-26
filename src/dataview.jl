@@ -1,10 +1,10 @@
-IndexStyle(::Type{T}) where {T<:DataView} = IndexLinear()
+Base.IndexStyle(::Type{T}) where {T<:DataView} = IndexLinear()
 Base.size(A::DataView) = (length(A),)
-Base.endof(A::DataView) = length(A)
-getobs(A::DataView) = getobs.(A)
+Base.lastindex(A::DataView) = length(A)
+getobs(A::DataView) = map(getobs, A)
 getobs(A::DataView, i) = getobs(A[i])
 getobs(A::DataView{T}) where {T<:Tuple} = map(i->getobs(A,i), 1:length(A))
-getobs(A::DataView{T}, i::Integer) where {T<:Tuple} = getobs.(A[i])
+getobs(A::DataView{T}, i::Integer) where {T<:Tuple} = map(getobs, A[i])
 
 allowcontainer(fun, ::AbstractObsView) = true
 allowcontainer(fun, ::DataView) = false
@@ -127,7 +127,7 @@ end
 
 function ObsView(A::T, obsdim) where T<:DataView
     @assert obsdim == A.obsdim
-    warn("Trying to nest a ", T.name, " into an ObsView, which is not supported. Returning ObsView(parent(_)) instead")
+    @warn string("Trying to nest a ", T.name, " into an ObsView, which is not supported. Returning ObsView(parent(_)) instead")
     ObsView(parent(A), obsdim)
 end
 
@@ -151,15 +151,14 @@ default_obsdim(A::ObsView) = A.obsdim
 
 const obsview = ObsView
 
-function ShowItLikeYouBuildIt.showarg(io::IO, A::ObsView)
+function Base.showarg(io::IO, A::ObsView, toplevel)
     print(io, "obsview(")
-    showarg(io, parent(A))
+    Base.showarg(io, parent(A), false)
     print(io, ", ")
-    print(io, replace(string(A.obsdim), "LearnBase.", ""))
+    print(io, replace(string(A.obsdim), "LearnBase." => ""))
     print(io, ')')
+    toplevel && print(io, " with eltype ", nameof(eltype(A))) # simpify
 end
-
-Base.summary(A::ObsView) = summary_build(A)
 
 # --------------------------------------------------------------------
 
@@ -202,7 +201,7 @@ function _compute_batch_settings(source, size::Int = -1, count::Int = -1, obsdim
     # check if the settings will result in all data points being used
     unused = num_observations - size*count
     if unused > 0
-        Base.warn_once("The specified values for size and/or count will result in $unused unused data points")
+        @warn "The specified values for size and/or count will result in $unused unused data points" maxlog=1
     end
     size::Int, count::Int
 end
@@ -410,17 +409,16 @@ default_obsdim(A::BatchView) = A.obsdim
 
 const batchview = BatchView
 
-function ShowItLikeYouBuildIt.showarg(io::IO, A::BatchView)
+function Base.showarg(io::IO, A::BatchView, toplevel)
     print(io, "batchview(")
-    showarg(io, parent(A))
+    Base.showarg(io, parent(A), false)
     print(io, ", ")
     print(io, A.size, ", ")
     print(io, A.count, ", ")
-    print(io, replace(string(A.obsdim), "LearnBase.", ""))
+    print(io, replace(string(A.obsdim), "LearnBase." => ""))
     print(io, ')')
+    toplevel && print(io, " with eltype ", nameof(eltype(A))) # simpify
 end
-
-Base.summary(A::BatchView) = summary_build(A)
 
 # --------------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-3-element batchview(::UnitRange{Int64}, 2, 3, ObsDim.Last()) with element type SubArray{Int64,1,UnitRange{Int64},Tuple{UnitRange{Int64}},true}:
+3-element batchview(::UnitRange{Int64}, 2, 3, ObsDim.Last()) with eltype SubArray:
  [1, 2]
  [3, 4]
  [5, 6]

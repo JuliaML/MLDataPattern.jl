@@ -7,7 +7,7 @@
         @test typeof(@inferred(shuffleobs(var))) <: SubArray
         @test typeof(@inferred(shuffleobs(var, ObsDim.Last()))) <: SubArray
         @test typeof(@inferred(shuffleobs(var, ObsDim.First()))) <: SubArray
-        @test_throws ErrorException @inferred(shuffleobs(var, obsdim=:last))
+        #@test_throws ErrorException @inferred(shuffleobs(var, obsdim=:last))
         @test_throws ErrorException @inferred(shuffleobs(var, obsdim=1))
     end
     for tup in tuples
@@ -23,8 +23,8 @@ end
         @test size(shuffleobs(var, obsdim=1)) == size(var)
     end
     # tests if all obs are still present and none duplicated
-    @test vec(sum(shuffleobs(X1),2)) == fill(11325,10)
-    @test vec(sum(shuffleobs(X1',obsdim=1),1)) == fill(11325,10)
+    @test vec(sum(shuffleobs(X1),dims=2)) == fill(11325,10)
+    @test vec(sum(shuffleobs(X1',obsdim=1),dims=1)) == fill(11325,10)
     @test sum(shuffleobs(Y1)) == 11325
     @test sum(shuffleobs(Y1, obsdim=:first)) == 11325
 end
@@ -42,13 +42,13 @@ println("<HEARTBEAT>")
     # tests if all obs are still present and none duplicated
     # also tests that both paramter are shuffled identically
     x1, y1, z1 = shuffleobs((X1,Y1,X1))
-    @test vec(sum(x1,2)) == fill(11325,10)
-    @test vec(sum(z1,2)) == fill(11325,10)
+    @test vec(sum(x1,dims=2)) == fill(11325,10)
+    @test vec(sum(z1,dims=2)) == fill(11325,10)
     @test sum(y1) == 11325
     @test all(x1' .== y1)
     @test all(z1' .== y1)
     x1, y1 = shuffleobs((X1',Y1), obsdim=1)
-    @test vec(sum(x1,1)) == fill(11325,10)
+    @test vec(sum(x1,dims=1)) == fill(11325,10)
     @test sum(y1) == 11325
     @test all(x1 .== y1)
 end
@@ -60,8 +60,8 @@ end
         @test nobs(shuffleobs(var, obsdim=:first)) == nobs(var, obsdim=:first)
     end
     # tests if all obs are still present and none duplicated
-    @test vec(sum(getobs(shuffleobs(sparse(X1))),2)) == fill(11325,10)
-    @test vec(sum(getobs(shuffleobs(sparse(X1'),obsdim=1)),1)) == fill(11325,10)
+    @test vec(sum(getobs(shuffleobs(sparse(X1))),dims=2)) == fill(11325,10)
+    @test vec(sum(getobs(shuffleobs(sparse(X1'),obsdim=1)),dims=1)) == fill(11325,10)
     @test sum(getobs(shuffleobs(sparse(Y1)))) == 11325
     @test sum(getobs(shuffleobs(sparse(Y1), obsdim=:first))) == 11325
 end
@@ -76,11 +76,11 @@ end
     # tests if all obs are still present and none duplicated
     # also tests that both paramter are shuffled identically
     x1, y1 = getobs(shuffleobs((sparse(X1),sparse(Y1))))
-    @test vec(sum(x1,2)) == fill(11325,10)
+    @test vec(sum(x1,dims=2)) == fill(11325,10)
     @test sum(y1) == 11325
     @test all(x1' .== y1)
     x1, y1 = getobs(shuffleobs((sparse(X1'),sparse(Y1)), obsdim=1))
-    @test vec(sum(x1,1)) == fill(11325,10)
+    @test vec(sum(x1,dims=1)) == fill(11325,10)
     @test sum(y1) == 11325
     @test all(x1 .== y1)
 end
@@ -109,5 +109,5 @@ end
     bv = @inferred shuffleobs(bv1)
     @test length(bv) == length(bv1)
     @test bv isa BatchView{<:SubArray,<:SubArray}
-    @test vec(sum(sum(bv),2)) == fill(11325,10)
+    @test vec(sum(sum(bv),dims=2)) == fill(11325,10)
 end

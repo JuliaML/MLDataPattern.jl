@@ -15,7 +15,7 @@ end
         @test_throws MethodError MLDataPattern._gettarget(X)
         @test_throws MethodError MLDataPattern._gettarget(uppercase, "test")
         @test @inferred(MLDataPattern._gettarget(identity, @v(1))) === 1
-        @test @inferred(MLDataPattern._gettarget(x->x+1,[1,2])) == [2,3]
+        @test @inferred(MLDataPattern._gettarget(x->x.+1,[1,2])) == [2,3]
         @test @inferred(MLDataPattern._gettarget(identity, X)) === X
         @test @inferred(MLDataPattern._gettarget(identity, y)) === y
         @test @inferred(MLDataPattern._gettarget(identity, yv)) === yv

@@ -1,12 +1,12 @@
-_length(iter) = _length(iter, Base.iteratorsize(iter))
+_length(iter) = _length(iter, Base.IteratorSize(iter))
 _length(iter, ::Base.HasLength) = length(iter)
 _length(iter, ::Base.HasShape)  = length(iter)
 _length(iter, ::Base.IsInfinite) = Inf
 _length(iter, ::Base.SizeUnknown) = "NA"
 
-_length_str(iter) = _length_str(iter, Base.iteratorsize(iter))
-_length_str(iter, ::Base.HasLength) = "$(length(iter)), "
-_length_str(iter, ::Base.HasShape)  = "$(length(iter)), "
+_length_str(iter) = _length_str(iter, Base.IteratorSize(iter))
+_length_str(iter, ::Base.HasLength) = string(length(iter), ", ")
+_length_str(iter, ::Base.HasShape)  = string(length(iter), ", ")
 _length_str(iter, ::Base.IsInfinite) = ""
 _length_str(iter, ::Base.SizeUnknown) = ""
 
@@ -16,16 +16,16 @@ Base.eltype(::Type{DataIterator{E,T}}) where {E,T} = E
 # There is no contract that says these methods will work
 # It may be that some DataIterator subtypes do not support getindex
 # and/or don't support collect
-getobs(A::AbstractDataIterator) = getobs.(collect(A))
+getobs(A::AbstractDataIterator) = map(getobs,collect(A))
 getobs(A::AbstractDataIterator, i) = getobs(A[i])
-getobs(A::AbstractDataIterator{T}) where {T<:Tuple} = map(x->getobs.(x), collect(A))
+getobs(A::AbstractDataIterator{T}) where {T<:Tuple} = map(x->map(getobs,x), collect(A))
 getobs(A::AbstractDataIterator{T}, i::Integer) where {T<:Tuple} = getobs.(A[i])
 
 DataSubset(data::T, indices, obsdim) where {T<:DataIterator} =
     throw(MethodError(DataSubset, (data,indices,obsdim)))
 
 # To avoid overflow when infinite
-_next_idx(iter, idx) = _next_idx(Base.iteratorsize(iter), idx)
+_next_idx(iter, idx) = _next_idx(Base.IteratorSize(iter), idx)
 _next_idx(::Base.IteratorSize, idx) = idx + 1
 _next_idx(::Base.IsInfinite, idx) = 1
 
@@ -156,9 +156,8 @@ function RandomObs(data; count = nothing, obsdim = default_obsdim(data))
     RandomObs(data, count, convert(LearnBase.ObsDimension,obsdim))
 end
 
-Base.start(iter::RandomObs) = 1
-Base.done(iter::RandomObs, idx) = idx > _length(iter)
-function Base.next(iter::RandomObs, idx)
+function Base.iterate(iter::RandomObs, idx = 1)
+    idx > _length(iter) && return nothing
     (datasubset(iter.data, rand(1:nobs(iter.data, iter.obsdim)), iter.obsdim),
      _next_idx(iter,idx))
 end
@@ -171,9 +170,9 @@ nobs(iter::RandomObs) = nobs(iter.data, iter.obsdim)
 function Base.summary(iter::RandomObs)
     io = IOBuffer()
     print(io, typeof(iter).name.name, "(")
-    showarg(io, iter.data)
+    Base.showarg(io, iter.data, false)
     print(io, ", ", _length_str(iter))
-    print(io, replace(string(iter.obsdim), "LearnBase.", ""))
+    print(io, replace(string(iter.obsdim), "LearnBase." => ""))
     print(io, ')')
     first(readlines(seek(io,0)))
 end
@@ -303,9 +302,8 @@ function BalancedObs(f::Function, data; count = nothing, obsdim = default_obsdim
     BalancedObs(f, data, count, convert(LearnBase.ObsDimension,obsdim))
 end
 
-Base.start(iter::BalancedObs) = 1
-Base.done(iter::BalancedObs, idx) = idx > _length(iter)
-function Base.next(iter::BalancedObs, idx)
+function Base.iterate(iter::BalancedObs, idx = 1)
+    idx > _length(iter) && return nothing
     # uniformly random select a label
     obsidx = rand(iter.labelmap).second
     # uniformly random select observation from that label
@@ -321,9 +319,9 @@ nobs(iter::BalancedObs) = nobs(iter.data, iter.obsdim)
 function Base.summary(iter::BalancedObs)
     io = IOBuffer()
     print(io, typeof(iter).name.name, '(')
-    showarg(io, iter.data)
+    Base.showarg(io, iter.data, false)
     print(io, ", ", _length_str(iter))
-    print(io, replace(string(iter.obsdim), "LearnBase.", ""))
+    print(io, replace(string(iter.obsdim), "LearnBase." => ""))
     print(io, ')')
     first(readlines(seek(io,0)))
 end
@@ -445,9 +443,8 @@ function RandomBatches(data::T; size::Int = -1, count = nothing, obsdim = defaul
     RandomBatches(data, nsize, count, nobsdim)
 end
 
-Base.start(iter::RandomBatches) = 1
-Base.done(iter::RandomBatches, idx) = idx > _length(iter)
-function Base.next(iter::RandomBatches, idx)
+function Base.iterate(iter::RandomBatches, idx = 1)
+    idx > _length(iter) && return nothing
     # maybe use StatsBase.sample instead of rand in order to avoid
     # replacement. That said I would like to avoid keyword arguments
     # and currently sample needs "replace" to be specified as such
@@ -464,11 +461,11 @@ batchsize(iter::RandomBatches) = iter.size
 function Base.summary(iter::RandomBatches)
     io = IOBuffer()
     print(io, typeof(iter).name.name, "(")
-    showarg(io, iter.data)
+    Base.showarg(io, iter.data, false)
     print(io, ", ")
     print(io, iter.size, ", ")
     print(io, _length_str(iter))
-    print(io, replace(string(iter.obsdim), "LearnBase.", ""))
+    print(io, replace(string(iter.obsdim), "LearnBase." => ""))
     print(io, ')')
     first(readlines(seek(io,0)))
 end
@@ -479,7 +476,7 @@ end
     BufferGetObs(iterator, [buffer])
 
 A stateful iterator that stores the output of
-`next(iterator,state)` into `buffer` using `getobs!(buffer,
+`iterate(iterator,state)` into `buffer` using `getobs!(buffer,
 ...)`. Depending on the type of data provided by `iterator` this
 may be more memory efficient than `getobs(...)`. In the case of
 array data, for example, this allows for cache-efficient
@@ -513,14 +510,29 @@ function Base.show(io::IO, iter::BufferGetObs{E,T}) where {E,T}
     end
 end
 
-Base.start(b::BufferGetObs) = start(b.iter)
-Base.done(b::BufferGetObs, idx) = done(b.iter, idx)
-function Base.next(b::BufferGetObs, idx)
-    subset, nidx = next(b.iter, idx)
+# TODO: simplify this mess
+function Base.iterate(b::BufferGetObs)
+    inner = Base.iterate(b.iter)
+    inner == nothing && return nothing
+    subset, nidx = inner
     (getobs!(b.buffer, subset), nidx)
 end
-function Base.next(b::BufferGetObs{T}, idx) where T<:Tuple
-    subset, nidx = next(b.iter, idx)
+function Base.iterate(b::BufferGetObs{T}) where T<:Tuple
+    inner = Base.iterate(b.iter)
+    inner == nothing && return nothing
+    subset, nidx = inner
+    (map(getobs!, b.buffer, subset), nidx)
+end
+function Base.iterate(b::BufferGetObs, idx)
+    inner = Base.iterate(b.iter, idx)
+    inner == nothing && return nothing
+    subset, nidx = inner
+    (getobs!(b.buffer, subset), nidx)
+end
+function Base.iterate(b::BufferGetObs{T}, idx) where T<:Tuple
+    inner = Base.iterate(b.iter, idx)
+    inner == nothing && return nothing
+    subset, nidx = inner
     (map(getobs!, b.buffer, subset), nidx)
 end
 
@@ -534,9 +546,9 @@ batchsize(b::BufferGetObs) = batchsize(b.iter)
 function Base.summary(b::BufferGetObs)
     io = IOBuffer()
     print(io, typeof(b).name.name, "(")
-    showarg(io, b.iter)
+    Base.showarg(io, b.iter, false)
     print(io, ", ")
-    showarg(io, b.buffer)
+    Base.showarg(io, b.buffer, false)
     print(io, ')')
     first(readlines(seek(io,0)))
 end
