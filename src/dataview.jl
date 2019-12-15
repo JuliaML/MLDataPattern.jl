@@ -149,6 +149,7 @@ Base.getindex(A::ObsView, i::AbstractVector) =
 # compatibility with nested functions
 default_obsdim(A::ObsView) = A.obsdim
 
+@doc (@doc ObsView)
 const obsview = ObsView
 
 function Base.showarg(io::IO, A::ObsView, toplevel)
@@ -407,6 +408,7 @@ end
 # compatibility with nested functions
 default_obsdim(A::BatchView) = A.obsdim
 
+@doc (@doc BatchView)
 const batchview = BatchView
 
 function Base.showarg(io::IO, A::BatchView, toplevel)
