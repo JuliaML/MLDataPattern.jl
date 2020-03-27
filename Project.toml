@@ -1,5 +1,6 @@
 name = "MLDataPattern"
 uuid = "9920b226-0b2a-5f5f-9153-9aa70a013f8b"
+version = "0.5.1"
 
 [deps]
 LearnBase = "7f8f8fb0-2700-5f03-b4bd-41f8cfc144b6"
