@@ -1,1 +1,0 @@
-RandomObs{SubArray{Float64,1,Array{Float64,2},Tuple{Base.Slice{Base.OneTo{Int64}},Int64},true},Array{Float64,2},LearnBase.ObsDim.Last,Base.IsInfinite}[RandomObs{SubArray{Float64,1,Array{Float64,2},Tuple{Slice{OneTo{Int64}},Int64},true},Array{Float64,2}} with Inf observations]

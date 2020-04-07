@@ -9,10 +9,6 @@
     @test_reference "references/RandomObs2.txt" RandomObs(X, 10)
     @test_reference "references/BalancedObs1.txt" BalancedObs(X)
     @test_reference "references/BalancedObs2.txt" BalancedObs(X, 10)
-    if  Int == Int64
-        @test_reference "references/RandomObs3.txt" [RandomObs(X)]
-        @test_reference "references/BalancedObs3.txt" [BalancedObs(X)]
-    end
 
     for TIter in (RandomObs, BalancedObs)
         @testset "constructor for $TIter" begin
@@ -136,9 +132,6 @@ end
     @test RandomBatches <: LearnBase.AbstractBatchIterator
     @test_reference "references/RandomBatches1.txt" RandomBatches(X)
     @test_reference "references/RandomBatches2.txt" RandomBatches(X,10,10)
-    if Int == Int64
-        @test_reference "references/RandomBatches3.txt" [RandomBatches(X)]
-    end
 
     @testset "constructor" begin
         A = @inferred RandomBatches(rand(2,5), 10)
@@ -267,9 +260,6 @@ end
     @testset "ObsView" begin
         A = BufferGetObs(ObsView(X))
         @test_reference "references/BufferGetObs1.txt" A
-        if Int == Int64
-            @test_reference "references/BufferGetObs2.txt" [A]
-        end
 
         @test size(A.buffer) == (4,)
         @test typeof(A.buffer) <: Array{Float64,1}
