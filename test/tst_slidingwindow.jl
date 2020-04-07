@@ -44,9 +44,6 @@
         end
         @test slidingwindow((X,X), 5) == @inferred(slidingwindow((X,X), 5, (ObsDim.Last(),ObsDim.Last())))
         @test slidingwindow((X,X), 5) == @inferred(slidingwindow((X,X), 5, 5, (ObsDim.Last(),ObsDim.Last())))
-        if Int == Int64
-            @test_reference "references/unlabeledslidingwindow.txt" @io2str show(::IO, MIME"text/plain"(), slidingwindow(1:6, 3, 2))
-        end
         A = slidingwindow(X',5,obsdim=1)
         @test A == @inferred(slidingwindow(X',5,ObsDim.First()))
         @test A == @inferred(slidingwindow(X',5,5,ObsDim.First()))
@@ -233,9 +230,6 @@ end
         @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, Val(false)))
         @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, 5, (ObsDim.Last(),ObsDim.Last())))
         @test slidingwindow(i->i,(X,X), 5) == @inferred(slidingwindow(i->i,(X,X), 5, 5, Val(false)))
-        if Int == Int64
-            @test_reference "references/labeledslidingwindow.txt" @io2str show(::IO, MIME"text/plain"(), slidingwindow(identity, 1:6, 3, 2, ObsDim.First()))
-        end
         A = slidingwindow(i->i-1,X',5,obsdim=1)
         @test A.size == 5
         @test A.stride == 5

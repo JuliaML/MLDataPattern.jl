@@ -5,9 +5,12 @@ resampling of Machine Learning datasets. Aside from providing
 common functionality, this library also allows for first class
 support of custom user-defined data structures.*
 
-| **Package Status** | **Package Evaluator** | **Build Status**  |
-|:------------------:|:---------------------:|:-----------------:|
-| [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE.md) [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg?style=flat)](http://mldatapatternjl.readthedocs.io/en/latest/?badge=latest) | [![MLDataPattern](http://pkg.julialang.org/badges/MLDataPattern_0.6.svg)](http://pkg.julialang.org/?pkg=MLDataPattern) [![MLDataPattern](http://pkg.julialang.org/badges/MLDataPattern_0.7.svg)](http://pkg.julialang.org/?pkg=MLDataPattern) | [![Build Status](https://travis-ci.org/JuliaML/MLDataPattern.jl.svg?branch=master)](https://travis-ci.org/JuliaML/MLDataPattern.jl) [![Build status](https://ci.appveyor.com/api/projects/status/c24s6qvmyybcpgt7?svg=true)](https://ci.appveyor.com/project/Evizero/mldatapattern-jl) [![Coverage Status](https://coveralls.io/repos/github/JuliaML/MLDataPattern.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaML/MLDataPattern.jl?branch=master) |
+[![][license-img]][license-url]
+[![][docs-dev-img]][docs-dev-url]
+[![][travis-img]][travis-url]
+[![][pkgeval-img]][pkgeval-url]
+[![][coveralls-img]][coveralls-url]
+
 
 ## Introduction
 
@@ -118,3 +121,17 @@ Pkg.add("MLDataPattern")
 ## License
 
 This code is free to use under the terms of the MIT license
+
+
+<!-- URLS -->
+
+[pkgeval-img]: https://juliaci.github.io/NanosoldierReports/pkgeval_badges/M/MLDataPattern.svg
+[pkgeval-url]: https://juliaci.github.io/NanosoldierReports/pkgeval_badges/report.html
+[travis-img]: https://api.travis-ci.org/JuliaML/MLDataPattern.jl.svg
+[travis-url]: https://travis-ci.org/JuliaML/MLDataPattern.jl
+[license-img]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat
+[license-url]: LICENSE.md
+[coveralls-img]: https://coveralls.io/repos/github/JuliaML/MLDataPattern.jl/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/JuliaML/MLDataPattern.jl?branch=master
+[docs-dev-img]: https://img.shields.io/badge/docs-latest-blue.svg?style=flat
+[docs-dev-url]: http://mldatapatternjl.readthedocs.io/en/latest/?badge=latest

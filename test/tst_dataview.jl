@@ -31,9 +31,6 @@
             @test @inferred(ObsView(A)) == A
             @test @inferred(ObsView(var)) == A
         end
-        if Int == Int64
-            @test_reference "references/ObsView.txt" @io2str show(::IO, MIME"text/plain"(), ObsView(1:6))
-        end
         A = ObsView(X',obsdim=1)
         @test A == @inferred(ObsView(X',ObsDim.First()))
         @test A == ObsView(X',obsdim=:first)
@@ -211,9 +208,6 @@ end
         end
         @test BatchView((X,X)) == @inferred(BatchView((X,X), (ObsDim.Last(),ObsDim.Last())))
         @test BatchView((X,X)) == @inferred(BatchView((X,X), -1, (ObsDim.Last(),ObsDim.Last())))
-        if Int == Int64
-            @test_reference "references/BatchView.txt" @io2str show(::IO, MIME"text/plain"(), BatchView(1:6))
-        end
         A = BatchView(X',obsdim=1)
         @test A == @inferred(BatchView(X',ObsDim.First()))
         @test A == @inferred(BatchView(X',-1,ObsDim.First()))
