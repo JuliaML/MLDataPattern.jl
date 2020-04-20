@@ -111,3 +111,13 @@ end
     @test bv isa BatchView{<:SubArray,<:SubArray}
     @test vec(sum(sum(bv),dims=2)) == fill(11325,10)
 end
+
+Random.seed!(42)
+@testset "RNG" begin
+    # tests reproducibility using explicit and global RNGs
+    default_shuffle = shuffleobs((X, y))
+    explicit_shuffle = shuffleobs((X, y), rng=MersenneTwister(42))
+    @test default_shuffle == explicit_shuffle
+    # test that explicit shuffling produces the same result everytime
+    @test explicit_shuffle == shuffleobs((X, y), rng=MersenneTwister(42))
+end
