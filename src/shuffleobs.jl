@@ -27,10 +27,10 @@ For this function to work, the type of `data` must implement
 [`nobs`](@ref) and [`getobs`](@ref). See [`DataSubset`](@ref)
 for more information.
 """
-shuffleobs(data; obsdim = default_obsdim(data)) =
-    shuffleobs(data, convert(LearnBase.ObsDimension,obsdim))
+shuffleobs(data; obsdim = default_obsdim(data), rng::AbstractRNG = Random.default_rng()) =
+    shuffleobs(data, convert(LearnBase.ObsDimension,obsdim), rng)
 
-function shuffleobs(data, obsdim)
+function shuffleobs(data, obsdim, rng::AbstractRNG)
     allowcontainer(shuffleobs, data) || throw(MethodError(shuffleobs, (data,obsdim)))
-    datasubset(data, randperm(nobs(data, obsdim)), obsdim)
+    datasubset(data, randperm(rng, nobs(data, obsdim)), obsdim)
 end

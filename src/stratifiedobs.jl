@@ -173,11 +173,11 @@ see [`DataSubset`](@ref) for more information on data subsets.
 
 see also [`undersample`](@ref), [`oversample`](@ref), [`splitobs`](@ref).
 """
-function stratifiedobs(data; p = 0.7, shuffle = true, obsdim = default_obsdim(data))
-    stratifiedobs(identity, data, p, shuffle, convert(ObsDimension, obsdim))
+function stratifiedobs(data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.default_rng())
+    stratifiedobs(identity, data, p, shuffle, convert(ObsDimension, obsdim), rng)
 end
 
-function stratifiedobs(f, data; p = 0.7, shuffle = true, obsdim = default_obsdim(data))
+function stratifiedobs(f, data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.default_rng())
     stratifiedobs(f, data, p, shuffle, convert(ObsDimension, obsdim))
 end
 
@@ -189,16 +189,16 @@ function stratifiedobs(data, p::NTuple{N,AbstractFloat}, args...) where N
     stratifiedobs(identity, data, p, args...)
 end
 
-function stratifiedobs(f, data, p::Union{NTuple,AbstractFloat}, shuffle::Bool = true, obsdim = default_obsdim(data))
+function stratifiedobs(f, data, p::Union{NTuple,AbstractFloat}, shuffle::Bool = true, obsdim = default_obsdim(data), rng::AbstractRNG = Random.default_rng())
     # The given data is always shuffled to qualify as performing
     # stratified sampling without replacement.
-    data_shuf = shuffleobs(data, obsdim)
+    data_shuf = shuffleobs(data, obsdim, rng)
     # FIXME: if i put the following line before `data_shuf` is
     #        defined, it breaks type inference for `data_shuf`.
     allowcontainer(stratifiedobs, data) || throw(MethodError(stratifiedobs, (f,data,shuffle,obsdim)))
     idx_tup = splitobs(labelmap(eachtarget(f, data_shuf, obsdim)), p)
     # Setting the parameter "shuffle = false" specifies that the
     # classes are ordered in the resulting subsets respectively.
-    shuffle && foreach(x->isempty(x) || shuffle!(x), idx_tup)
+    shuffle && foreach(x->isempty(x) || shuffle!(rng, x), idx_tup)
     map(idx -> datasubset(data_shuf, idx, obsdim), idx_tup)
 end
