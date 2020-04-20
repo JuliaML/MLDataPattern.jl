@@ -131,7 +131,8 @@ reproducible results are desired. By default, uses the global RNG.
 See `Random` in Julia's standard library for more info.
 
 ```julia
-using Random: MersenneTwister
+julia> using Random: MersenneTwister
+
 julia> X = [1:6;]
 6-element Array{Int64,1}:
  1
