@@ -47,7 +47,7 @@ end
 end
 
 """
-    stratifiedobs([f], data, [p = 0.7], [shuffle = true], [obsdim]) -> Tuple
+    stratifiedobs([f], data, [p = 0.7], [shuffle = true], [obsdim], [rng]) -> Tuple
 
 Partition the `data` into multiple disjoint subsets proportional
 to the value(s) of `p`. The observations are assignmed to a data
@@ -123,6 +123,35 @@ julia> X = [1 0; 1 0; 1 0; 1 0; 0 1; 0 1]
 
 julia> train, test = stratifiedobs(argmax, X, p = 0.5, obsdim = 1)
 ([1 0; 1 0; 0 1], [0 1; 1 0; 1 0])
+```
+
+The optional (keyword) parameter `rng` allows one to specify the
+random number generator used for shuffling. This is useful when
+reproducible results are desired. By default, uses the global RNG.
+See `Random` in Julia's standard library for more info.
+
+```julia
+using Random: MersenneTwister
+julia> X = [1:6;]
+6-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+
+julia> y = [:a, :b, :b, :b, :b, :a]
+6-element Array{Symbol,1}:
+ :a
+ :b
+ :b
+ :b
+ :b
+ :a
+
+julia> train, test = stratifiedobs((x, y), rng=MersenneTwister(42))
+(([5, 3, 1, 4], [:b, :b, :a, :b]), ([2, 6], [:b, :a]))
 ```
 
 For this function to work, the type of `data` must implement

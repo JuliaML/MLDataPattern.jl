@@ -1,5 +1,5 @@
 """
-    shuffleobs(data, [obsdim])
+    shuffleobs(data, [obsdim], [rng])
 
 Return a "subset" of `data` that spans all observations, but
 has the order of the observations shuffled.
@@ -22,6 +22,11 @@ end
 The optional (keyword) parameter `obsdim` allows one to specify
 which dimension denotes the observations. see `LearnBase.ObsDim`
 for more detail.
+
+The optional (keyword) parameter `rng` allows one to specify the
+random number generator used for shuffling. This is useful when
+reproducible results are desired. By default, uses the global RNG.
+See `Random` in Julia's standard library for more info.
 
 For this function to work, the type of `data` must implement
 [`nobs`](@ref) and [`getobs`](@ref). See [`DataSubset`](@ref)
