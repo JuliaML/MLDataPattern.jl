@@ -130,7 +130,7 @@ random number generator used for shuffling. This is useful when
 reproducible results are desired. By default, uses the global RNG.
 See `Random` in Julia's standard library for more info.
 
-```julia
+```jldoctest; setup = :(using MLDataPattern)
 julia> using Random: MersenneTwister
 
 julia> X = [1:6;]
