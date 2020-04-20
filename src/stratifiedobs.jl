@@ -203,11 +203,11 @@ see [`DataSubset`](@ref) for more information on data subsets.
 
 see also [`undersample`](@ref), [`oversample`](@ref), [`splitobs`](@ref).
 """
-function stratifiedobs(data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.default_rng())
+function stratifiedobs(data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.GLOBAL_RNG)
     stratifiedobs(identity, data, p, shuffle, convert(ObsDimension, obsdim), rng)
 end
 
-function stratifiedobs(f, data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.default_rng())
+function stratifiedobs(f, data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.GLOBAL_RNG)
     stratifiedobs(f, data, p, shuffle, convert(ObsDimension, obsdim))
 end
 
@@ -219,7 +219,7 @@ function stratifiedobs(data, p::NTuple{N,AbstractFloat}, args...) where N
     stratifiedobs(identity, data, p, args...)
 end
 
-function stratifiedobs(f, data, p::Union{NTuple,AbstractFloat}, shuffle::Bool = true, obsdim = default_obsdim(data), rng::AbstractRNG = Random.default_rng())
+function stratifiedobs(f, data, p::Union{NTuple,AbstractFloat}, shuffle::Bool = true, obsdim = default_obsdim(data), rng::AbstractRNG = Random.GLOBAL_RNG)
     # The given data is always shuffled to qualify as performing
     # stratified sampling without replacement.
     data_shuf = shuffleobs(data, obsdim, rng)
