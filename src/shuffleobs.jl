@@ -35,7 +35,7 @@ for more information.
 shuffleobs(data; obsdim = default_obsdim(data), rng::AbstractRNG = Random.default_rng()) =
     shuffleobs(data, convert(LearnBase.ObsDimension,obsdim), rng)
 
-function shuffleobs(data, obsdim, rng::AbstractRNG)
+function shuffleobs(data, obsdim, rng::AbstractRNG = Random.default_rng())
     allowcontainer(shuffleobs, data) || throw(MethodError(shuffleobs, (data,obsdim)))
     datasubset(data, randperm(rng, nobs(data, obsdim)), obsdim)
 end
