@@ -47,7 +47,7 @@ end
 end
 
 """
-    stratifiedobs([f], data, [p = 0.7], [shuffle = true], [obsdim]) -> Tuple
+    stratifiedobs([f], data, [p = 0.7], [shuffle = true], [obsdim], [rng]) -> Tuple
 
 Partition the `data` into multiple disjoint subsets proportional
 to the value(s) of `p`. The observations are assignmed to a data
@@ -125,6 +125,36 @@ julia> train, test = stratifiedobs(argmax, X, p = 0.5, obsdim = 1)
 ([1 0; 1 0; 0 1], [0 1; 1 0; 1 0])
 ```
 
+The optional (keyword) parameter `rng` allows one to specify the
+random number generator used for shuffling. This is useful when
+reproducible results are desired. By default, uses the global RNG.
+See `Random` in Julia's standard library for more info.
+
+```jldoctest; setup = :(using MLDataPattern)
+julia> using Random: MersenneTwister
+
+julia> X = [1:6;]
+6-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+
+julia> y = [:a, :b, :b, :b, :b, :a]
+6-element Array{Symbol,1}:
+ :a
+ :b
+ :b
+ :b
+ :b
+ :a
+
+julia> train, test = stratifiedobs((x, y), rng=MersenneTwister(42))
+(([5, 3, 1, 4], [:b, :b, :a, :b]), ([2, 6], [:b, :a]))
+```
+
 For this function to work, the type of `data` must implement
 [`nobs`](@ref) and [`getobs`](@ref). For example, the following
 code allows `stratifiedobs` to work on a `DataTable`.
@@ -173,11 +203,11 @@ see [`DataSubset`](@ref) for more information on data subsets.
 
 see also [`undersample`](@ref), [`oversample`](@ref), [`splitobs`](@ref).
 """
-function stratifiedobs(data; p = 0.7, shuffle = true, obsdim = default_obsdim(data))
-    stratifiedobs(identity, data, p, shuffle, convert(ObsDimension, obsdim))
+function stratifiedobs(data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.GLOBAL_RNG)
+    stratifiedobs(identity, data, p, shuffle, convert(ObsDimension, obsdim), rng)
 end
 
-function stratifiedobs(f, data; p = 0.7, shuffle = true, obsdim = default_obsdim(data))
+function stratifiedobs(f, data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.GLOBAL_RNG)
     stratifiedobs(f, data, p, shuffle, convert(ObsDimension, obsdim))
 end
 
@@ -189,16 +219,16 @@ function stratifiedobs(data, p::NTuple{N,AbstractFloat}, args...) where N
     stratifiedobs(identity, data, p, args...)
 end
 
-function stratifiedobs(f, data, p::Union{NTuple,AbstractFloat}, shuffle::Bool = true, obsdim = default_obsdim(data))
+function stratifiedobs(f, data, p::Union{NTuple,AbstractFloat}, shuffle::Bool = true, obsdim = default_obsdim(data), rng::AbstractRNG = Random.GLOBAL_RNG)
     # The given data is always shuffled to qualify as performing
     # stratified sampling without replacement.
-    data_shuf = shuffleobs(data, obsdim)
+    data_shuf = shuffleobs(data, obsdim, rng)
     # FIXME: if i put the following line before `data_shuf` is
     #        defined, it breaks type inference for `data_shuf`.
     allowcontainer(stratifiedobs, data) || throw(MethodError(stratifiedobs, (f,data,shuffle,obsdim)))
     idx_tup = splitobs(labelmap(eachtarget(f, data_shuf, obsdim)), p)
     # Setting the parameter "shuffle = false" specifies that the
     # classes are ordered in the resulting subsets respectively.
-    shuffle && foreach(x->isempty(x) || shuffle!(x), idx_tup)
+    shuffle && foreach(x->isempty(x) || shuffle!(rng, x), idx_tup)
     map(idx -> datasubset(data_shuf, idx, obsdim), idx_tup)
 end

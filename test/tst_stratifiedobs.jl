@@ -91,3 +91,14 @@ end
     @test test == [:a, :a, :b] || test == [:b, :a, :a]
     @test val == [:a, :b] || val == [:b, :a]
 end
+
+Random.seed!(42)
+@testset "RNG" begin
+    # tests reproducibility using explicit and global RNGs
+    tX = [1:20;]
+    ty = [:b, :b, :a, :b, :b, :b, :b, :a, :b, :a, :b, :b, :b, :a, :a, :b, :b, :b, :b, :b]
+    (def_train_x, def_train_y), (def_test_x, def_test_y) = stratifiedobs((tX, ty))
+    (exp_train_x, exp_train_y), (exp_test_x, exp_test_y) = stratifiedobs((tX, ty), rng=MersenneTwister(42))
+    @test ((def_train_x, def_train_y), (def_test_x, def_test_y)) == ((exp_train_x, exp_train_y), (exp_test_x, exp_test_y))
+    @test ((exp_train_x, exp_train_y), (exp_test_x, exp_test_y)) == stratifiedobs((tX, ty), rng=MersenneTwister(42))
+end
