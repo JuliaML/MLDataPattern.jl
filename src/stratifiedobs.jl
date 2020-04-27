@@ -208,7 +208,7 @@ function stratifiedobs(data; p = 0.7, shuffle = true, obsdim = default_obsdim(da
 end
 
 function stratifiedobs(f, data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.GLOBAL_RNG)
-    stratifiedobs(f, data, p, shuffle, convert(ObsDimension, obsdim))
+    stratifiedobs(f, data, p, shuffle, convert(ObsDimension, obsdim), rng)
 end
 
 function stratifiedobs(data, p::AbstractFloat, args...)
