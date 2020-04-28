@@ -102,3 +102,8 @@ Random.seed!(42)
     @test ((def_train_x, def_train_y), (def_test_x, def_test_y)) == ((exp_train_x, exp_train_y), (exp_test_x, exp_test_y))
     @test ((exp_train_x, exp_train_y), (exp_test_x, exp_test_y)) == stratifiedobs((tX, ty), rng=MersenneTwister(42))
 end
+
+@testset "RNG with callback" begin
+    exp_train_y, exp_test_y = stratifiedobs(y->y==:a, ty, rng=MersenneTwister(42))
+    @test (exp_train_y, exp_test_y) == stratifiedobs(y->y==:a, ty, rng=MersenneTwister(42))
+end
