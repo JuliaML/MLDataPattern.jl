@@ -248,7 +248,7 @@ column ``:y`` contains the targets.
    │ 4   │ 0.582912  │ 0.509047 │ a │
    │ 5   │ 0.407289  │ 0.113006 │ b │
 
-   julia> targets(row->row[1,:y], df)
+   julia> targets(row->row[:y], df)
    5-element Array{Symbol,1}:
     :a
     :a
@@ -421,7 +421,7 @@ we will assume that the column ``:y`` contains the targets.
    │ 4   │ 0.582912  │ 0.509047 │ a │
    │ 5   │ 0.407289  │ 0.113006 │ b │
 
-   julia> iter = eachtarget(row->row[1,:y], df)
+   julia> iter = eachtarget(row->row[:y], df)
    Base.Generator{MLDataPattern.ObsView{MLDataPattern.DataSubset{DataFrames.DataFrame,Int64,LearnBase.ObsDim.Undefined},...
 
    julia> collect(iter)
@@ -590,7 +590,7 @@ be done generically by specifying a target-extraction-function.
    │ 4   │ 0.522172 │ 0.812814  │ a │
    │ 5   │ 0.505208 │ 0.245457  │ b │
 
-   julia> targets(row->row[1,:y], df)
+   julia> targets(row->row[:y], df)
    5-element Array{Symbol,1}:
     :a
     :a
@@ -603,9 +603,9 @@ overloading ``LearnBase.gettarget``.
 
 .. code-block:: julia
 
-   LearnBase.gettarget(col::Symbol, df::DataFrame) = df[1, col]
+   LearnBase.gettarget(col::Symbol, df::DataFrameRow) = df[col]
 
-This now allows us to call ``targets(:Y, dataframe)``. While not
+This now allows us to call ``targets(:y, dataframe)``. While not
 strictly necessary in this case, it can be quite useful for
 special types of observations, such as ``ImageMeta``.
 
@@ -624,7 +624,7 @@ column denotes the targets unless otherwise specified.
 
 .. code-block:: julia
 
-   LearnBase.gettarget(df::DataFrame) = df[1, end]
+   LearnBase.gettarget(df::DataFrameRow) = df[end]
 
 Note that this might not be a good idea for a ``DataFrame`` in
 particular. The purpose of this exercise is solely to show what
