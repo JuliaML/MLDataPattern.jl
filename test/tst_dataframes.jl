@@ -5,13 +5,13 @@
     @testset "targets" begin
         y = [:a,:a,:b,:a,:b]
         df = DataFrame(x1 = rand(5), x2 = rand(5), y = y)
-        @test y == targets(row->row[:y], df)
+        @test y == targets(row->row.y, df)
     end
 
     @testset "eachtarget" begin
         y = [:a,:a,:b,:a,:b]
         df = DataFrame(x1 = rand(5), x2 = rand(5), y = y)
-        iter = eachtarget(row->row[:y], df)
+        iter = eachtarget(row->row.y, df)
         @test y == collect(iter)
     end
 

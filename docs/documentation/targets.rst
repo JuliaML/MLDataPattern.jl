@@ -248,7 +248,7 @@ column ``:y`` contains the targets.
    │ 4   │ 0.582912  │ 0.509047 │ a │
    │ 5   │ 0.407289  │ 0.113006 │ b │
 
-   julia> targets(row->row[:y], df)
+   julia> targets(row->row.y, df)
    5-element Array{Symbol,1}:
     :a
     :a
@@ -421,7 +421,7 @@ we will assume that the column ``:y`` contains the targets.
    │ 4   │ 0.582912  │ 0.509047 │ a │
    │ 5   │ 0.407289  │ 0.113006 │ b │
 
-   julia> iter = eachtarget(row->row[:y], df)
+   julia> iter = eachtarget(row->row.y, df)
    Base.Generator{MLDataPattern.ObsView{MLDataPattern.DataSubset{DataFrames.DataFrame,Int64,LearnBase.ObsDim.Undefined},...
 
    julia> collect(iter)
@@ -590,7 +590,7 @@ be done generically by specifying a target-extraction-function.
    │ 4   │ 0.522172 │ 0.812814  │ a │
    │ 5   │ 0.505208 │ 0.245457  │ b │
 
-   julia> targets(row->row[:y], df)
+   julia> targets(row->row.y, df)
    5-element Array{Symbol,1}:
     :a
     :a
