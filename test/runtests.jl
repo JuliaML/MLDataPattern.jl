@@ -6,6 +6,7 @@ using MLDataPattern
 using ReferenceTests
 using Random
 using SparseArrays
+using DataFrames
 
 # --------------------------------------------------------------------
 # create some test data
@@ -69,6 +70,7 @@ tests = [
     "tst_resample.jl"
     "tst_folds.jl"
     "tst_dataiterator.jl"
+    "tst_dataframes.jl"
 ]
 
 for t in tests
