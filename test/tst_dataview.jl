@@ -1,9 +1,9 @@
 @testset "ObsView" begin
     @test ObsView <: AbstractVector
-    @test ObsView <: DataView
-    @test ObsView <: AbstractObsView
-    @test ObsView <: AbstractObsIterator
-    @test ObsView <: AbstractDataIterator
+    @test ObsView <: LearnBase.DataView
+    @test ObsView <: LearnBase.AbstractObsView
+    @test ObsView <: LearnBase.AbstractObsIterator
+    @test ObsView <: LearnBase.AbstractDataIterator
     @test obsview === ObsView
 
     @testset "constructor" begin
@@ -169,10 +169,10 @@ end
 
 @testset "BatchView" begin
     @test BatchView <: AbstractVector
-    @test BatchView <: DataView
-    @test BatchView <: AbstractBatchView
-    @test BatchView <: AbstractBatchIterator
-    @test BatchView <: AbstractDataIterator
+    @test BatchView <: LearnBase.DataView
+    @test BatchView <: LearnBase.AbstractBatchView
+    @test BatchView <: LearnBase.AbstractBatchIterator
+    @test BatchView <: LearnBase.AbstractDataIterator
     @test batchview == BatchView
     @test_throws MethodError oversample(BatchView(X))
     @test_throws MethodError undersample(BatchView(X))

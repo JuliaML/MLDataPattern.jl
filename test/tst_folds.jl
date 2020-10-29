@@ -52,8 +52,8 @@ println("<HEARTBEAT>")
 
 @testset "FoldsView constructor" begin
     @test FoldsView <: AbstractVector
-    @test FoldsView <: DataView
-    @test FoldsView{Tuple} <: DataView{Tuple}
+    @test FoldsView <: LearnBase.DataView
+    @test FoldsView{Tuple} <: LearnBase.DataView{Tuple}
 
     @test_reference "references/FoldsView.txt" @io2str show(::IO, MIME"text/plain"(), kfolds(rand(10),k=5))
 

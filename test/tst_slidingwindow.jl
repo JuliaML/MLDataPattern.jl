@@ -1,9 +1,9 @@
 @testset "UnlabeledSlidingWindow" begin
     @test_throws UndefVarError UnlabeledSlidingWindow
     @test MLDataPattern.UnlabeledSlidingWindow <: AbstractVector
-    @test MLDataPattern.UnlabeledSlidingWindow <: DataView
-    @test !(MLDataPattern.UnlabeledSlidingWindow <: AbstractObsIterator)
-    @test !(MLDataPattern.UnlabeledSlidingWindow <: AbstractBatchIterator)
+    @test MLDataPattern.UnlabeledSlidingWindow <: LearnBase.DataView
+    @test !(MLDataPattern.UnlabeledSlidingWindow <: LearnBase.AbstractObsIterator)
+    @test !(MLDataPattern.UnlabeledSlidingWindow <: LearnBase.AbstractBatchIterator)
 
     @testset "constructor" begin
         @test_throws DimensionMismatch slidingwindow((rand(2,10),rand(9)), 1)
@@ -180,9 +180,9 @@ end
 @testset "LabeledSlidingWindow" begin
     @test_throws UndefVarError LabeledSlidingWindow
     @test MLDataPattern.LabeledSlidingWindow <: AbstractVector
-    @test MLDataPattern.LabeledSlidingWindow <: DataView
-    @test !(MLDataPattern.LabeledSlidingWindow <: AbstractObsIterator)
-    @test !(MLDataPattern.LabeledSlidingWindow <: AbstractBatchIterator)
+    @test MLDataPattern.LabeledSlidingWindow <: LearnBase.DataView
+    @test !(MLDataPattern.LabeledSlidingWindow <: LearnBase.AbstractObsIterator)
+    @test !(MLDataPattern.LabeledSlidingWindow <: LearnBase.AbstractBatchIterator)
 
     @testset "constructor" begin
         @test_throws DimensionMismatch slidingwindow(i->i, (rand(2,10),rand(9)), 1)

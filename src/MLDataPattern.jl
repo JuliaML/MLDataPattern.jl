@@ -4,7 +4,9 @@ using LearnBase
 using MLLabelUtils
 
 using LearnBase: ObsDimension
-import LearnBase: nobs, getobs, getobs!, gettarget, gettargets, targets, datasubset, default_obsdim
+import StatsBase: nobs
+import LearnBase: getobs, getobs!, gettarget, gettargets, targets, datasubset, default_obsdim, DataView,
+    AbstractObsView, AbstractBatchView, DataIterator, AbstractDataIterator, ObsIterator, BatchIterator
 
 using Base.Cartesian
 using Random
