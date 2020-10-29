@@ -162,7 +162,7 @@ code allows `stratifiedobs` to work on a `DataTable`.
 ```julia
 # Make DataTables.jl work
 LearnBase.getobs(data::DataTable, i) = data[i,:]
-LearnBase.nobs(data::DataTable) = nrow(data)
+StatsBase.nobs(data::DataTable) = nrow(data)
 ```
 
 You can use the parameter `f` to specify how to extract or

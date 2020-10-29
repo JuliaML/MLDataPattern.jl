@@ -507,7 +507,7 @@ targets are available in some member variable.
 
    LearnBase.getobs(::DummyDirImageSource, i) = error("expensive computation triggered")
 
-   LearnBase.nobs(data::DummyDirImageSource) = length(data.targets)
+   StatsBase.nobs(data::DummyDirImageSource) = length(data.targets)
 
 Naturally, we would like to avoid calling :func:`getobs` if at
 all possible. While we can't avoid calling :func:`getobs` when we
@@ -571,7 +571,7 @@ Example 1). Furthermore, each observation is itself also a
 
    LearnBase.getobs(df::DataFrame, idx) = df[idx,:]
 
-   LearnBase.nobs(df::DataFrame) = nrow(df)
+   StatsBase.nobs(df::DataFrame) = nrow(df)
 
 Here we are fine with :func:`getobs` being called, since we need
 to access the actual ``DataFrame`` anyway. However, we still need
