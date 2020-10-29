@@ -1,38 +1,3 @@
-getobs(data; obsdim = default_obsdim(data)) =
-    __getobs(data, convert(LearnBase.ObsDimension,obsdim))
-
-# These "__" methods serve the sole purpose of avoiding ambiguities
-# when a user defines "getobs" for his/her type.
-# Basically if obsdim is undefined, we assume there is no
-# getobs(::MyType, ::ObsDimension) to care about.
-# All others are fed back into "getobs" dispatch
-@inline __getobs(data, obsdim::ObsDim.Undefined) = _getobs(data, obsdim)
-@inline __getobs(data, obsdim::ObsDimension) = getobs(data, obsdim)
-@inline __getobs(data::Tuple, obsdim::Tuple) = getobs(data, obsdim)
-
-getobs!(buffer, data) = getobs(data)
-getobs!(buffer, data, idx, obsdim) = getobs(data, idx, obsdim)
-getobs!(buffer, data, idx; obsdim = default_obsdim(data)) =
-    getobs!(buffer, data, idx, convert(LearnBase.ObsDimension,obsdim))
-# NOTE: default to not use buffer since copy! may not be defined
-# getobs!(buffer, data) = copy!(buffer, getobs(data))
-# getobs!(buffer, data, idx, obsdim) = copy!(buffer, getobs(data, idx, obsdim))
-
-# fallback methods discards unused obsdim
-nobs(data, ::ObsDim.Undefined)::Int = nobs(data)
-getobs(data, idx, ::ObsDim.Undefined) = getobs(data, idx)
-
-# to accumulate indices as views instead of copies
-_view(indices::AbstractRange, i::Int) = indices[i]
-_view(indices::AbstractRange, i::AbstractRange) = indices[i]
-_view(indices, i::Int) = indices[i] # to throw error in case
-_view(indices, i) = view(indices, i)
-
-# can be used to prevent specific data container to be used
-# in (specific) functions. For example passing a BatchView to
-# oversample or undersample should throw an error
-allowcontainer(fun, data) = true
-
 """
     nobs(data, [obsdim]) -> Int
 
@@ -42,12 +7,8 @@ The optional parameter `obsdim` can be used to specify which
 dimension denotes the observations, if that concept makes sense for
 the type of `data`. See `?LearnBase.ObsDim` for more information.
 """
-function nobs(data; obsdim = default_obsdim(data))::Int
-    nobsdim = convert(LearnBase.ObsDimension,obsdim)
-    # make sure we don't bounce between fallback methods
-    typeof(nobsdim) <: ObsDim.Undefined && throw(MethodError(nobs, (data,)))
-    nobs(data, nobsdim)
-end
+StatsBase.nobs(data; obsdim = default_obsdim(data)) = nobs(data, obsdim)
+StatsBase.nobs(data, obsdim::Nothing) = nobs(data)
 
 """
     getobs(data, [idx], [obsdim])
@@ -68,35 +29,25 @@ can be specified in a type-stable manner as a positional argument
 (see `?LearnBase.ObsDim`), or more conveniently as a smart
 keyword argument.
 """
-getobs(data, arg, args...; kw...) = _getobs(data, arg, args...; kw...)
-getobs(data, arg) = _getobs(data, arg)
 
-# These "_" methods serve the sole purpose of avoiding ambiguities
-# when a user defines "getobs" for his/her type.
-# The problem would be getobs(::Any, ::Union{ObsDimension,Tuple}),
-# which would likely collide with getobs(::MyType, idx)
-@inline function _getobs(data, idx; obsdim = default_obsdim(data))
-    nobsdim = convert(LearnBase.ObsDimension,obsdim)
-    # make sure we don't bounce between fallback methods
-    typeof(nobsdim) <: ObsDim.Undefined && throw(MethodError(getobs, (data,idx)))
-    getobs(data, idx, nobsdim)
-end
+# --------------------------------------------------------------------
+# Global keyword definitions
 
-@inline _getobs(data, obsdim::Union{ObsDimension,Tuple}) =
-    getobs(data, 1:nobs(data,obsdim), obsdim)
+LearnBase.getobs(data, idx; obsdim = default_obsdim(data)) = getobs(data, idx, obsdim)
 
 # --------------------------------------------------------------------
 # Arrays
 
-nobs(A::AbstractArray, ::ObsDim.Constant{DIM}) where {DIM} = size(A, DIM)::Int
-nobs(A::AbstractArray{T,N}, ::ObsDim.Last) where {T,N} = size(A, N)::Int
-nobs(A::AbstractArray{T,0}, ::ObsDim.Last) where {T} = 1
+# StatsBase.nobs(A::AbstractArray; obsdim = default_obsdim(A)) = size(A, obsdim)
+# StatsBase.nobs(A::AbstractArray{T,0}; obsdim = default_obsdim(A)) where {T} = 1
 
-getobs(A::Array, ::ObsDimension=default_obsdim(A)) = A
-getobs(A::AbstractSparseArray, ::ObsDimension=default_obsdim(A)) = A
-getobs(A::SubArray, ::ObsDimension=default_obsdim(A)) = copy(A)
-getobs(A::SubArray{T,0}, ::ObsDimension=default_obsdim(A)) where {T} = A[1]
-getobs(A::AbstractArray, ::ObsDimension=default_obsdim(A)) = collect(A)
+# LearnBase.getobs(A::Array, obsdim) = A
+# LearnBase.getobs(A::AbstractSparseArray, obsdim) = A
+# LearnBase.getobs(A::SubArray, obsdim) = copy(A)
+# LearnBase.getobs(A::SubArray{T,0}, obsdim) where {T} = A[1]
+# LearnBase.getobs(A::AbstractArray, obsdim) = collect(A)
+
+LearnBase.getobs(A::AbstractArray, idx, obsdim) = selectdim(A, obsdim, idx)
 
 """
     getobs!(buffer, data, [idx], [obsdim]) -> buffer
@@ -114,39 +65,14 @@ can be specified in a type-stable manner as a positional argument
 (see `?LearnBase.ObsDim`), or more conveniently as a smart
 keyword argument.
 """
-getobs!(buffer, A::AbstractSparseArray, idx, obsdim) = getobs(A, idx, obsdim)
-getobs!(buffer, A::AbstractSparseArray) = getobs(A)
-
-getobs!(buffer, A::AbstractArray, idx, obsdim) = getobs!(buffer, datasubset(A, idx, obsdim))
-getobs!(buffer, A::AbstractArray) = copyto!(buffer, A)
-
-getobs!(buffer, A::SubArray{T,0}) where {T} = A[1]
-
-# catch the undefined setting for consistency.
-# should never happen by accident
-getobs(A::AbstractArray, idx, obsdim::ObsDim.Undefined) =
-    throw(MethodError(getobs, (A, idx, obsdim)))
-
-@generated function getobs(A::AbstractArray{T,N}, idx, obsdim::ObsDimension) where {T,N}
-    if N <= 1 && idx <: Integer
-        :(A[idx])
-    elseif N == 0
-        throw(ArgumentError("attempting to index 0-dimensional array using indices of type $idx"))
-    elseif obsdim <: ObsDim.First
-        :(getindex(A, idx, $(fill(:(:),N-1)...)))
-    elseif obsdim <: ObsDim.Last || (obsdim <: ObsDim.Constant && obsdim.parameters[1] == N)
-        :(getindex(A, $(fill(:(:),N-1)...), idx))
-    else # obsdim <: ObsDim.Constant
-        DIM = obsdim.parameters[1]
-        DIM > N && throw(DimensionMismatch("the given obsdim=$DIM is greater than the number of available dimensions N=$N"))
-        :(getindex(A, $(fill(:(:),DIM-1)...), idx, $(fill(:(:),N-DIM)...)))
-    end
-end
+LearnBase.getobs!(buffer, A::AbstractArray, idx, obsdim) =
+    getobs!(buffer, datasubset(A, idx, obsdim))
 
 # --------------------------------------------------------------------
 # Tuples
 
-_check_nobs_error() = throw(DimensionMismatch("all data container must have the same number of observations"))
+_check_nobs_error() =
+    throw(DimensionMismatch("All data containers must have the same number of observations."))
 
 function _check_nobs(tup::Tuple)
     length(tup) == 0 && return
@@ -166,52 +92,33 @@ end
 
 function _check_nobs(tup::Tuple, obsdims::Tuple)
     length(tup) == 0 && return
-    length(tup) == length(obsdims) || throw(DimensionMismatch("number of elements in obsdim doesn't match data"))
-    all(map(x-> typeof(x) <: Union{ObsDimension,Tuple}, obsdims)) || throw(MethodError(_check_nobs, (tup, obsdims)))
+    length(tup) == length(obsdims) ||
+        throw(DimensionMismatch("Number of elements in obsdim doesn't match data."))
     n1 = nobs(tup[1], obsdims[1])
     for i=2:length(tup)
         nobs(tup[i], obsdims[i]) != n1 && _check_nobs_error()
     end
 end
 
-function nobs(tup::Tuple, ::ObsDim.Undefined = ObsDim.Undefined())::Int
+function LearnBase.nobs(tup::Tuple, obsdim::Nothing)::Int
     _check_nobs(tup)
-    length(tup) == 0 ? 0 : nobs(tup[1])
+    return length(tup) == 0 ? 0 : nobs(tup[1])
 end
 
-function nobs(tup::Tuple, obsdim::ObsDimension)::Int
+function LearnBase.nobs(tup::Tuple, obsdim)::Int
     _check_nobs(tup, obsdim)
-    length(tup) == 0 ? 0 : nobs(tup[1], obsdim)
+    return length(tup) == 0 ? 0 : nobs(tup[1], obsdim)
 end
 
-function nobs(tup::Tuple, obsdims::Tuple)::Int
-    _check_nobs(tup, obsdims)
-    length(tup) == 0 ? 0 : nobs(tup[1], obsdims[1])
-end
-
-function getobs(tup::Tuple, obsdim::Tuple)
-    _check_nobs(tup)
-    map(getobs, tup, obsdim)
-end
-
-function getobs(tup::Tuple, obsdim::ObsDimension)
+function LearnBase.getobs(tup::Tuple, indices, obsdim)
     _check_nobs(tup, obsdim)
-    map(data -> getobs(data, obsdim), tup)
+    return map(data -> getobs(data, indices, obsdim), tup)
 end
 
-function getobs(tup::Tuple, indices)
-    _check_nobs(tup)
-    map(data -> getobs(data, indices), tup)
-end
-
-function getobs(tup::Tuple, indices, obsdim::ObsDimension)
-    _check_nobs(tup, obsdim)
-    map(data -> getobs(data, indices, obsdim), tup)
-end
-
-@generated function getobs(tup::Tuple, indices, obsdims::Tuple)
+@generated function LearnBase.getobs(tup::Tuple, indices, obsdims::Tuple)
     N = length(obsdims.types)
-    quote
+
+    return quote
         _check_nobs(tup, obsdims)
         # This line generates a tuple of N elements:
         # (getobs(tup[1], indices, obsdims[1]), getobs(tup[2], indi...
@@ -219,26 +126,19 @@ end
     end
 end
 
-_getobs_error() = throw(DimensionMismatch("the first argument (tuple with the buffers) must have the same length as the second argument (tuple with the data container)"))
+_getobs_tuple_error() =
+    throw(DimensionMismatch("The first argument (tuple with the buffers) must have the same length as the second argument (tuple with the data containers)."))
 
-@generated function getobs!(buffer::Tuple, tup::Tuple)
+@generated function LearnBase.getobs!(buffer::Tuple, tup::Tuple, indices, obsdim)
     N = length(buffer.types)
-    N == length(tup.types) || _getobs_error()
-    quote
-        # _check_nobs(tup) # don't check because of single obs
-        $(Expr(:tuple, (:(getobs!(buffer[$i],tup[$i])) for i in 1:N)...))
-    end
-end
-
-@generated function getobs!(buffer::Tuple, tup::Tuple, indices, obsdim)
-    N = length(buffer.types)
-    N == length(tup.types) || _getobs_error()
-    expr = if obsdim <: ObsDimension
-        Expr(:tuple, (:(getobs!(buffer[$i], tup[$i], indices, obsdim)) for i in 1:N)...)
-    else
+    N == length(tup.types) || _getobs_tuple_error()
+    expr = if obsdim <: Tuple
         Expr(:tuple, (:(getobs!(buffer[$i], tup[$i], indices, obsdim[$i])) for i in 1:N)...)
+    else
+        Expr(:tuple, (:(getobs!(buffer[$i], tup[$i], indices, obsdim)) for i in 1:N)...)
     end
-    quote
+
+    return quote
         # _check_nobs(tup, obsdim) # don't check because of single obs
         $expr
     end

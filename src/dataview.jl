@@ -1,24 +1,20 @@
 Base.IndexStyle(::Type{T}) where {T<:DataView} = IndexLinear()
 Base.size(A::DataView) = (length(A),)
 Base.lastindex(A::DataView) = length(A)
-getobs(A::DataView) = map(getobs, A)
-getobs(A::DataView, i) = getobs(A[i])
-getobs(A::DataView{T}) where {T<:Tuple} = map(i->getobs(A,i), 1:length(A))
-getobs(A::DataView{T}, i::Integer) where {T<:Tuple} = map(getobs, A[i])
+LearnBase.getobs(A::DataView, i) = getobs(A[i])
+LearnBase.getobs(A::DataView{T}) where {T<:Tuple} = map(i->getobs(A,i), 1:length(A))
 
 allowcontainer(fun, ::AbstractObsView) = true
 allowcontainer(fun, ::DataView) = false
 
-# for proper dispatch to trump the abstract arrays one
-for T in (ObsDim.Constant, ObsDim.Last, Tuple)
-    @eval function nobs(A::DataView, obsdim::$T)
-        @assert obsdim === default_obsdim(A)
-        nobs(A)
-    end
-    @eval function getobs(A::DataView, idx, obsdim::$T)
-        @assert obsdim === default_obsdim(A)
-        getobs(A, idx)
-    end
+function StatsBase.nobs(A::DataView, obsdim)
+    @assert obsdim === default_obsdim(A)
+    return nobs(A)
+end
+
+function LearnBase.getobs(A::DataView, idx, obsdim)
+    @assert obsdim === default_obsdim(A)
+    return getobs(A, idx)
 end
 
 # --------------------------------------------------------------------
@@ -136,10 +132,9 @@ function ObsView(A::ObsView, obsdim)
     A
 end
 
-ObsView(data; obsdim = default_obsdim(data)) =
-    ObsView(data, convert(LearnBase.ObsDimension,obsdim))
+ObsView(data; obsdim = default_obsdim(data)) = ObsView(data, obsdim)
 
-nobs(A::ObsView) = nobs(A.data, A.obsdim)
+StatsBase.nobs(A::ObsView) = nobs(A.data, A.obsdim)
 Base.parent(A::ObsView) = A.data
 Base.length(A::ObsView) = nobs(A)
 Base.getindex(A::ObsView, i::Int) = datasubset(A.data, i, A.obsdim)
@@ -147,7 +142,7 @@ Base.getindex(A::ObsView, i::AbstractVector) =
     ObsView(datasubset(A.data, i, A.obsdim), A.obsdim)
 
 # compatibility with nested functions
-default_obsdim(A::ObsView) = A.obsdim
+LearnBase.default_obsdim(A::ObsView) = A.obsdim
 
 @doc (@doc ObsView)
 const obsview = ObsView

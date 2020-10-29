@@ -33,7 +33,7 @@ For this function to work, the type of `data` must implement
 for more information.
 """
 shuffleobs(data; obsdim = default_obsdim(data), rng::AbstractRNG = Random.GLOBAL_RNG) =
-    shuffleobs(data, convert(LearnBase.ObsDimension,obsdim), rng)
+    shuffleobs(data, obsdim, rng)
 
 function shuffleobs(data, obsdim, rng::AbstractRNG = Random.GLOBAL_RNG)
     allowcontainer(shuffleobs, data) || throw(MethodError(shuffleobs, (data,obsdim)))

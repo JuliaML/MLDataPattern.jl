@@ -164,7 +164,7 @@ see also
 [`splitobs`](@ref), [`shuffleobs`](@ref),
 [`KFolds`](@ref), [`BatchView`](@ref), [`ObsView`](@ref),
 """
-struct DataSubset{T, I<:Union{Int,AbstractVector}, O<:ObsDimension}
+struct DataSubset{T, I<:Union{Int,AbstractVector}, O}
     data::T
     indices::I
     obsdim::O
@@ -174,7 +174,7 @@ struct DataSubset{T, I<:Union{Int,AbstractVector}, O<:ObsDimension}
             error("inner constructor should not be called using a Tuple")
         end
         1 <= minimum(indices) || throw(BoundsError(data, indices))
-        maximum(indices) <= nobs(data, obsdim) || throw(BoundsError(data, indices))
+        maximum(indices) >= nobs(data, obsdim) || throw(BoundsError(data, indices))
         new{T,I,O}(data, indices, obsdim)
     end
 end
@@ -224,41 +224,23 @@ Base.lastindex(subset::DataSubset) = length(subset)
 Base.getindex(subset::DataSubset, idx) =
     DataSubset(subset.data, _view(subset.indices, idx), subset.obsdim)
 
-nobs(subset::DataSubset) = length(subset)
+StatsBase.nobs(subset::DataSubset) = length(subset)
 
-getobs(subset::DataSubset) =
-    getobs(subset.data, subset.indices, subset.obsdim)
-
-function getobs(subset::DataSubset, obsdim::ObsDimension)
-    @assert obsdim === subset.obsdim
-    getobs(subset)
-end
-
-getobs(subset::DataSubset, idx) =
+LearnBase.getobs(subset::DataSubset, idx) =
     getobs(subset.data, _view(subset.indices, idx), subset.obsdim)
 
-getobs!(buffer, subset::DataSubset) =
-    getobs!(buffer, subset.data, subset.indices, subset.obsdim)
-
-getobs!(buffer, subset::DataSubset, idx) =
+LearnBase.getobs!(buffer, subset::DataSubset, idx) =
     getobs!(buffer, subset.data, _view(subset.indices, idx), subset.obsdim)
 
 # compatibility with nested functions
-default_obsdim(subset::DataSubset) = subset.obsdim
+LearnBase.default_obsdim(subset::DataSubset) = subset.obsdim
 
-nobs(subset::DataSubset, ::ObsDim.Undefined) = nobs(subset)
-
-function nobs(subset::DataSubset, obsdim::ObsDimension)
-    @assert obsdim === subset.obsdim
-    nobs(subset)
-end
-
-function getobs(subset::DataSubset, idx, obsdim::ObsDimension)
+function LearnBase.getobs(subset::DataSubset, idx, obsdim)
     @assert obsdim === subset.obsdim
     getobs(subset, idx)
 end
 
-function getobs!(buffer, subset::DataSubset, idx, obsdim::ObsDimension)
+function LearnBase.getobs!(buffer, subset::DataSubset, idx, obsdim)
     @assert obsdim === subset.obsdim
     getobs!(buffer, subset, idx)
 end
@@ -288,48 +270,40 @@ keyword argument.
 
 see `DataSubset` for more information.
 """
-datasubset(data, indices, obsdim) =
+LearnBase.datasubset(data, indices, obsdim) =
     DataSubset(data, indices, obsdim)
+LearnBase.datasubset(data, indices; obsdim = default_obsdim(data)) =
+    datasubset(data, indices, obsdim)
 
 # --------------------------------------------------------------------
 
+DataSubset(subset::DataSubset) = subset
+LearnBase.datasubset(subset::DataSubset) = subset
+
 for fun in (:DataSubset, :datasubset)
     @eval begin
-        ($fun)(data, indices; obsdim = default_obsdim(data)) =
-            ($fun)(data, indices, convert(LearnBase.ObsDimension,obsdim))
-
-        function ($fun)(data; obsdim = default_obsdim(data))
-            nobsdim = convert(LearnBase.ObsDimension,obsdim)
-            ($fun)(data, 1:nobs(data, nobsdim), nobsdim)
-        end
-
         # No-op
         ($fun)(subset::DataSubset) = subset
 
         # allow type-stable way to just provide the obsdim
-        ($fun)(data, obsdim::ObsDimension) =
-            ($fun)(data, 1:nobs(data, obsdim), obsdim)
+        ($fun)(data, obsdim) = ($fun)(data, 1:nobs(data, obsdim), obsdim)
 
-        ($fun)(data::Tuple, obsdim::ObsDimension) =
-            ($fun)(data, 1:nobs(data, obsdim), obsdim)
-
-        ($fun)(data::Tuple, obsdim::Tuple) =
-            ($fun)(data, 1:nobs(data, obsdim), obsdim)
+        ($fun)(data::Tuple, obsdim::Tuple) = ($fun)(data, 1:nobs(data, obsdim), obsdim)
 
         # map DataSubset over the tuple
         function ($fun)(tup::Tuple)
             _check_nobs(tup)
-            map(data -> ($fun)(data), tup)
+            return map(data -> ($fun)(data), tup)
         end
 
         function ($fun)(tup::Tuple, indices)
             _check_nobs(tup)
-            map(data -> ($fun)(data, indices), tup)
+            return map(data -> ($fun)(data, indices), tup)
         end
 
-        function ($fun)(tup::Tuple, indices, obsdim::ObsDimension)
+        function ($fun)(tup::Tuple, indices, obsdim)
             _check_nobs(tup, obsdim)
-            map(data -> ($fun)(data, indices, obsdim), tup)
+            return map(data -> ($fun)(data, indices, obsdim), tup)
         end
 
         @generated function ($fun)(tup::Tuple, indices, obsdims::Tuple)
@@ -347,27 +321,10 @@ end
 # --------------------------------------------------------------------
 # Arrays
 
-datasubset(A::SubArray; kw...) = A
+LearnBase.datasubset(A::SubArray; kw...) = A
 
 # catch the undefined setting for consistency.
 # should never happen by accident
-datasubset(A::AbstractArray, idx, obsdim::ObsDim.Undefined) =
+LearnBase.datasubset(A::AbstractArray, idx, obsdim::Nothing) =
     throw(MethodError(datasubset, (A, idx, obsdim)))
-
-datasubset(A::AbstractSparseArray, idx, obsdim::ObsDimension) =
-    DataSubset(A, idx, obsdim)
-
-@generated function datasubset(A::AbstractArray{T,N}, idx, obsdim::ObsDimension) where {T,N}
-    @assert N > 0
-    if N == 1 && idx <: Integer
-        :(view(A, idx))
-    elseif obsdim <: ObsDim.First
-        :(view(A, idx, $(fill(:(:),N-1)...)))
-    elseif obsdim <: ObsDim.Last || (obsdim <: ObsDim.Constant && obsdim.parameters[1] == N)
-        :(view(A, $(fill(:(:),N-1)...), idx))
-    else # obsdim <: ObsDim.Constant
-        DIM = obsdim.parameters[1]
-        DIM > N && throw(DimensionMismatch("the given obsdim=$DIM is greater than the number of available dimensions N=$N"))
-        :(view(A, $(fill(:(:),DIM-1)...), idx, $(fill(:(:),N-DIM)...)))
-    end
-end
+LearnBase.datasubset(A::AbstractArray, idx, obsdim) = selectdim(A, obsdim, idx)

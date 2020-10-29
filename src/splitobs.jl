@@ -111,7 +111,7 @@ see [`stratifiedobs`](@ref) for a related function that preserves
 the target distribution.
 """
 splitobs(data; at = 0.7, obsdim = default_obsdim(data)) =
-    splitobs(data, at, convert(LearnBase.ObsDimension,obsdim))
+    splitobs(data, at, obsdim)
 
 # partition into 2 sets
 function splitobs(data, at::AbstractFloat, obsdim=default_obsdim(data))

@@ -87,7 +87,7 @@ see [`DataSubset`](@ref) for more information on data subsets.
 see also [`undersample`](@ref) and [`stratifiedobs`](@ref).
 """
 oversample(data; fraction=1, shuffle=true, obsdim=default_obsdim(data)) =
-    oversample(identity, data, fraction, shuffle, convert(LearnBase.ObsDimension,obsdim))
+    oversample(identity, data, fraction, shuffle, obsdim)
 
 oversample(data, shuffle::Bool, obsdim=default_obsdim(data)) =
     oversample(identity, data, shuffle, obsdim)
@@ -99,7 +99,7 @@ oversample(data, fraction::Real, shuffle::Bool, obsdim=default_obsdim(data)) =
     oversample(identity, data, fraction, shuffle, obsdim)
 
 oversample(f, data; fraction=1, shuffle=true, obsdim=default_obsdim(data)) =
-    oversample(f, data, fraction, shuffle, convert(LearnBase.ObsDimension,obsdim))
+    oversample(f, data, fraction, shuffle, obsdim)
 
 oversample(f, data, shuffle::Bool, obsdim=default_obsdim(data)) =
     oversample(identity, data, 1, shuffle, obsdim)
@@ -209,13 +209,13 @@ see [`DataSubset`](@ref) for more information on data subsets.
 see also [`oversample`](@ref) and [`stratifiedobs`](@ref).
 """
 undersample(data; shuffle=false, obsdim=default_obsdim(data)) =
-    undersample(identity, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
+    undersample(identity, data, shuffle, obsdim)
 
 undersample(data, shuffle::Bool, obsdim=default_obsdim(data)) =
     undersample(identity, data, shuffle, obsdim)
 
 undersample(f, data; shuffle=false, obsdim=default_obsdim(data)) =
-    undersample(f, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
+    undersample(f, data, shuffle, obsdim)
 
 function undersample(f, data, shuffle::Bool, obsdim=default_obsdim(data))
     allowcontainer(undersample, data) || throw(MethodError(undersample, (f,data,shuffle,obsdim)))

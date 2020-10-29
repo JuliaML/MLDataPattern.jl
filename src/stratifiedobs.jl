@@ -204,11 +204,11 @@ see [`DataSubset`](@ref) for more information on data subsets.
 see also [`undersample`](@ref), [`oversample`](@ref), [`splitobs`](@ref).
 """
 function stratifiedobs(data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.GLOBAL_RNG)
-    stratifiedobs(identity, data, p, shuffle, convert(ObsDimension, obsdim), rng)
+    stratifiedobs(identity, data, p, shuffle, obsdim, rng)
 end
 
 function stratifiedobs(f, data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.GLOBAL_RNG)
-    stratifiedobs(f, data, p, shuffle, convert(ObsDimension, obsdim), rng)
+    stratifiedobs(f, data, p, shuffle, obsdim, rng)
 end
 
 function stratifiedobs(data, p::AbstractFloat, args...)
