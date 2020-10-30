@@ -46,8 +46,8 @@
     @testset "Array, SubArray, SparseArray" begin
         @test nobs(DataSubset(X, obsdim = 1)) == 4
         @test nobs(DataSubset(X, 1:3, obsdim = 1)) == 3
-        @test_reference "references/DataSubset1.txt" strip_summary(DataSubset(X, Int64(1):Int64(nobs(X))))
-        @test_reference "references/DataSubset2.txt" strip_summary(@io2str showcompact(::IO, DataSubset(X)))
+        @test_reference "references/DataSubset1.txt" DataSubset(X, Int64(1):Int64(nobs(X))) by=matrix_compat_isequal
+        @test_reference "references/DataSubset2.txt" @io2str showcompact(::IO, DataSubset(X)) by=matrix_compat_isequal
         for var in (Xs, ys, vars...)
             subset = @inferred(DataSubset(var))
             @test subset.data === var

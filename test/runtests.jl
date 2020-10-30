@@ -57,6 +57,8 @@ LearnBase.gettargets(::MetaDataStorage, i::AbstractVector) = "batch $i"
 
 # --------------------------------------------------------------------
 
+replace_matrix(x) = replace(x, "Matrix{Float64}"=>"Array{Float64,2}")
+matrix_compat_isequal(x,y) = isequal(replace_matrix(x), replace_matrix(y))
 strip_summary(content::String) = join(split(content, "\n")[2:end], "\n")
 
 tests = [
