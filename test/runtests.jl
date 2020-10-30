@@ -57,6 +57,8 @@ LearnBase.gettargets(::MetaDataStorage, i::AbstractVector) = "batch $i"
 
 # --------------------------------------------------------------------
 
+strip_summary(content::String) = join(split(content, "\n")[2:end], "\n")
+
 tests = [
     "tst_container.jl"
     "tst_datasubset.jl"
