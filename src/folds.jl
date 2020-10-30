@@ -167,8 +167,7 @@ end
 default_obsdim(iter::FoldsView) = iter.obsdim
 
 function Base.summary(A::FoldsView)
-    string(length(A), "-fold ", typeof(A).name,
-           " of ", nobs(A), " observations")
+    string(length(A), "-fold FoldsView of ", nobs(A), " observations")
 end
 
 _datastr(data) = summary(data)

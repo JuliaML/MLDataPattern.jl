@@ -5,10 +5,10 @@
         @test TIter <: LearnBase.AbstractDataIterator
         @test TIter <: LearnBase.AbstractObsIterator
     end
-    @test_reference "references/RandomObs1.txt" RandomObs(X)
-    @test_reference "references/RandomObs2.txt" RandomObs(X, 10)
-    @test_reference "references/BalancedObs1.txt" BalancedObs(X)
-    @test_reference "references/BalancedObs2.txt" BalancedObs(X, 10)
+    @test_reference "references/RandomObs1.txt" RandomObs(X) by=matrix_compat_isequal
+    @test_reference "references/RandomObs2.txt" RandomObs(X, 10) by=matrix_compat_isequal
+    @test_reference "references/BalancedObs1.txt" BalancedObs(X) by=matrix_compat_isequal
+    @test_reference "references/BalancedObs2.txt" BalancedObs(X, 10) by=matrix_compat_isequal
 
     for TIter in (RandomObs, BalancedObs)
         @testset "constructor for $TIter" begin
@@ -130,8 +130,8 @@ end
     @test RandomBatches <: LearnBase.BatchIterator
     @test RandomBatches <: LearnBase.AbstractDataIterator
     @test RandomBatches <: LearnBase.AbstractBatchIterator
-    @test_reference "references/RandomBatches1.txt" RandomBatches(X)
-    @test_reference "references/RandomBatches2.txt" RandomBatches(X,10,10)
+    @test_reference "references/RandomBatches1.txt" RandomBatches(X) by=matrix_compat_isequal
+    @test_reference "references/RandomBatches2.txt" RandomBatches(X,10,10) by=matrix_compat_isequal
 
     @testset "constructor" begin
         A = @inferred RandomBatches(rand(2,5), 10)
@@ -259,7 +259,7 @@ end
 @testset "BufferGetObs" begin
     @testset "ObsView" begin
         A = BufferGetObs(ObsView(X))
-        @test_reference "references/BufferGetObs1.txt" A
+        @test_reference "references/BufferGetObs1.txt" A by=matrix_compat_isequal
 
         @test size(A.buffer) == (4,)
         @test typeof(A.buffer) <: Array{Float64,1}
