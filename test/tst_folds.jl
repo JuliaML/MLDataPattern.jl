@@ -52,10 +52,10 @@ println("<HEARTBEAT>")
 
 @testset "FoldsView constructor" begin
     @test FoldsView <: AbstractVector
-    @test FoldsView <: DataView
-    @test FoldsView{Tuple} <: DataView{Tuple}
+    @test FoldsView <: LearnBase.DataView
+    @test FoldsView{Tuple} <: LearnBase.DataView{Tuple}
 
-    @test_reference "references/FoldsView.txt" @io2str show(::IO, MIME"text/plain"(), kfolds(rand(10),k=5))
+    @test_reference "references/FoldsView.txt" @io2str(show(::IO, MIME"text/plain"(), kfolds(rand(10),k=5))) by=matrix_compat_isequal
 
     @testset "Illegal arguments" begin
         # fold indices out of bounds for the given data

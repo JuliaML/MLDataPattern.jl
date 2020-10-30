@@ -117,7 +117,7 @@ require [`nobs`](@ref) and [`getobs`](@ref) to be defined.
 ```julia
 julia> LearnBase.getobs(data::DataFrame, i) = data[i,:]
 
-julia> LearnBase.nobs(data::DataFrame) = nrow(data)
+julia> StatsBase.nobs(data::DataFrame) = nrow(data)
 
 julia> data = DataFrame(X1=rand(3), X2=rand(3), Y=[:a,:b,:a])
 3×3 DataFrames.DataFrame

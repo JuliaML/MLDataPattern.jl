@@ -68,7 +68,7 @@ For `DataSubset` to work on some data structure, the desired type
     In what form is up to the user.
     Note that `idx` can be of type `Int` or `AbstractVector`.
 
-- `LearnBase.nobs(data::MyType, [obsdim::ObsDimension])` :
+- `StatsBase.nobs(data::MyType, [obsdim::ObsDimension])` :
     Should return the total number of observations in `data`
 
 The following methods can also be provided and are optional:

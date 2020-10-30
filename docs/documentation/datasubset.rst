@@ -535,7 +535,7 @@ not implement the required interface. We can change that however.
 
    julia> LearnBase.getobs(df::DataFrame, idx) = df[idx,:]
 
-   julia> LearnBase.nobs(df::DataFrame) = nrow(df)
+   julia> StatsBase.nobs(df::DataFrame) = nrow(df)
 
 With those two methods defined, every ``DataFrame`` is a fully
 qualified data container. This means that it can now be
@@ -596,7 +596,7 @@ however, we will also implement a custom method for
 
    julia> using DataTables, LearnBase
 
-   julia> LearnBase.nobs(dt::AbstractDataTable) = nrow(dt)
+   julia> StatsBase.nobs(dt::AbstractDataTable) = nrow(dt)
 
    julia> LearnBase.getobs(dt::AbstractDataTable, idx) = dt[idx,:]
 
