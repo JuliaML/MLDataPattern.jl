@@ -319,13 +319,13 @@ of an observation dimension is not defined for the type of
     0  1
     1  0
 
-   julia> targets(indmax, X, obsdim=1)
+   julia> targets(argmax, X, obsdim=1)
    3-element Array{Int64,1}:
     1
     2
     1
 
-   julia> targets(indmax, X, ObsDim.First())
+   julia> targets(argmax, X, ObsDim.First())
    3-element Array{Int64,1}:
     1
     2
@@ -444,7 +444,7 @@ if that concept makes sense for the type of the given data.
     0  1
     1  0
 
-   julia> iter = eachtarget(indmax, X, obsdim = 1)
+   julia> iter = eachtarget(argmax, X, obsdim = 1)
    Base.Generator{MLDataPattern.ObsView{SubArray{Int64,1,Array{Int64,2},Tuple{Int64,Colon},true},Array{Int64,2},LearnBase.ObsDim.Constant{1}},...
 
    julia> collect(iter)
@@ -849,7 +849,7 @@ class-encoding.
     0  1
     0  1
 
-Here we could use the function ``indmax`` to discretize the
+Here we could use the function ``argmax`` to discretize the
 individual target vectors on the fly. Remember that the
 target-extraction-function is applied on each individual
 observation in ``Y``. Since ``Y`` is a matrix, each observation
@@ -858,7 +858,7 @@ row is an observation.
 
 .. code-block:: jlcon
 
-   julia> train, test = stratifiedobs(indmax, X, p = 0.5, obsdim = 1)
+   julia> train, test = stratifiedobs(argmax, X, p = 0.5, obsdim = 1)
    ([1 0; 1 0; 0 1], [0 1; 1 0; 1 0])
 
 .. _resampling:
@@ -1218,7 +1218,7 @@ class-encoding.
     1.0  0.0  0.0  0.0  0.0  1.0
     0.0  1.0  1.0  1.0  1.0  0.0
 
-Here we could use the function ``indmax`` to discretize the
+Here we could use the function ``argmax`` to discretize the
 individual target vectors on the fly. Remember that the
 target-extraction-function is applied on each individual
 observation in ``Y``. Since ``Y`` is a matrix, each observation
@@ -1226,7 +1226,7 @@ is a vector slice.
 
 .. code-block:: jlcon
 
-   julia> X_bal, Y_bal = oversample(indmax, (X, Y));
+   julia> X_bal, Y_bal = oversample(argmax, (X, Y));
 
    julia> X_bal
    2×8 SubArray{Float64,2,Array{Float64,2},Tuple{Colon,Array{Int64,1}},false}:
