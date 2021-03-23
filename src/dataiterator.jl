@@ -165,7 +165,7 @@ end
 Base.eltype(::Type{RandomObs{E,T,O,I}}) where {E,T,O,I} = E
 Base.IteratorSize(::Type{RandomObs{E,T,O,I}}) where {E,T,O,I} = I()
 Base.length(iter::RandomObs{E,T,O,Base.HasLength}) where {E,T,O} = iter.count
-nobs(iter::RandomObs) = nobs(iter.data, iter.obsdim)
+StatsBase.nobs(iter::RandomObs) = nobs(iter.data, iter.obsdim)
 
 function Base.summary(iter::RandomObs)
     io = IOBuffer()
@@ -314,7 +314,7 @@ end
 Base.eltype(::Type{BalancedObs{E,T,L,O,I}}) where {E,T,L,O,I} = E
 Base.IteratorSize(::Type{BalancedObs{E,T,L,O,I}}) where {E,T,L,O,I} = I()
 Base.length(iter::BalancedObs{E,T,L,O,Base.HasLength}) where {E,T,L,O} = iter.count
-nobs(iter::BalancedObs) = nobs(iter.data, iter.obsdim)
+StatsBase.nobs(iter::BalancedObs) = nobs(iter.data, iter.obsdim)
 
 function Base.summary(iter::BalancedObs)
     io = IOBuffer()
@@ -455,7 +455,7 @@ end
 Base.eltype(::Type{RandomBatches{E,T,O,I}}) where {E,T,O,I} = E
 Base.IteratorSize(::Type{RandomBatches{E,T,O,I}}) where {E,T,O,I} = I()
 Base.length(iter::RandomBatches{E,T,O,Base.HasLength}) where {E,T,O} = iter.count
-nobs(iter::RandomBatches) = nobs(iter.data, iter.obsdim)
+StatsBase.nobs(iter::RandomBatches) = nobs(iter.data, iter.obsdim)
 batchsize(iter::RandomBatches) = iter.size
 
 function Base.summary(iter::RandomBatches)

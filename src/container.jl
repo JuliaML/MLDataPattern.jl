@@ -29,12 +29,6 @@ can be specified in a type-stable manner as a positional argument
 (see `?LearnBase.ObsDim`), or more conveniently as a smart
 keyword argument.
 """
-
-# --------------------------------------------------------------------
-# Global keyword definitions
-
-LearnBase.getobs(data, idx; obsdim = default_obsdim(data)) = getobs(data, idx, obsdim)
-
 # --------------------------------------------------------------------
 # Arrays
 
@@ -47,7 +41,7 @@ LearnBase.getobs(data, idx; obsdim = default_obsdim(data)) = getobs(data, idx, o
 # LearnBase.getobs(A::SubArray{T,0}, obsdim) where {T} = A[1]
 # LearnBase.getobs(A::AbstractArray, obsdim) = collect(A)
 
-LearnBase.getobs(A::AbstractArray, idx, obsdim) = selectdim(A, obsdim, idx)
+LearnBase.getobs(A::AbstractArray, idx; obsdim = default_obsdim(obsdim)) = selectdim(A, obsdim, idx)
 
 """
     getobs!(buffer, data, [idx], [obsdim]) -> buffer
@@ -65,7 +59,7 @@ can be specified in a type-stable manner as a positional argument
 (see `?LearnBase.ObsDim`), or more conveniently as a smart
 keyword argument.
 """
-LearnBase.getobs!(buffer, A::AbstractArray, idx, obsdim) =
+LearnBase.getobs!(buffer, A::AbstractArray, idx; obsdim = default_obsdim(obsdim)) =
     getobs!(buffer, datasubset(A, idx, obsdim))
 
 # --------------------------------------------------------------------
@@ -82,7 +76,7 @@ function _check_nobs(tup::Tuple)
     end
 end
 
-function _check_nobs(tup::Tuple, obsdim::ObsDimension)
+function _check_nobs(tup::Tuple, obsdim)
     length(tup) == 0 && return
     n1 = nobs(tup[1], obsdim)
     for i=2:length(tup)
@@ -110,32 +104,38 @@ function LearnBase.nobs(tup::Tuple, obsdim)::Int
     return length(tup) == 0 ? 0 : nobs(tup[1], obsdim)
 end
 
-function LearnBase.getobs(tup::Tuple, indices, obsdim)
+# special re-routing for data container <: Tuple
+# where we need to dispatch on the type of obsdim
+LearnBase.getobs(tup::Tuple, indices; obsdim = default_obsdim(tup)) =
+    _getobs(tup, indices, obsdim)
+
+function _getobs(tup::Tuple, indices, obsdim)
     _check_nobs(tup, obsdim)
-    return map(data -> getobs(data, indices, obsdim), tup)
+    return map(data -> getobs(data, indices; obsdim = obsdim), tup)
 end
 
-@generated function LearnBase.getobs(tup::Tuple, indices, obsdims::Tuple)
+@generated function _getobs(tup::Tuple, indices, obsdims::Tuple)
     N = length(obsdims.types)
 
     return quote
         _check_nobs(tup, obsdims)
         # This line generates a tuple of N elements:
         # (getobs(tup[1], indices, obsdims[1]), getobs(tup[2], indi...
-        $(Expr(:tuple, (:(getobs(tup[$i], indices, obsdims[$i])) for i in 1:N)...))
+        $(Expr(:tuple, (:(getobs(tup[$i], indices; obsdim = obsdims[$i])) for i in 1:N)...))
     end
 end
 
 _getobs_tuple_error() =
     throw(DimensionMismatch("The first argument (tuple with the buffers) must have the same length as the second argument (tuple with the data containers)."))
 
-@generated function LearnBase.getobs!(buffer::Tuple, tup::Tuple, indices, obsdim)
+@generated function LearnBase.getobs!(buffer::Tuple, tup::Tuple, indices;
+                                      obsdim = default_obsdim(buffer))
     N = length(buffer.types)
     N == length(tup.types) || _getobs_tuple_error()
     expr = if obsdim <: Tuple
-        Expr(:tuple, (:(getobs!(buffer[$i], tup[$i], indices, obsdim[$i])) for i in 1:N)...)
+        Expr(:tuple, (:(getobs!(buffer[$i], tup[$i], indices; obsdim = obsdim[$i])) for i in 1:N)...)
     else
-        Expr(:tuple, (:(getobs!(buffer[$i], tup[$i], indices, obsdim)) for i in 1:N)...)
+        Expr(:tuple, (:(getobs!(buffer[$i], tup[$i], indices; obsdim = obsdim)) for i in 1:N)...)
     end
 
     return quote

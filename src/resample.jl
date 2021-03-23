@@ -127,7 +127,7 @@ function oversample(f, data, fraction::Real, shuffle::Bool=true, obsdim=default_
     end
 
     shuffle && shuffle!(inds)
-    datasubset(data, inds, obsdim)
+    datasubset(data, inds)
 end
 
 """
@@ -230,7 +230,7 @@ function undersample(f, data, shuffle::Bool, obsdim=default_obsdim(data))
     end
 
     shuffle ? shuffle!(inds) : sort!(inds)
-    datasubset(data, inds, obsdim)
+    datasubset(data, inds)
 end
 
 # Make sure the R people find the functionality

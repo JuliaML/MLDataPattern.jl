@@ -164,29 +164,21 @@ see also
 [`splitobs`](@ref), [`shuffleobs`](@ref),
 [`KFolds`](@ref), [`BatchView`](@ref), [`ObsView`](@ref),
 """
-struct DataSubset{T, I<:Union{Int,AbstractVector}, O}
+struct DataSubset{T, I<:Union{Int,AbstractVector}}
     data::T
     indices::I
-    obsdim::O
 
-    function DataSubset{T,I,O}(data::T, indices::I, obsdim::O) where {T,I,O}
+    function DataSubset{T, I}(data::T, indices::I) where {T, I}
         if T <: Tuple
             error("inner constructor should not be called using a Tuple")
         end
-        1 <= minimum(indices) || throw(BoundsError(data, indices))
-        maximum(indices) >= nobs(data, obsdim) || throw(BoundsError(data, indices))
-        new{T,I,O}(data, indices, obsdim)
+
+        new{T, I}(data, indices)
     end
 end
-
-DataSubset(data::T, indices::I, obsdim::O) where {T,I,O} =
-    DataSubset{T,I,O}(data, indices, obsdim)
-
+DataSubset(data::T, indices::I) where {T, I} = DataSubset{T, I}(data, indices)
 # don't nest subsets
-function DataSubset(subset::DataSubset, indices, obsdim)
-    @assert subset.obsdim == obsdim
-    DataSubset(subset.data, _view(subset.indices, indices), obsdim)
-end
+DataSubset(subset::DataSubset, indices) = DataSubset(subset.data, _view(subset.indices, indices))
 
 function Base.show(io::IO, subset::DataSubset)
     if get(io, :compact, false)
@@ -202,8 +194,6 @@ function Base.summary(subset::DataSubset)
     Base.showarg(io, subset.data, false)
     print(io, ", ")
     Base.showarg(io, subset.indices, false)
-    print(io, ", ")
-    print(io, replace(string(subset.obsdim), "LearnBase." => ""))
     print(io, ')')
     first(readlines(seek(io,0)))
 end
@@ -211,39 +201,25 @@ end
 # compare if both subsets cover the same observations of the same data
 # we don't care how the indices are stored, just that they match
 # in order and values
-function Base.:(==)(s1::DataSubset,s2::DataSubset)
-    s1.data == s2.data &&
-        all(i1==i2 for (i1,i2) in zip(s1.indices,s2.indices)) &&
-        s1.obsdim == s2.obsdim
-end
+Base.:(==)(s1::DataSubset, s2::DataSubset) =
+    (s1.data == s2.data) && all(i1==i2 for (i1, i2) in zip(s1.indices, s2.indices))
 
 Base.length(subset::DataSubset) = length(subset.indices)
 
 Base.lastindex(subset::DataSubset) = length(subset)
 
 Base.getindex(subset::DataSubset, idx) =
-    DataSubset(subset.data, _view(subset.indices, idx), subset.obsdim)
+    DataSubset(subset.data, _view(subset.indices, idx), default_obsdim(subset))
+
+LearnBase.default_obsdim(subset::DataSubset) = default_obsdim(subset.data)
 
 StatsBase.nobs(subset::DataSubset) = length(subset)
 
-LearnBase.getobs(subset::DataSubset, idx) =
-    getobs(subset.data, _view(subset.indices, idx), subset.obsdim)
+LearnBase.getobs(subset::DataSubset, idx; obsdim = default_obsdim(subset)) =
+    getobs(subset.data, _view(subset.indices, idx); obsdim = obsdim)
 
-LearnBase.getobs!(buffer, subset::DataSubset, idx) =
-    getobs!(buffer, subset.data, _view(subset.indices, idx), subset.obsdim)
-
-# compatibility with nested functions
-LearnBase.default_obsdim(subset::DataSubset) = subset.obsdim
-
-function LearnBase.getobs(subset::DataSubset, idx, obsdim)
-    @assert obsdim === subset.obsdim
-    getobs(subset, idx)
-end
-
-function LearnBase.getobs!(buffer, subset::DataSubset, idx, obsdim)
-    @assert obsdim === subset.obsdim
-    getobs!(buffer, subset, idx)
-end
+LearnBase.getobs!(buffer, subset::DataSubset, idx; obsdim = default_obsdim(subset)) =
+    getobs!(buffer, subset.data, _view(subset.indices, idx); obsdim = obsdim)
 
 # --------------------------------------------------------------------
 
@@ -270,25 +246,14 @@ keyword argument.
 
 see `DataSubset` for more information.
 """
-LearnBase.datasubset(data, indices, obsdim) =
-    DataSubset(data, indices, obsdim)
-LearnBase.datasubset(data, indices; obsdim = default_obsdim(data)) =
-    datasubset(data, indices, obsdim)
+datasubset(data, indices) = DataSubset(data, indices)
 
 # --------------------------------------------------------------------
 
-DataSubset(subset::DataSubset) = subset
-LearnBase.datasubset(subset::DataSubset) = subset
-
-for fun in (:DataSubset, :datasubset)
+for fun in (:DataSubset, :(datasubset))
     @eval begin
         # No-op
         ($fun)(subset::DataSubset) = subset
-
-        # allow type-stable way to just provide the obsdim
-        ($fun)(data, obsdim) = ($fun)(data, 1:nobs(data, obsdim), obsdim)
-
-        ($fun)(data::Tuple, obsdim::Tuple) = ($fun)(data, 1:nobs(data, obsdim), obsdim)
 
         # map DataSubset over the tuple
         function ($fun)(tup::Tuple)
@@ -300,31 +265,10 @@ for fun in (:DataSubset, :datasubset)
             _check_nobs(tup)
             return map(data -> ($fun)(data, indices), tup)
         end
-
-        function ($fun)(tup::Tuple, indices, obsdim)
-            _check_nobs(tup, obsdim)
-            return map(data -> ($fun)(data, indices, obsdim), tup)
-        end
-
-        @generated function ($fun)(tup::Tuple, indices, obsdims::Tuple)
-            N = length(obsdims.types)
-            quote
-                _check_nobs(tup, obsdims)
-                # This line generates a tuple of N elements:
-                # (datasubset(tup[1], indices, obsdims[1]), datasu...
-                $(Expr(:tuple, (:(($($fun))(tup[$i], indices, obsdims[$i])) for i in 1:N)...))
-            end
-        end
     end
 end
 
 # --------------------------------------------------------------------
 # Arrays
 
-LearnBase.datasubset(A::SubArray; kw...) = A
-
-# catch the undefined setting for consistency.
-# should never happen by accident
-LearnBase.datasubset(A::AbstractArray, idx, obsdim::Nothing) =
-    throw(MethodError(datasubset, (A, idx, obsdim)))
-LearnBase.datasubset(A::AbstractArray, idx, obsdim) = selectdim(A, obsdim, idx)
+datasubset(A::SubArray; kw...) = A

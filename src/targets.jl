@@ -188,55 +188,47 @@ gettargets
 # custom "_" function to throw away Undefined obsdims.
 # this is important so that a user can leave out obsdim when
 # implementing a custom method that doesn't need it.
-@inline _gettargets(data, ::ObsDim.Undefined) = gettargets(data)
-@inline _gettargets(data, idx, ::ObsDim.Undefined) = gettargets(data, idx)
-@inline _gettargets(data) = gettargets(data)
-@inline _gettargets(data, args...) = gettargets(data, args...)
-
-# gettargets is intended to be defined by the user.
-# It's main purpose is to allow types to have the option
-# to load the targets of some data without needing to load the
-# actual data with "getobs" itself.
-@inline gettargets(data) = gettargets(DataSubset(data))
-@inline gettargets(data, obsdim::Union{Tuple, ObsDimension}) =
-    gettargets(DataSubset(data, obsdim))
+# @inline _gettargets(data, ::ObsDim.Undefined) = gettargets(data)
+# @inline _gettargets(data, idx, ::ObsDim.Undefined) = gettargets(data, idx)
+# @inline _gettargets(data) = gettargets(data)
+# @inline _gettargets(data, args...) = gettargets(data, args...)
 
 # We use this _gettargets_dispatch_idx function to avoid ambiguity
-@inline gettargets(data, idx, args...) =
-    _gettargets_dispatch_idx(data, idx, args...)
+@inline gettargets(data, idx; kwargs...) =
+    _gettargets_dispatch_idx(data, idx; kwargs...)
 
-@inline _gettargets_dispatch_idx(data, idx, args...) =
-    gettargets(obsview(DataSubset(data, idx, args...)))
+@inline _gettargets_dispatch_idx(data, idx; kwargs...) =
+    gettargets(obsview(DataSubset(data, idx)))
 
-@inline _gettargets_dispatch_idx(data, idx::Int, args...) =
-    gettarget(identity, getobs_targetfun(datasubset(data, idx, args...)))
+@inline _gettargets_dispatch_idx(data, idx::Int; kwargs...) =
+    gettarget(identity, getobs_targetfun(datasubset(data, idx)))
 
 # This method prevents ObsView to happen by default for Arrays.
 # Thus targets will return arrays in their original shape.
-@inline gettargets(data::AbstractArray, obsdim::ObsDimension) = getobs(data)
-@inline gettargets(data::AbstractArray, idx, obsdim) = getobs(data, idx, obsdim)
+@inline gettargets(data::AbstractArray, idx; obsdim = default_obsdim(data)) =
+    getobs(data, idx; obsdim = obsdim)
 
 # DataSubset will query the underlying data using "gettargets"
 # this way custom data storage types can provide the targets
 # without having to trigger "getobs". Support optional
-@inline gettargets(subset::DataSubset) =
-    _gettargets(subset.data, subset.indices, subset.obsdim)
+# @inline gettargets(subset::DataSubset) =
+#     _gettargets(subset.data, subset.indices, subset.obsdim)
 
-@inline gettargets(subset::DataSubset, idx) =
-    _gettargets(subset.data, _view(subset.indices, idx), subset.obsdim)
+# @inline gettargets(subset::DataSubset, idx) =
+#     _gettargets(subset.data, _view(subset.indices, idx), subset.obsdim)
 
-function gettargets(subset::DataSubset, obsdim::Union{Tuple, ObsDimension})
-    @assert obsdim === subset.obsdim
-    _gettargets(subset.data, subset.indices, subset.obsdim)
-end
+# function gettargets(subset::DataSubset, obsdim::Union{Tuple, ObsDimension})
+#     @assert obsdim === subset.obsdim
+#     _gettargets(subset.data, subset.indices, subset.obsdim)
+# end
 
-function gettargets(subset::DataSubset, idx, obsdim::ObsDimension)
-    @assert obsdim === subset.obsdim
+function gettargets(subset::DataSubset, idx; obsdim = default_obsdim(subset))
+    @assert obsdim == subset.obsdim
     gettargets(subset, idx)
 end
 
 function gettargets(data::AbstractObsView)
-    map(x->gettarget(identity,getobs_targetfun(x)), data)
+    map(x->gettarget(identity, getobs_targetfun(x)), data)
 end
 
 gettargets(tup::Tuple) = map(gettargets, tup)
@@ -304,94 +296,99 @@ julia> targets(argmax, [1 0; 0 1; 1 0], obsdim=1)
 targets
 
 # keyword based convenience API
-targets(data; obsdim=default_obsdim(data)) =
-    targets(identity, data, convert(LearnBase.ObsDimension,obsdim))
+# targets(data; obsdim=default_obsdim(data)) =
+#     targets(identity, data, convert(LearnBase.ObsDimension,obsdim))
 
-targets(f, data; obsdim=default_obsdim(data)) =
-    targets(f, data, convert(LearnBase.ObsDimension,obsdim))
+# targets(f, data; obsdim=default_obsdim(data)) =
+#     targets(f, data, convert(LearnBase.ObsDimension,obsdim))
 
 # default to identity function. This is later dispatched on
-@inline targets(data, obsdim::ObsDimension) =
-    targets(identity, data, obsdim)
+@inline targets(data; obsdim = default_obsdim(data)) =
+    targets(identity, data; obsdim = obsdim)
 
-@inline targets(tup::Tuple, obsdim::Tuple) =
-    targets(identity, tup, obsdim)
+# @inline targets(tup::Tuple, obsdim::Tuple) =
+#     targets(identity, tup, obsdim)
 
 # only dispatch on tuples once (nested tuples are not interpreted)
 # here we swapped the naming convention because the exposed function
 # should always be the one without an "_"
 # i.e. "targets" interprets tuple, while "_targets" does not
 # that means that "targets((X,(Y1,Y2)))" --> "(Y1,Y2)", and NOT "Y2"
-function targets(f, tup::NTuple{N,Any}, obsdim::ObsDimension) where N
+targets(f, tup::NTuple{N, Any}; obsdim = default_obsdim(tup)) where N =
+    _targets_tuple(f, tup, obsdim)
+
+
+function _targets_tuple(f, tup::NTuple{N,Any}, obsdim) where N
     _check_nobs(tup, obsdim)
     _targets(f, tup[N], obsdim)
 end
-
-function targets(f, tup::NTuple{N,Any}, obsdim::Tuple) where N
+function _targets_tuple(f, tup::NTuple{N,Any}, obsdim::Tuple) where N
     _check_nobs(tup, obsdim)
     _targets(f, tup[N], obsdim[N])
 end
 
-@inline targets(f, data, obsdim) = _targets(f, data, obsdim)
+# @inline targets(f, data, obsdim) = _targets(f, data, obsdim)
 
 # Batch Views
-targets(f, data::AbstractBatchView, obsdim) =
+targets(f, data::AbstractBatchView) =
     map(x->targets(f,x), data)
 
 # Obs Views
-targets(f, data::AbstractObsView, obsdim) =
+targets(f, data::AbstractObsView) =
     map(x->_gettarget(f,x), data)
 
 # custom "_" function to not recurse on tuples
 # Here we decide if "getobs" will be triggered based on "f"
-@inline _targets(f::typeof(identity), data, obsdim) =
-    _gettargets(data, obsdim)
+@inline targets(f::typeof(identity), data; obsdim = default_obsdim(data)) =
+    gettargets(data, 1:nobs(data; obsdim = obsdim); obsdim = obsdim)
 
-_targets(f, data, obsdim) =
-    map(x->gettarget(f,getobs_targetfun(x)), obsview(data, obsdim))
+targets(f, data; obsdim = default_obsdim(data)) =
+    map(x -> gettarget(f, getobs_targetfun(x)), obsview(data, obsdim))
 
 # --------------------------------------------------------------------
 # eachtarget (lazy version of targets for iterating)
 
 # keyword based convenience API
-eachtarget(data; obsdim=default_obsdim(data)) =
-    eachtarget(identity, data, convert(LearnBase.ObsDimension,obsdim))
+# eachtarget(data; obsdim=default_obsdim(data)) =
+#     eachtarget(identity, data, convert(LearnBase.ObsDimension,obsdim))
 
-eachtarget(f, data; obsdim=default_obsdim(data)) =
-    eachtarget(f, data, convert(LearnBase.ObsDimension,obsdim))
+# eachtarget(f, data; obsdim=default_obsdim(data)) =
+#     eachtarget(f, data, convert(LearnBase.ObsDimension,obsdim))
 
-@inline eachtarget(data, obsdim::ObsDimension) =
+@inline eachtarget(data; obsdim = default_obsdim(data)) =
     eachtarget(identity, data, obsdim)
 
-@inline eachtarget(tup::Tuple, obsdim::Tuple) =
-    eachtarget(identity, tup, obsdim)
+# @inline eachtarget(tup::Tuple, obsdim::Tuple) =
+#     eachtarget(identity, tup, obsdim)
 
 # go with _gettargets (avoids getobs)
 
-eachtarget(f::typeof(identity), data, obsdim) =
-    (_gettargets(data, i, obsdim) for i in 1:nobs(data,obsdim))
+eachtarget(f::typeof(identity), data; obsdim = default_obsdim(data)) =
+    (gettargets(data, i; obsdim = obsdim) for i in 1:nobs(data; obsdim = obsdim))
 
-function eachtarget(f::typeof(identity), tup::NTuple{N,Any}, obsdim) where N
+eachtarget(f::typeof(identity), tup::NTuple{N, Any}; obsdim = default_obsdim(tup)) where N =
+    _eachtarget_tuple(f, tup, obsdim)
+
+function _eachtarget_tuple(::typeof(identity), tup::NTuple{N,Any}, obsdim) where N
     _check_nobs(tup, obsdim)
-    (_gettargets(tup[N], i, obsdim) for i in 1:nobs(tup[N],obsdim))
+    (gettargets(tup[N], i; obsdim = obsdim) for i in 1:nobs(tup[N]; obsdim = obsdim))
 end
-
-function eachtarget(f::typeof(identity), tup::NTuple{N,Any}, obsdim::Tuple) where N
+function _eachtarget_tuple(::typeof(identity), tup::NTuple{N,Any}, obsdim::Tuple) where N
     _check_nobs(tup, obsdim)
-    (_gettargets(tup[N], i, obsdim[N]) for i in 1:nobs(tup[N],obsdim[N]))
+    (gettargets(tup[N], i; obsdim = obsdim[N]) for i in 1:nobs(tup[N]; obsdim = obsdim[N]))
 end
 
 # go with _gettarget (triggers getobs)
 
-@inline eachtarget(f, data, obsdim) =
-    eachtarget(f, obsview(data, obsdim))
+@inline eachtarget(f, data; obsdim = default_obsdim(data)) =
+    eachtarget(f, obsview(data; obsdim = obsdim))
 
-function eachtarget(f::typeof(identity), data::AbstractObsView, obsdim=default_obsdim(data))
-    @assert obsdim === default_obsdim(data)
+function eachtarget(f, data::AbstractObsView; obsdim = default_obsdim(data))
+    @assert obsdim == default_obsdim(data)
     (_gettarget(f,x) for x in data)
 end
 
-function eachtarget(f, data::AbstractObsView, obsdim=default_obsdim(data))
-    @assert obsdim === default_obsdim(data)
-    (_gettarget(f,x) for x in data)
-end
+# function eachtarget(f, data::AbstractObsView, obsdim=default_obsdim(data))
+#     @assert obsdim === default_obsdim(data)
+#     (_gettarget(f,x) for x in data)
+# end

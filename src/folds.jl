@@ -110,7 +110,7 @@ struct FoldsView{T,D,O,A1<:AbstractArray,A2<:AbstractArray} <: DataView{T,D}
 
     function FoldsView{T,D,O,A1,A2}(
             data::D, train_indices::A1, val_indices::A2, obsdim::O) where {T,D,O,A1<:AbstractArray,A2<:AbstractArray}
-        n = nobs(data, obsdim)
+        n = nobs(data; obsdim = obsdim)
         (eltype(train_indices) <: AbstractArray{Int}) || throw(ArgumentError("The parameter \"train_indices\" must be an array of integer arrays"))
         (eltype(val_indices)  <: AbstractArray{Int}) || throw(ArgumentError("The parameter \"val_indices\" must be an array of integer arrays"))
         2 <= length(train_indices) <= n || throw(ArgumentError("The amount of train- and validation-indices must be within 2:$n respectively"))
@@ -120,19 +120,19 @@ struct FoldsView{T,D,O,A1<:AbstractArray,A2<:AbstractArray} <: DataView{T,D}
 end
 
 function FoldsView(data::D, train_indices::A1, val_indices::A2, obsdim::O) where {D,O,A1<:AbstractArray,A2<:AbstractArray}
-    n = nobs(data, obsdim)
+    n = nobs(data; obsdim = obsdim)
     # TODO: Move this back into the inner constructor after the
     #       "T = typeof(...)" line below is removed
     (1 <= minimum(minimum.(train_indices)) && maximum(maximum.(train_indices)) <= n) || throw(DimensionMismatch("All training indices must be within 1:$n"))
     (1 <= minimum(minimum.(val_indices))  && maximum(maximum.(val_indices))  <= n) || throw(DimensionMismatch("All validation indices must be within 1:$n"))
     # FIXME: In 0.6 it should be possible to compute just the return
     #        type without executing the function
-    T = typeof((datasubset(data, train_indices[1], obsdim), datasubset(data, val_indices[1], obsdim)))
+    T = typeof((datasubset(data, train_indices[1], obsdim), datasubset(data, val_indices[1])))
     FoldsView{T,D,O,A1,A2}(data, train_indices, val_indices, obsdim)
 end
 
 FoldsView(data, train_indices::AbstractArray, val_indices::AbstractArray; obsdim = default_obsdim(data)) =
-    FoldsView(data, train_indices, val_indices, convert(LearnBase.ObsDimension,obsdim))
+    FoldsView(data, train_indices, val_indices, obsdim)
 
 function FoldsView(data::T, train_indices::AbstractArray, val_indices::AbstractArray, obsdim) where T<:DataView
     @assert obsdim == data.obsdim
@@ -150,13 +150,13 @@ function Base.:(==)(fv1::FoldsView,fv2::FoldsView)
         fv1.obsdim == fv2.obsdim
 end
 
-nobs(iter::FoldsView) = nobs(iter.data, iter.obsdim)
+StatsBase.nobs(iter::FoldsView) = nobs(iter.data; obsdim = iter.obsdim)
 Base.parent(iter::FoldsView) = iter.data
 Base.length(iter::FoldsView) = length(iter.train_indices)
 
 function Base.getindex(iter::FoldsView, i::Int)
-    (datasubset(iter.data, iter.train_indices[i], iter.obsdim),
-     datasubset(iter.data, iter.val_indices[i], iter.obsdim))
+    (datasubset(iter.data, iter.train_indices[i]),
+     datasubset(iter.data, iter.val_indices[i]))
 end
 
 function Base.getindex(iter::FoldsView, i::AbstractVector)
@@ -290,20 +290,11 @@ end
 see [`FoldsView`](@ref) for more info, or [`leaveout`](@ref) for
 a related function.
 """
-function kfolds(data, k::Integer, obsdim)
-    n = nobs(data, obsdim)
+function kfolds(data; k::Integer = 5 obsdim = default_obsdim(data))
+    n = nobs(data; obsdim = obsdim)
     train_indices, val_indices = kfolds(n, k)
     FoldsView(data, train_indices, val_indices, obsdim)
 end
-
-kfolds(data, k::Integer; obsdim = default_obsdim(data)) =
-    kfolds(data, k, convert(LearnBase.ObsDimension,obsdim))
-
-kfolds(data; k = 5, obsdim = default_obsdim(data)) =
-    kfolds(data, k, convert(LearnBase.ObsDimension,obsdim))
-
-kfolds(data, obsdim::Union{Tuple,ObsDimension}) =
-    kfolds(data, 5, obsdim)
 
 """
     leaveout(n::Integer, [size = 1]) -> Tuple
@@ -374,17 +365,8 @@ end
 see [`FoldsView`](@ref) for more info, or [`kfolds`](@ref) for a
 related function.
 """
-function leaveout(data, size, obsdim)
+function leaveout(data; size = 1 obsdim = default_obsdim(data))
     n = nobs(data, obsdim)
     train_indices, val_indices = leaveout(n, size)
     FoldsView(data, train_indices, val_indices, obsdim)
 end
-
-leaveout(data, size::Integer; obsdim = default_obsdim(data)) =
-    leaveout(data, size, convert(LearnBase.ObsDimension,obsdim))
-
-leaveout(data; size = 1, obsdim = default_obsdim(data)) =
-    leaveout(data, size, convert(LearnBase.ObsDimension,obsdim))
-
-leaveout(data, obsdim::Union{Tuple,ObsDimension}) =
-    leaveout(data, 1, obsdim)

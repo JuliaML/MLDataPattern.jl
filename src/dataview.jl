@@ -7,7 +7,7 @@ LearnBase.getobs(A::DataView{T}) where {T<:Tuple} = map(i->getobs(A,i), 1:length
 allowcontainer(fun, ::AbstractObsView) = true
 allowcontainer(fun, ::DataView) = false
 
-function StatsBase.nobs(A::DataView, obsdim)
+function StatsBase.nobs(A::DataView; obsdim = default_obsdim(A))
     @assert obsdim === default_obsdim(A)
     return nobs(A)
 end
@@ -111,13 +111,13 @@ see also
 [`eachobs`](@ref), [`BatchView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
-struct ObsView{TElem,TData,O} <: AbstractObsView{TElem,TData}
+struct ObsView{TElem,TData} <: AbstractObsView{TElem,TData}
     data::TData
     obsdim::O
 end
 
 function ObsView(data::T, obsdim::O) where {T,O}
-    E = typeof(datasubset(data, 1, obsdim))
+    E = typeof(datasubset(data, 1))
     ObsView{E,T,O}(data,obsdim)
 end
 
@@ -134,12 +134,15 @@ end
 
 ObsView(data; obsdim = default_obsdim(data)) = ObsView(data, obsdim)
 
-StatsBase.nobs(A::ObsView) = nobs(A.data, A.obsdim)
+function StatsBase.nobs(A::ObsView; obsdim = default_obsdim(A))
+    @assert obsdim == A.obsdim
+    return nobs(A.data; obsdim = A.obsdim)
+end
 Base.parent(A::ObsView) = A.data
 Base.length(A::ObsView) = nobs(A)
-Base.getindex(A::ObsView, i::Int) = datasubset(A.data, i, A.obsdim)
+Base.getindex(A::ObsView, i::Int) = datasubset(A.data, i)
 Base.getindex(A::ObsView, i::AbstractVector) =
-    ObsView(datasubset(A.data, i, A.obsdim), A.obsdim)
+    ObsView(datasubset(A.data, i); obsdim = A.obsdim)
 
 # compatibility with nested functions
 LearnBase.default_obsdim(A::ObsView) = A.obsdim
@@ -158,7 +161,7 @@ end
 
 # --------------------------------------------------------------------
 
-default_batch_size(source, obsdim) = clamp(div(nobs(source,obsdim), 5), 2, 100)
+default_batch_size(source, obsdim) = clamp(div(nobs(source; obsdim = obsdim), 5), 2, 100)
 
 """
 Helper function to compute sensible and compatible values for the
@@ -389,7 +392,7 @@ allowcontainer(::typeof(splitobs), ::BatchView) = true
 Return the fixed size of each batch in `data`.
 """
 batchsize(A::BatchView) = A.size
-nobs(A::BatchView) = A.count * A.size
+StatsBase.nobs(A::BatchView) = A.count * A.size
 Base.parent(A::BatchView) = A.data
 Base.length(A::BatchView) = A.count
 Base.getindex(A::BatchView, batchindex::Int) =
