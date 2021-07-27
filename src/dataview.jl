@@ -111,7 +111,7 @@ see also
 [`eachobs`](@ref), [`BatchView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
-struct ObsView{TElem,TData} <: AbstractObsView{TElem,TData}
+struct ObsView{TElem,TData,O} <: AbstractObsView{TElem,TData}
     data::TData
     obsdim::O
 end
@@ -360,7 +360,7 @@ function BatchView(data::T, size::Int, count::Int, obsdim::O = default_obsdim(da
     BatchView{E,T,O}(data, nsize, ncount, obsdim)
 end
 
-function BatchView(data::T, size::Int, obsdim::O = default_obsdim(data), upto::Bool = false) where {T,O<:Union{Tuple,ObsDimension}}
+function BatchView(data::T, size::Int, obsdim::O = default_obsdim(data), upto::Bool = false) where {T,O}
     BatchView(data, size, -1, obsdim, upto)
 end
 
@@ -369,17 +369,17 @@ function BatchView(A::BatchView, size::Int, count::Int, obsdim, upto::Bool = fal
     BatchView(parent(A), size, count, obsdim, upto)
 end
 
-BatchView(data, obsdim::Union{Tuple,ObsDimension}) =
+BatchView(data, obsdim) =
     BatchView(data, -1, -1, obsdim)
 
 function BatchView(data; size = -1, maxsize = -1, count = -1, obsdim = default_obsdim(data))
     maxsize != -1 && size != -1 && throw(ArgumentError("Providing both \"size\" and \"maxsize\" is not supported"))
     if maxsize != -1
         # set upto to true in order to allow a flexible batch size
-        BatchView(data, maxsize, count, convert(LearnBase.ObsDimension,obsdim), true)
+        BatchView(data, maxsize, count, obsdim, true)
     else
         # force given batch size
-        BatchView(data, size, count, convert(LearnBase.ObsDimension,obsdim))
+        BatchView(data, size, count, obsdim)
     end
 end
 
@@ -404,7 +404,7 @@ function Base.getindex(A::BatchView, batchindices::AbstractVector)
 end
 
 # compatibility with nested functions
-default_obsdim(A::BatchView) = A.obsdim
+LearnBase.default_obsdim(A::BatchView) = A.obsdim
 
 @doc (@doc BatchView)
 const batchview = BatchView
@@ -423,16 +423,16 @@ end
 # --------------------------------------------------------------------
 
 # if subsetting a DataView, then DataView the subset instead.
-for fun in (:DataSubset, :datasubset), O in (ObsDimension, Tuple)
-    @eval @generated function ($fun)(A::T, i, obsdim::$O) where T<:AbstractObsView
+for fun in (:DataSubset, :datasubset)
+    @eval @generated function ($fun)(A::T, i, obsdim) where T<:AbstractObsView
         quote
             @assert obsdim == A.obsdim
-            ($(T.name.name))(($($fun))(parent(A), i, obsdim), obsdim)
+            ($(T.name.name))(($($fun))(parent(A), i), obsdim)
         end
     end
-    @eval function ($fun)(A::BatchView, i, obsdim::$O)
+    @eval function ($fun)(A::BatchView, i, obsdim)
         @assert obsdim == A.obsdim
         length(i) < A.size && throw(ArgumentError("The chosen batch-size ($(A.size)) is greater than the number of observations ($(length(i)))"))
-        BatchView(($fun)(parent(A), i, obsdim), A.size, -1, obsdim)
+        BatchView(($fun)(parent(A), i), A.size, -1, obsdim)
     end
 end

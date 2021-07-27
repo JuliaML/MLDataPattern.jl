@@ -29,7 +29,7 @@ deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[LearnBase]]
-git-tree-sha1 = "76f886dda5ae8c0cf727627ee7bbd15c312e98c9"
+git-tree-sha1 = "3b082a360e8dd225263f7a71734dd98d48ad8c73"
 repo-rev = "darsnack/rm-obsdim"
 repo-url = "https://github.com/darsnack/LearnBase.jl"
 uuid = "7f8f8fb0-2700-5f03-b4bd-41f8cfc144b6"
@@ -47,7 +47,7 @@ uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[MLLabelUtils]]
 deps = ["LearnBase", "MappedArrays", "StatsBase"]
-git-tree-sha1 = "dcd95a1d24fe4e70497df74da0adf0cb4353f0f0"
+git-tree-sha1 = "ea20150b85e70ea9469494a02f1bfa147b67eebf"
 repo-rev = "darsnack/refactor"
 repo-url = "https://github.com/darsnack/MLLabelUtils.jl"
 uuid = "66a33bbf-0c2b-5fc8-a008-9da813334f0a"

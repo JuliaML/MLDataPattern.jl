@@ -4,7 +4,10 @@ using LearnBase
 using MLLabelUtils
 
 import StatsBase: nobs
-import LearnBase: getobs, getobs!, gettarget, gettargets, targets, default_obsdim
+import LearnBase: getobs, getobs!, gettarget, gettargets, targets, default_obsdim,
+                  DataView, AbstractObsView, AbstractBatchView,
+                  DataIterator, ObsIterator, BatchIterator,
+                  AbstractDataIterator, AbstractObsIterator, AbstractBatchIterator
 
 using Base.Cartesian
 using Random
@@ -33,8 +36,8 @@ export
     SlidingWindow,
     slidingwindow,
 
-    # targets,
-    # eachtarget,
+    targets,
+    eachtarget,
 
     stratifiedobs,
 

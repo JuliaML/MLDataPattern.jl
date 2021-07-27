@@ -290,7 +290,7 @@ end
 see [`FoldsView`](@ref) for more info, or [`leaveout`](@ref) for
 a related function.
 """
-function kfolds(data; k::Integer = 5 obsdim = default_obsdim(data))
+function kfolds(data; k::Integer = 5, obsdim = default_obsdim(data))
     n = nobs(data; obsdim = obsdim)
     train_indices, val_indices = kfolds(n, k)
     FoldsView(data, train_indices, val_indices, obsdim)
@@ -365,7 +365,7 @@ end
 see [`FoldsView`](@ref) for more info, or [`kfolds`](@ref) for a
 related function.
 """
-function leaveout(data; size = 1 obsdim = default_obsdim(data))
+function leaveout(data; size = 1, obsdim = default_obsdim(data))
     n = nobs(data, obsdim)
     train_indices, val_indices = leaveout(n, size)
     FoldsView(data, train_indices, val_indices, obsdim)

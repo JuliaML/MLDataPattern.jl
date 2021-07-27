@@ -84,18 +84,18 @@ end
 
 tests = [
     "tst_container.jl"
-    "tst_datasubset.jl"
-    "tst_randobs.jl"
-    "tst_shuffleobs.jl"
-    "tst_splitobs.jl"
-    "tst_dataview.jl"
-    "tst_slidingwindow.jl"
-    "tst_targets.jl"
-    "tst_stratifiedobs.jl"
-    "tst_resample.jl"
-    "tst_folds.jl"
-    "tst_dataiterator.jl"
-    "tst_dataframes.jl"
+    # "tst_datasubset.jl"
+    # "tst_randobs.jl"
+    # "tst_shuffleobs.jl"
+    # "tst_splitobs.jl"
+    # "tst_dataview.jl"
+    # "tst_slidingwindow.jl"
+    # "tst_targets.jl"
+    # "tst_stratifiedobs.jl"
+    # "tst_resample.jl"
+    # "tst_folds.jl"
+    # "tst_dataiterator.jl"
+    # "tst_dataframes.jl"
 ]
 
 for t in tests

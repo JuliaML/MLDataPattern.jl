@@ -80,7 +80,7 @@ function _check_nobs(tup::Tuple, obsdim)
     length(tup) == 0 && return
     n1 = nobs(tup[1], obsdim)
     for i=2:length(tup)
-        nobs(tup[i], obsdim) != n1 && _check_nobs_error()
+        nobs(tup[i]; obsdim = obsdim) != n1 && _check_nobs_error()
     end
 end
 
@@ -88,20 +88,20 @@ function _check_nobs(tup::Tuple, obsdims::Tuple)
     length(tup) == 0 && return
     length(tup) == length(obsdims) ||
         throw(DimensionMismatch("Number of elements in obsdim doesn't match data."))
-    n1 = nobs(tup[1], obsdims[1])
+    n1 = nobs(tup[1]; obsdim = obsdims[1])
     for i=2:length(tup)
-        nobs(tup[i], obsdims[i]) != n1 && _check_nobs_error()
+        nobs(tup[i]; obsdim = obsdims[i]) != n1 && _check_nobs_error()
     end
 end
 
-function LearnBase.nobs(tup::Tuple, obsdim::Nothing)::Int
+function StatsBase.nobs(tup::Tuple, obsdim::Nothing)::Int
     _check_nobs(tup)
     return length(tup) == 0 ? 0 : nobs(tup[1])
 end
 
-function LearnBase.nobs(tup::Tuple, obsdim)::Int
+function StatsBase.nobs(tup::Tuple; obsdim = default_obsdim(tup))::Int
     _check_nobs(tup, obsdim)
-    return length(tup) == 0 ? 0 : nobs(tup[1], obsdim)
+    return length(tup) == 0 ? 0 : nobs(tup[1]; obsdim = obsdim)
 end
 
 # special re-routing for data container <: Tuple
