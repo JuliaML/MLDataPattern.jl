@@ -111,20 +111,21 @@ see [`DataSubset`](@ref) for more information on data subsets.
 see [`stratifiedobs`](@ref) for a related function that preserves
 the target distribution.
 """
-splitobs(data; at = 0.7, obsdim = default_obsdim(data)) = _splitobs(data, at, obsdim)
+splitobs(data, at = 0.7) = splitobs(data, at, default_obsdim(data))
 
 # partition into 2 sets
-function _splitobs(data, at::AbstractFloat, obsdim)
+function splitobs(data, at::AbstractFloat, obsdim)
     allowcontainer(splitobs, data) || throw(MethodError(splitobs, (data, at, obsdim)))
     n = nobs(data, obsdim)
     idx1, idx2 = splitobs(n; at = at)
-    
+
     return datasubset(data, idx1), datasubset(data, idx2)
 end
 
 # partition into length(at)+1 sets
-function _splitobs(data, at::NTuple{N,AbstractFloat}, obsdim) where N
+function splitobs(data, at::NTuple{N,AbstractFloat}, obsdim) where N
     allowcontainer(splitobs, data) || throw(MethodError(splitobs, (data, at, obsdim)))
     n = nobs(data, obsdim)
-    map(idx -> datasubset(data, idx), splitobs(n; at = at))
+
+    return map(idx -> datasubset(data, idx), splitobs(n; at = at))
 end

@@ -7,7 +7,7 @@ LearnBase.getobs(A::DataView{T}) where {T<:Tuple} = map(i->getobs(A,i), 1:length
 allowcontainer(fun, ::AbstractObsView) = true
 allowcontainer(fun, ::DataView) = false
 
-function StatsBase.nobs(A::DataView; obsdim = default_obsdim(A))
+function LearnBase.nobs(A::DataView, obsdim = default_obsdim(A))
     @assert obsdim === default_obsdim(A)
     return nobs(A)
 end

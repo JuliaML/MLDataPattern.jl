@@ -213,13 +213,13 @@ Base.getindex(subset::DataSubset, idx) =
 
 LearnBase.default_obsdim(subset::DataSubset) = default_obsdim(subset.data)
 
-StatsBase.nobs(subset::DataSubset) = length(subset)
+LearnBase.nobs(subset::DataSubset) = length(subset)
 
-LearnBase.getobs(subset::DataSubset, idx; obsdim = default_obsdim(subset)) =
-    getobs(subset.data, _view(subset.indices, idx); obsdim = obsdim)
+LearnBase.getobs(subset::DataSubset, idx, obsdim = default_obsdim(subset)) =
+    getobs(subset.data, _view(subset.indices, idx), obsdim)
 
-LearnBase.getobs!(buffer, subset::DataSubset, idx; obsdim = default_obsdim(subset)) =
-    getobs!(buffer, subset.data, _view(subset.indices, idx); obsdim = obsdim)
+LearnBase.getobs!(buffer, subset::DataSubset, idx, obsdim = default_obsdim(subset)) =
+    getobs!(buffer, subset.data, _view(subset.indices, idx), obsdim)
 
 # --------------------------------------------------------------------
 

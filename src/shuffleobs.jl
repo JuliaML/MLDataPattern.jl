@@ -32,7 +32,8 @@ For this function to work, the type of `data` must implement
 [`nobs`](@ref) and [`getobs`](@ref). See [`DataSubset`](@ref)
 for more information.
 """
-function shuffleobs(data; obsdim = default_obsdim(data), rng::AbstractRNG = Random.GLOBAL_RNG)
+function shuffleobs(data, obsdim = default_obsdim(data); rng::AbstractRNG = Random.GLOBAL_RNG)
     allowcontainer(shuffleobs, data) || throw(MethodError(shuffleobs, (data, obsdim)))
-    datasubset(data, randperm(rng, nobs(data, obsdim)))
+
+    return datasubset(data, randperm(rng, nobs(data, obsdim)))
 end

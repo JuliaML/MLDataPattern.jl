@@ -1,10 +1,9 @@
 module MLDataPattern
-using StatsBase
+
 using LearnBase
 using MLLabelUtils
 
-import StatsBase: nobs
-import LearnBase: getobs, getobs!, gettarget, gettargets, targets, default_obsdim,
+import LearnBase: nobs, getobs, getobs!, gettarget, gettargets, targets, default_obsdim,
                   DataView, AbstractObsView, AbstractBatchView,
                   DataIterator, ObsIterator, BatchIterator,
                   AbstractDataIterator, AbstractObsIterator, AbstractBatchIterator
