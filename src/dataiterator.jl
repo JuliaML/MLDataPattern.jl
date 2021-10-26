@@ -19,39 +19,14 @@ _length_str(iter, ::Base.SizeUnknown) = ""
 # and/or don't support collect
 LearnBase.getobs(A::AbstractDataIterator) = map(getobs,collect(A))
 LearnBase.getobs(A::AbstractDataIterator, i) = getobs(A[i])
-# todo: fix this
-LearnBase.getobs(A::AbstractDataIterator{T}) where {T<:Tuple} = map(x->map(getobs,x), collect(A))
-LearnBase.getobs(A::AbstractDataIterator{T}, i::Integer) where {T<:Tuple} = getobs.(A[i])
 
-DataSubset(data::T, indices) where {T<:DataIterator} =
+DataSubset(data::T, indices) where {T<:AbstractDataIterator} =
     throw(MethodError(DataSubset, (data,indices)))
 
 # To avoid overflow when infinite
 _next_idx(iter, idx) = _next_idx(Base.IteratorSize(iter), idx)
 _next_idx(::Base.IteratorSize, idx) = idx + 1
 _next_idx(::Base.IsInfinite, idx) = 1
-
-# --------------------------------------------------------------------
-# ObsIterator
-
-function Base.show(io::IO, iter::ObsIterator{E,T}) where {E,T}
-    if get(io, :compact, false)
-        print(io, typeof(iter).name.name, "{", E, ",", T, "} with " , _length(iter), " observations")
-    else
-        print(io, summary(iter), "\n Iterator providing ", _length(iter), " observations")
-    end
-end
-
-# --------------------------------------------------------------------
-# BatchIterator
-
-function Base.show(io::IO, iter::BatchIterator{E,T}) where {E,T}
-    if get(io, :compact, false)
-        print(io, typeof(iter).name.name, "{", E, ",", T, "} with " , _length(iter), " batches")
-    else
-        print(io, summary(iter), "\n Iterator providing ", _length(iter), " batches of size ", batchsize(iter))
-    end
-end
 
 # --------------------------------------------------------------------
 
@@ -132,21 +107,14 @@ see also
 [`ObsView`](@ref), [`BatchView`](@ref), [`shuffleobs`](@ref),
 [`DataSubset`](@ref), [`BufferGetObs`](@ref)
 """
-struct RandomObs{E,T,O,I} <: ObsIterator{E,T}
+struct RandomObs{T,O,I}
     data::T
     count::Int
     obsdim::O
 end
 
-function RandomObs(data::T, count::Int, obsdim::O) where {T,O}
-    count > 0 || throw(ArgumentError("count has to be greater than 0"))
-    E = typeof(datasubset(data, 1, obsdim))
-    RandomObs{E,T,O,Base.HasLength}(data, count, obsdim)
-end
-
 function RandomObs(data::T, obsdim::O) where {T,O}
-    E = typeof(datasubset(data, 1, obsdim))
-    RandomObs{E,T,O,Base.IsInfinite}(data, 1337, obsdim)
+    RandomObs{T,O,Base.IsInfinite}(data, 1337, obsdim)
 end
 
 RandomObs(data::T, count::Int; obsdim = default_obsdim(data)) where {T} =
@@ -164,9 +132,8 @@ function Base.iterate(iter::RandomObs, idx = 1)
      _next_idx(iter,idx))
 end
 
-Base.eltype(::Type{RandomObs{E,T,O,I}}) where {E,T,O,I} = E
-Base.IteratorSize(::Type{RandomObs{E,T,O,I}}) where {E,T,O,I} = I()
-Base.length(iter::RandomObs{E,T,O,Base.HasLength}) where {E,T,O} = iter.count
+Base.IteratorSize(::Type{RandomObs{T,O,I}}) where {T,O,I} = I()
+Base.length(iter::RandomObs{T,O,Base.HasLength}) where {T,O} = iter.count
 StatsBase.nobs(iter::RandomObs) = nobs(iter.data; obsdim = iter.obsdim)
 
 function Base.summary(iter::RandomObs)
@@ -267,7 +234,7 @@ see also
 [`ObsView`](@ref), [`BatchView`](@ref), [`shuffleobs`](@ref),
 [`DataSubset`](@ref), [`BufferGetObs`](@ref)
 """
-struct BalancedObs{E,T,L,O,I} <: ObsIterator{E,T}
+struct BalancedObs{T,L,O,I} <: AbstractDataIterator
     data::T
     labelmap::L
     count::Int
@@ -277,15 +244,13 @@ end
 function BalancedObs(f::Function, data, count::Int, obsdim)
     count > 0 || throw(ArgumentError("count has to be greater than 0"))
     lm = labelmap(eachtarget(f, data; obsdim = obsdim))
-    E = typeof(datasubset(data, 1))
-    BalancedObs{E,typeof(data),typeof(lm),typeof(obsdim),Base.HasLength}(data, lm, count, obsdim)
+    BalancedObs{typeof(data),typeof(lm),typeof(obsdim),Base.HasLength}(data, lm, count, obsdim)
 end
 BalancedObs(data, count::Int, obsdim) = BalancedObs(identity, data, count, obsdim)
 
 function BalancedObs(f::Function, data, obsdim)
     lm = labelmap(eachtarget(f, data; obsdim = obsdim))
-    E = typeof(datasubset(data, 1))
-    BalancedObs{E,typeof(data),typeof(lm),typeof(obsdim),Base.IsInfinite}(data, lm, 1337, obsdim)
+    BalancedObs{typeof(data),typeof(lm),typeof(obsdim),Base.IsInfinite}(data, lm, 1337, obsdim)
 end
 BalancedObs(data, obsdim) = BalancedObs(identity, data, obsdim)
 
@@ -313,9 +278,8 @@ function Base.iterate(iter::BalancedObs, idx = 1)
      _next_idx(iter,idx))
 end
 
-Base.eltype(::Type{BalancedObs{E,T,L,O,I}}) where {E,T,L,O,I} = E
-Base.IteratorSize(::Type{BalancedObs{E,T,L,O,I}}) where {E,T,L,O,I} = I()
-Base.length(iter::BalancedObs{E,T,L,O,Base.HasLength}) where {E,T,L,O} = iter.count
+Base.IteratorSize(::Type{BalancedObs{T,L,O,I}}) where {T,L,O,I} = I()
+Base.length(iter::BalancedObs{T,L,O,Base.HasLength}) where {T,L,O} = iter.count
 StatsBase.nobs(iter::BalancedObs) = nobs(iter.data; obsdim = iter.obsdim)
 
 function Base.summary(iter::BalancedObs)
@@ -409,7 +373,7 @@ see also
 [`RandomObs`](@ref), [`BatchView`](@ref), [`ObsView`](@ref),
 [`shuffleobs`](@ref), [`DataSubset`](@ref), [`BufferGetObs`](@ref)
 """
-struct RandomBatches{E,T,O,I} <: BatchIterator{E,T}
+struct RandomBatches{T,O,I} <: AbstractDataIterator
     data::T
     size::Int
     count::Int
@@ -419,20 +383,18 @@ end
 function RandomBatches(data::T, size::Int, count::Int, obsdim::O) where {T,O}
     size  > 0 || throw(ArgumentError("size has to be greater than 0"))
     count > 0 || throw(ArgumentError("count has to be greater than 0"))
-    E = typeof(datasubset(data, rand(1:nobs(data; obsdim = obsdim), size)))
-    RandomBatches{E,T,O,Base.HasLength}(data, size, count, obsdim)
+    RandomBatches{T,O,Base.HasLength}(data, size, count, obsdim)
 end
 
 function RandomBatches(data::T, size::Int, obsdim::O) where {T,O}
     size > 0 || throw(ArgumentError("size has to be greater than 0"))
-    E = typeof(datasubset(data, rand(1:nobs(data; obsdim = obsdim), size)))
-    RandomBatches{E,T,O,Base.IsInfinite}(data, size, 1337, obsdim)
+    RandomBatches{T,O,Base.IsInfinite}(data, size, 1337, obsdim)
 end
 
-RandomBatches(data::T, size::Int; obsdim = default_obsdim(data)) where {T} =
+RandomBatches(data::T, size::Int, obsdim = default_obsdim(data)) where {T} =
     RandomBatches(data, size, obsdim)
 
-RandomBatches(data::T, size::Int, count::Int; obsdim = default_obsdim(data)) where {T} =
+RandomBatches(data::T, size::Int, count::Int, obsdim = default_obsdim(data)) where {T} =
     RandomBatches(data, size, count, obsdim)
 
 # convenience constructor.
@@ -449,14 +411,13 @@ function Base.iterate(iter::RandomBatches, idx = 1)
     # maybe use StatsBase.sample instead of rand in order to avoid
     # replacement. That said I would like to avoid keyword arguments
     # and currently sample needs "replace" to be specified as such
-    indices = rand(1:nobs(iter.data; obsdim = iter.obsdim), iter.size)
+    indices = rand(1:nobs(iter.data, iter.obsdim), iter.size)
     (datasubset(iter.data, indices), _next_idx(iter, idx))
 end
 
-Base.eltype(::Type{RandomBatches{E,T,O,I}}) where {E,T,O,I} = E
-Base.IteratorSize(::Type{RandomBatches{E,T,O,I}}) where {E,T,O,I} = I()
-Base.length(iter::RandomBatches{E,T,O,Base.HasLength}) where {E,T,O} = iter.count
-StatsBase.nobs(iter::RandomBatches) = nobs(iter.data; obsdim = iter.obsdim)
+Base.IteratorSize(::Type{RandomBatches{T,O,I}}) where {T,O,I} = I()
+Base.length(iter::RandomBatches{T,O,Base.HasLength}) where {T,O} = iter.count
+StatsBase.nobs(iter::RandomBatches) = nobs(iter.data, iter.obsdim)
 batchsize(iter::RandomBatches) = iter.size
 
 function Base.summary(iter::RandomBatches)

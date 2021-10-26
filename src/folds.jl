@@ -102,7 +102,7 @@ see also
 [`kfolds`](@ref), [`leaveout`](@ref), [`splitobs`](@ref),
 [`DataSubset`](@ref)
 """
-struct FoldsView{T,D,O,A1<:AbstractArray,A2<:AbstractArray}
+struct FoldsView{T,D,O,A1<:AbstractArray,A2<:AbstractArray} <: AbstractDataIterator
     data::D
     train_indices::A1
     val_indices::A2
@@ -133,12 +133,6 @@ end
 
 FoldsView(data, train_indices::AbstractArray, val_indices::AbstractArray; obsdim = default_obsdim(data)) =
     FoldsView(data, train_indices, val_indices, obsdim)
-
-function FoldsView(data::T, train_indices::AbstractArray, val_indices::AbstractArray, obsdim) where T
-    @assert obsdim == data.obsdim
-    @warn string("Trying to nest a ", T.name, " into an FoldsView, which is not supported. Returning FoldsView(parent(_)) instead")
-    FoldsView(parent(data), train_indices, val_indices, obsdim)
-end
 
 # compare if both FoldsViews describe the same folds of the same data
 # we don't care how the indices are stored, just that they match
