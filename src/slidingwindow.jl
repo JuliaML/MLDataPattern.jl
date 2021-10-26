@@ -1,4 +1,4 @@
-abstract type SlidingWindow{TElem,TData,O} <: DataView{TElem,TData} end
+abstract type SlidingWindow{TElem,TData,O} end
 
 Base.parent(A::SlidingWindow) = A.data
 Base.length(A::SlidingWindow) = nobs(A)
@@ -285,12 +285,11 @@ end
 # --------------------------------------------------------------------
 # batches of sliding windows
 
-const WindowBatchView{TElem,O} = BatchView{TElem,<:SlidingWindow,O}
+const WindowBatchView{O} = BatchView{<:SlidingWindow,O}
 
 function BatchView(data::T, size::Int, count::Int, obsdim::O = default_obsdim(data), upto::Bool = false) where {T<:SlidingWindow,O}
     nsize, ncount = _compute_batch_settings(data, size, count, obsdim, upto)
-    E = typeof(_getwindowbatch(data, nsize, 1))
-    BatchView{E,T,O}(data, nsize, ncount, obsdim)
+    BatchView{T,O}(data, nsize, ncount, obsdim)
 end
 
 function Base.getindex(A::WindowBatchView, batchindex::Int)
@@ -320,7 +319,7 @@ end
 
 # --------------------------------------------------------------------
 
-function _getwindowbatch(A::LabeledSlidingWindow{TElem,TData,O,TFun,Exclude}, batchsize::Int, batchindex::Int) where {TElem,TData,O,TFun,Exclude}
+function _getwindowbatch(A::LabeledSlidingWindow{TData,O,TFun,Exclude}, batchsize::Int, batchindex::Int) where {TData,O,TFun,Exclude}
     batchrange = _batchrange(batchsize, batchindex)
     fltr = if Exclude
         s -> (A.targetfun(s[1]), setdiff(s[2], A.targetfun(s[1])))

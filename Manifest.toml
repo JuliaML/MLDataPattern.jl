@@ -54,7 +54,9 @@ uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[LearnBase]]
 deps = ["StatsBase"]
-path = "/Users/darsnack/.julia/dev/LearnBase"
+git-tree-sha1 = "4008c9fac3e9cbe08536af1e3d02fb4453506ea1"
+repo-rev = "darsnack/rm-obsdim"
+repo-url = "https://github.com/darsnack/LearnBase.jl.git"
 uuid = "7f8f8fb0-2700-5f03-b4bd-41f8cfc144b6"
 version = "0.5.2"
 
@@ -86,7 +88,9 @@ uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[MLLabelUtils]]
 deps = ["LearnBase", "MappedArrays", "StatsBase"]
-path = "/Users/darsnack/.julia/dev/MLLabelUtils"
+git-tree-sha1 = "e8d4d473a6ca5d89ed7f54f72469d0bb987b1304"
+repo-rev = "darsnack/refactor"
+repo-url = "https://github.com/darsnack/MLLabelUtils.jl.git"
 uuid = "66a33bbf-0c2b-5fc8-a008-9da813334f0a"
 version = "0.5.5"
 

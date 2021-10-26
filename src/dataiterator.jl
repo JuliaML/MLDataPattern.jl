@@ -10,14 +10,16 @@ _length_str(iter, ::Base.HasShape)  = string(length(iter), ", ")
 _length_str(iter, ::Base.IsInfinite) = ""
 _length_str(iter, ::Base.SizeUnknown) = ""
 
-Base.IteratorEltype(::Type{T}) where {T<:DataIterator} = Base.HasEltype()
-Base.eltype(::Type{DataIterator{E,T}}) where {E,T} = E
+# maybe I should use AbstractDataIterator here?
+#Base.IteratorEltype(::Type{T}) where {T<:DataIterator} = Base.HasEltype()
+#Base.eltype(::Type{DataIterator{E,T}}) where {E,T} = E
 
 # There is no contract that says these methods will work
 # It may be that some DataIterator subtypes do not support getindex
 # and/or don't support collect
 LearnBase.getobs(A::AbstractDataIterator) = map(getobs,collect(A))
 LearnBase.getobs(A::AbstractDataIterator, i) = getobs(A[i])
+# todo: fix this
 LearnBase.getobs(A::AbstractDataIterator{T}) where {T<:Tuple} = map(x->map(getobs,x), collect(A))
 LearnBase.getobs(A::AbstractDataIterator{T}, i::Integer) where {T<:Tuple} = getobs.(A[i])
 

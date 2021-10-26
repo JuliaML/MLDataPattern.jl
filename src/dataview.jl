@@ -1,22 +1,3 @@
-Base.IndexStyle(::Type{T}) where {T<:DataView} = IndexLinear()
-Base.size(A::DataView) = (length(A),)
-Base.lastindex(A::DataView) = length(A)
-LearnBase.getobs(A::DataView, i) = getobs(A[i])
-LearnBase.getobs(A::DataView{T}) where {T<:Tuple} = map(i->getobs(A,i), 1:length(A))
-
-allowcontainer(fun, ::AbstractObsView) = true
-allowcontainer(fun, ::DataView) = false
-
-function LearnBase.nobs(A::DataView, obsdim = default_obsdim(A))
-    @assert obsdim === default_obsdim(A)
-    return nobs(A)
-end
-
-function LearnBase.getobs(A::DataView, idx, obsdim)
-    @assert obsdim === default_obsdim(A)
-    return getobs(A, idx)
-end
-
 # --------------------------------------------------------------------
 
 """
@@ -111,20 +92,9 @@ see also
 [`eachobs`](@ref), [`BatchView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
-struct ObsView{TElem,TData,O} <: AbstractObsView{TElem,TData}
+struct ObsView{TData,O}
     data::TData
     obsdim::O
-end
-
-function ObsView(data::T, obsdim::O) where {T,O}
-    E = typeof(datasubset(data, 1))
-    ObsView{E,T,O}(data,obsdim)
-end
-
-function ObsView(A::T, obsdim) where T<:DataView
-    @assert obsdim == A.obsdim
-    @warn string("Trying to nest a ", T.name, " into an ObsView, which is not supported. Returning ObsView(parent(_)) instead")
-    ObsView(parent(A), obsdim)
 end
 
 function ObsView(A::ObsView, obsdim)
@@ -347,17 +317,11 @@ see also
 [`eachbatch`](@ref), [`ObsView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
-struct BatchView{TElem,TData,O} <: AbstractBatchView{TElem,TData}
+struct BatchView{TData,O}
     data::TData
     size::Int
     count::Int
     obsdim::O
-end
-
-function BatchView(data::T, size::Int, count::Int, obsdim::O = default_obsdim(data), upto::Bool = false) where {T,O}
-    nsize, ncount = _compute_batch_settings(data, size, count, obsdim, upto)
-    E = typeof(datasubset(data, 1:nsize, obsdim))
-    BatchView{E,T,O}(data, nsize, ncount, obsdim)
 end
 
 function BatchView(data::T, size::Int, obsdim::O = default_obsdim(data), upto::Bool = false) where {T,O}
@@ -424,7 +388,7 @@ end
 
 # if subsetting a DataView, then DataView the subset instead.
 for fun in (:DataSubset, :datasubset)
-    @eval @generated function ($fun)(A::T, i, obsdim) where T<:AbstractObsView
+    @eval @generated function ($fun)(A::T, i, obsdim) where T
         quote
             @assert obsdim == A.obsdim
             ($(T.name.name))(($($fun))(parent(A), i), obsdim)

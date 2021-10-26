@@ -227,10 +227,6 @@ function gettargets(subset::DataSubset, idx; obsdim = default_obsdim(subset))
     gettargets(subset, idx)
 end
 
-function gettargets(data::AbstractObsView)
-    map(x->gettarget(identity, getobs_targetfun(x)), data)
-end
-
 gettargets(tup::Tuple) = map(gettargets, tup)
 
 # --------------------------------------------------------------------
@@ -330,11 +326,11 @@ end
 # @inline targets(f, data, obsdim) = _targets(f, data, obsdim)
 
 # Batch Views
-targets(f, data::AbstractBatchView) =
+targets(f, data::BatchView) =
     map(x->targets(f,x), data)
 
 # Obs Views
-targets(f, data::AbstractObsView) =
+targets(f, data::ObsView) =
     map(x->_gettarget(f,x), data)
 
 # custom "_" function to not recurse on tuples
@@ -383,7 +379,7 @@ end
 @inline eachtarget(f, data; obsdim = default_obsdim(data)) =
     eachtarget(f, obsview(data; obsdim = obsdim))
 
-function eachtarget(f, data::AbstractObsView; obsdim = default_obsdim(data))
+function eachtarget(f, data::ObsView; obsdim = default_obsdim(data))
     @assert obsdim == default_obsdim(data)
     (_gettarget(f,x) for x in data)
 end
