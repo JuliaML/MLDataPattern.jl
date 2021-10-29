@@ -391,7 +391,7 @@ function RandomBatches(data::T, size::Int, obsdim::O) where {T,O}
     RandomBatches{T,O,Base.IsInfinite}(data, size, 1337, obsdim)
 end
 
-RandomBatches(data::T, size::Int, obsdim = default_obsdim(data)) where {T} =
+RandomBatches(data::T, size::Int, obsdim::Union{Nothing, Integer} = default_obsdim(data)) where {T} =
     RandomBatches(data, size, obsdim)
 
 RandomBatches(data::T, size::Int, count::Int, obsdim = default_obsdim(data)) where {T} =
