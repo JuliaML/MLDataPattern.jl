@@ -61,7 +61,6 @@ export
 # obsdim_string(::ObsDim.Undefined) = "\"NA\""
 # obsdim_string(obsdim::Tuple) = string("(", join(map(obsdim_string, obsdim), ", "), ")")
 
-include("container.jl")
 include("datasubset.jl")
 include("randobs.jl")
 include("shuffleobs.jl")

@@ -16,14 +16,6 @@
         @test @inferred(nobs((), obsdim = 3)) === 0
     end
 
-    @testset "0-dim SubArray" begin
-        v = view([3], 1)
-        @test @inferred(nobs(v)) === 1
-        @test @inferred(getobs(v, 1)) === 3
-        @test_throws BoundsError getobs(v, 2)
-        @test_throws BoundsError getobs(v, 2:3)
-    end
-
     @testset "SubArray" begin
         @test @inferred(nobs(view(X,:,:))) === 150
         @test @inferred(nobs(view(X,:,:))) === 150
@@ -54,11 +46,11 @@
 
     @testset "custom types" begin
         # test that fallback bouncing doesn't cause stackoverflow
-        # @test_throws MethodError nobs(EmptyType())
-        # @test_throws MethodError nobs(EmptyType(); obsdim = 1)
-        # @test_throws MethodError nobs(EmptyType(); obsdim = (1, 2))
+        @test_throws MethodError nobs(EmptyType())
+        @test_throws MethodError nobs(EmptyType(); obsdim = 1)
+        @test_throws MethodError nobs(EmptyType(); obsdim = (1, 2))
         # test types that don't use the obsdim
-        @test nobs(CustomType(); obsdim = 1) == 100
+        @test_throws MethodError nobs(CustomType(); obsdim = 1)
         @test nobs(CustomType()) === 100
     end
 end
@@ -169,9 +161,9 @@ end
 
     @testset "type without getobs support" begin
         # test that fallback bouncing doesn't cause stackoverflow
-        # @test_throws MethodError getobs(EmptyType(), 1)
-        # @test_throws MethodError getobs(EmptyType(), 1:10)
-        # @test_throws MethodError getobs(EmptyType(), 1; obsdim=1)
+        @test_throws MethodError getobs(EmptyType(), 1)
+        @test_throws MethodError getobs(EmptyType(), 1:10)
+        @test_throws MethodError getobs(EmptyType(), 1; obsdim=1)
     end
 
     @testset "custom type with getobs support" begin

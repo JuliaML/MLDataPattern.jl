@@ -394,7 +394,7 @@ end
 RandomBatches(data::T, size::Int, obsdim::Union{Nothing, Integer} = default_obsdim(data)) where {T} =
     RandomBatches(data, size, obsdim)
 
-RandomBatches(data::T, size::Int, count::Int, obsdim = default_obsdim(data)) where {T} =
+RandomBatches(data::T, size::Int, count::Int, obsdim::Union{Nothing, Integer} = default_obsdim(data)) where {T} =
     RandomBatches(data, size, count, obsdim)
 
 # convenience constructor.
