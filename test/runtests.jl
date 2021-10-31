@@ -85,7 +85,7 @@ end
 tests = [
     "tst_container.jl"
     # "tst_datasubset.jl"
-    # "tst_randobs.jl"
+    "tst_randobs.jl"
     # "tst_shuffleobs.jl"
     # "tst_splitobs.jl"
     # "tst_dataview.jl"

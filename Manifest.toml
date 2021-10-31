@@ -61,7 +61,7 @@ version = "0.1.1"
 
 [[LearnBase]]
 deps = ["StatsBase"]
-git-tree-sha1 = "cefbc1ab6e69abd001aa5bf8cb465151070601a7"
+git-tree-sha1 = "f1b8214972833125cac5c7d52830932600f0ffa9"
 repo-rev = "darsnack/rm-obsdim"
 repo-url = "https://github.com/darsnack/LearnBase.jl.git"
 uuid = "7f8f8fb0-2700-5f03-b4bd-41f8cfc144b6"

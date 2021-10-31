@@ -7,6 +7,7 @@ using MLLabelUtils
 import LearnBase: nobs, getobs, getobs!, gettarget, gettargets, targets, default_obsdim,
                   AbstractDataIterator
 
+using LearnBase: _check_nobs
 using Base.Cartesian
 using Random
 using SparseArrays

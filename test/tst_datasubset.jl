@@ -14,22 +14,22 @@
     end
 
     @testset "Tuple unrolling" begin
-        @test_throws DimensionMismatch DataSubset((X,X), 1:150, (ObsDim.Last(), ObsDim.Last(), ObsDim.Last()))
-        @test_throws DimensionMismatch DataSubset((X,X), 1:150, (ObsDim.Last(),))
-        @test_throws DimensionMismatch DataSubset((X,X), (ObsDim.Last(), ObsDim.Last(), ObsDim.Last()))
-        @test_throws DimensionMismatch DataSubset((X,X), (ObsDim.Last(),))
+        @test_throws DimensionMismatch DataSubset((X,X), 1:150; obsdim = (2, 2, 2))
+        @test_throws DimensionMismatch DataSubset((X,X), 1:150; obsdim = (2,))
+        @test_throws DimensionMismatch DataSubset((X,X); obsdim = (2, 2, 2))
+        @test_throws DimensionMismatch DataSubset((X,X); obsdim = (2,))
         @test typeof(@inferred(DataSubset((X,X)))) <: Tuple
         @test eltype(@inferred(DataSubset((X,X)))) <: DataSubset
-        @test typeof(@inferred(DataSubset((X,X), ObsDim.Last()))) <: Tuple
-        @test eltype(@inferred(DataSubset((X,X), ObsDim.Last()))) <: DataSubset
-        @test typeof(@inferred(DataSubset((X,X), (ObsDim.Last(), ObsDim.Last())))) <: Tuple
-        @test eltype(@inferred(DataSubset((X,X), (ObsDim.Last(), ObsDim.Last())))) <: DataSubset
-        @test typeof(@inferred(DataSubset((X,X), 1:150, (ObsDim.Last(), ObsDim.Last())))) <: Tuple
-        @test eltype(@inferred(DataSubset((X,X), 1:150, (ObsDim.Last(), ObsDim.Last())))) <: DataSubset
-        D1 = @inferred(DataSubset((X',X), (ObsDim.First(),ObsDim.Last())))
-        D2 = @inferred(DataSubset((X',X), 1:150, (ObsDim.First(),ObsDim.Last())))
-        D3 = DataSubset((X',X), obsdim = (1,:last))
-        D4 = DataSubset((X',X), 1:150, obsdim = (:first,:last))
+        @test typeof(@inferred(DataSubset((X,X); obsdim = 2))) <: Tuple
+        @test eltype(@inferred(DataSubset((X,X); obsdim = 2))) <: DataSubset
+        @test typeof(@inferred(DataSubset((X,X); obsdim = (2, 2)))) <: Tuple
+        @test eltype(@inferred(DataSubset((X,X); obsdim = (2, 2)))) <: DataSubset
+        @test typeof(@inferred(DataSubset((X,X), 1:150; obsdim = (2, 2)))) <: Tuple
+        @test eltype(@inferred(DataSubset((X,X), 1:150; obsdim = (2, 2)))) <: DataSubset
+        D1 = @inferred(DataSubset((X',X); obsdim = (1, 2)))
+        D2 = @inferred(DataSubset((X',X), 1:150; obsdim = (1, 2)))
+        D3 = DataSubset((X',X); obsdim = (1, 2))
+        D4 = DataSubset((X',X), 1:150; obsdim = (1, 2))
         for (s1,s2) in (D1,D2,D3,D4)
             @test typeof(datasubset(s1,2:10)) <: DataSubset
             @test @inferred(datasubset(s1,2:10)) == @inferred(s1[2:10])
@@ -44,8 +44,8 @@
     end
 
     @testset "Array, SubArray, SparseArray" begin
-        @test nobs(DataSubset(X, obsdim = 1)) == 4
-        @test nobs(DataSubset(X, 1:3, obsdim = 1)) == 3
+        @test nobs(DataSubset(X; obsdim = 1)) == 4
+        @test nobs(DataSubset(X, 1:3; obsdim = 1)) == 3
         @test_reference "references/DataSubset1.txt" DataSubset(X, Int64(1):Int64(nobs(X))) by=matrix_compat_isequal
         @test_reference "references/DataSubset2.txt" @io2str(showcompact(::IO, DataSubset(X))) by=matrix_compat_isequal
         for var in (Xs, ys, vars...)

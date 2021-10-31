@@ -180,6 +180,12 @@ DataSubset(data::T, indices::I) where {T, I} = DataSubset{T, I}(data, indices)
 # don't nest subsets
 DataSubset(subset::DataSubset, indices) = DataSubset(subset.data, _view(subset.indices, indices))
 
+# to accumulate indices as views instead of copies
+_view(indices::AbstractRange, i::Int) = indices[i]
+_view(indices::AbstractRange, i::AbstractRange) = indices[i]
+_view(indices, i::Int) = indices[i] # to throw error in case
+_view(indices, i) = view(indices, i)
+
 function Base.show(io::IO, subset::DataSubset)
     if get(io, :compact, false)
         print(io, "DataSubset{", typeof(subset.data), "} with " , nobs(subset), " observations")
