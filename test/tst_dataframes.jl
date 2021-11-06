@@ -6,6 +6,11 @@
         y = [:a,:a,:b,:a,:b]
         df = DataFrame(x1 = rand(5), x2 = rand(5), y = y)
         @test y == targets(row->row.y, df)
+        # figure out why this is not working
+        # obsview(df, LearnBase.default_obsdim(df))
+        # collect(obsview(df, LearnBase.default_obsdim(df)))
+        # first(obsview(df, LearnBase.default_obsdim(df)))
+
     end
 
     @testset "eachtarget" begin
