@@ -214,18 +214,19 @@ Base.length(subset::DataSubset) = length(subset.indices)
 
 Base.lastindex(subset::DataSubset) = length(subset)
 
+# todo: check this, because it does not seem to make much sense
 Base.getindex(subset::DataSubset, idx) =
-    DataSubset(subset.data, _view(subset.indices, idx), default_obsdim(subset))
+    DataSubset(subset.data, _view(subset.indices, idx))
 
 LearnBase.default_obsdim(subset::DataSubset) = default_obsdim(subset.data)
 
-LearnBase.nobs(subset::DataSubset) = length(subset)
+LearnBase.nobs(subset::DataSubset; obsdim = default_obsdim(subset)) = length(subset)
 
-LearnBase.getobs(subset::DataSubset, idx, obsdim = default_obsdim(subset)) =
-    getobs(subset.data, _view(subset.indices, idx), obsdim)
+LearnBase.getobs(subset::DataSubset, idx; obsdim = default_obsdim(subset)) =
+    getobs(subset.data, _view(subset.indices, idx); obsdim = obsdim)
 
-LearnBase.getobs!(buffer, subset::DataSubset, idx, obsdim = default_obsdim(subset)) =
-    getobs!(buffer, subset.data, _view(subset.indices, idx), obsdim)
+LearnBase.getobs!(buffer, subset::DataSubset, idx; obsdim = default_obsdim(subset)) =
+    getobs!(buffer, subset.data, _view(subset.indices, idx); obsdim = obsdim)
 
 # --------------------------------------------------------------------
 

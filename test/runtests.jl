@@ -34,23 +34,23 @@ Y1 = collect(1:150)
 struct EmptyType end
 
 struct CustomType end
-StatsBase.nobs(::CustomType) = 100
-LearnBase.getobs(::CustomType, i::Int) = i
-LearnBase.getobs(::CustomType, i::AbstractVector) = collect(i)
+StatsBase.nobs(x::CustomType; obsdim = LearnBase.default_obsdim(x)) = 100
+LearnBase.getobs(x::CustomType, i::Int; obsdim = LearnBase.default_obsdim(x)) = i
+LearnBase.getobs(x::CustomType, i::AbstractVector; obsdim = LearnBase.default_obsdim(x)) = collect(i)
 LearnBase.gettargets(::CustomType, i::Int) = "obs $i"
 LearnBase.gettargets(::CustomType, i::AbstractVector) = "batch $i"
 
 struct CustomStorage end
 struct CustomObs{T}; data::T end
-StatsBase.nobs(::CustomStorage) = 2
-LearnBase.getobs(::CustomStorage, i) = CustomObs(i)
+StatsBase.nobs(x::CustomStorage; obsdim = LearnBase.default_obsdim(x)) = 2
+LearnBase.getobs(x::CustomStorage, i; obsdim = LearnBase.default_obsdim(x)) = CustomObs(i)
 LearnBase.gettarget(str::String, obs::CustomObs) = "$str - obs $(obs.data)"
 LearnBase.gettarget(obs::CustomObs) = "obs $(obs.data)"
 
 struct ObsDimTriggeredException <: Exception end
 struct MetaDataStorage end
-StatsBase.nobs(::MetaDataStorage) = 3
-LearnBase.getobs(::MetaDataStorage, i) = throw(ObsDimTriggeredException())
+StatsBase.nobs(x::MetaDataStorage; obsdim = LearnBase.default_obsdim(x)) = 3
+LearnBase.getobs(x::MetaDataStorage, i; obsdim = LearnBase.default_obsdim(x)) = throw(ObsDimTriggeredException())
 LearnBase.gettargets(::MetaDataStorage) = "full"
 LearnBase.gettargets(::MetaDataStorage, i::Int) = "obs $i"
 LearnBase.gettargets(::MetaDataStorage, i::AbstractVector) = "batch $i"
@@ -84,7 +84,7 @@ end
 
 tests = [
     "tst_container.jl"
-    # "tst_datasubset.jl"
+    "tst_datasubset.jl"
     "tst_randobs.jl"
     # "tst_shuffleobs.jl"
     # "tst_splitobs.jl"

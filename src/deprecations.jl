@@ -1,0 +1,1 @@
+@deprecate DataSubset(data::T; obsdim = default_obsdim(data)) where {T} DataSubset(data::T, 1:nobs(data; obsdim = obsdim))

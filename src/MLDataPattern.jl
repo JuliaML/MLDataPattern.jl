@@ -73,5 +73,6 @@ include("stratifiedobs.jl")
 include("resample.jl")
 include("folds.jl")
 include("dataiterator.jl")
+include("deprecations.jl")
 
 end # module

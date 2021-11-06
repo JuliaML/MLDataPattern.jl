@@ -502,7 +502,7 @@ Base.eltype(::Type{BufferGetObs{E,T}}) where {E,T} = E
 Base.IteratorSize(::Type{BufferGetObs{E,T}}) where {E,T} = Base.IteratorSize(T)
 Base.length(b::BufferGetObs) = length(b.iter)
 Base.size(b::BufferGetObs, I...) = size(b.iter, I...)
-StatsBase.nobs(b::BufferGetObs) = nobs(b.iter)
+StatsBase.nobs(b::BufferGetObs; obsdim = default_obsdim(b)) = nobs(b.iter; obsdim = obsdim)
 batchsize(b::BufferGetObs) = batchsize(b.iter)
 
 function Base.summary(b::BufferGetObs)
