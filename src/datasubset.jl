@@ -186,6 +186,12 @@ _view(indices::AbstractRange, i::AbstractRange) = indices[i]
 _view(indices, i::Int) = indices[i] # to throw error in case
 _view(indices, i) = view(indices, i)
 
+# can be used to prevent specific data container to be used
+# in (specific) functions. For example passing a BatchView to
+# oversample or undersample should throw an error
+# todo: discuss if we want to have it here
+allowcontainer(fun, data) = true
+
 function Base.show(io::IO, subset::DataSubset)
     if get(io, :compact, false)
         print(io, "DataSubset{", typeof(subset.data), "} with " , nobs(subset), " observations")

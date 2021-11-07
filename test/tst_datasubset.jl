@@ -77,7 +77,7 @@
                 @test subset.data === var
                 @test subset.indices === idx
                 @test @inferred(nobs(subset)) === length(idx)
-                @test @inferred(getobs(subset)) == getobs(var, idx)
+                @test @inferred(getobs(subset, 1:nobs(subset))) == getobs(var, idx)
                 @test @inferred(DataSubset(subset)) === subset
                 @test @inferred(subset[1]) == DataSubset(var, idx[1])
                 if typeof(idx) <: AbstractRange
@@ -100,7 +100,7 @@
         @test typeof(@inferred(DataSubset(CustomType()))) <: DataSubset
         @test nobs(DataSubset(CustomType())) === 100
         @test nobs(DataSubset(CustomType(), 11:20)) === 10
-        @test getobs(DataSubset(CustomType())) == collect(1:100)
+        @test getobs(DataSubset(CustomType()), 1:nobs(CustomType())) == collect(1:100)
         @test getobs(DataSubset(CustomType(),11:20),10) == 20
         @test getobs(DataSubset(CustomType(),11:20),[3,5]) == [13,15]
     end
@@ -110,7 +110,7 @@ end
     @testset "Matrix and SubArray{T,2}" begin
         for var in (X, Xv)
             subset = @inferred(DataSubset(var, 101:150))
-            @test typeof(@inferred(getobs(subset))) <: Array{Float64,2}
+            @test typeof(@inferred(getobs(subset, 1:nobs(subset)))) <: Array{Float64,2}
             @test @inferred(nobs(subset)) == length(subset) == 50
             @test @inferred(subset[10:20]) == DataSubset(X, 110:120)
             @test @inferred(subset[11:21]) != DataSubset(X, 110:120)
@@ -119,14 +119,14 @@ end
             @test typeof(subset[10:20]) <: DataSubset
             @test @inferred(subset[collect(10:20)]) == DataSubset(X, collect(110:120))
             @test typeof(subset[collect(10:20)]) <: DataSubset
-            @test @inferred(getobs(subset)) == getobs(subset[1:end]) == X[:, 101:150]
+            @test @inferred(getobs(subset, 1:nobs(subset))) == getobs(subset[1:end], 1:nobs(subset)) == X[:, 101:150]
         end
     end
 
     @testset "Vector and SubArray{T,1}" begin
         for var in (y, yv)
             subset = @inferred(DataSubset(var, 101:150))
-            @test typeof(getobs(subset)) <: Array{String,1}
+            @test typeof(getobs(subset, 1:nobs(subset))) <: Array{String,1}
             @test @inferred(nobs(subset)) == length(subset) == 50
             @test @inferred(subset[10:20]) == DataSubset(y, 110:120)
             @test @inferred(getobs(subset, 10:20)) == y[110:120]
@@ -134,7 +134,7 @@ end
             @test typeof(subset[10:20]) <: DataSubset
             @test @inferred(subset[collect(10:20)]) == DataSubset(y, collect(110:120))
             @test typeof(subset[collect(10:20)]) <: DataSubset
-            @test @inferred(getobs(subset)) == getobs(subset[1:end]) == y[101:150]
+            @test @inferred(getobs(subset, 1:nobs(subset))) == getobs(subset[1:end], 1:nobs(subset)) == y[101:150]
         end
     end
 
@@ -158,8 +158,8 @@ end
         @test typeof(getobs(subset, 1:nobs(subset))[1]) <: SparseMatrixCSC
         @test typeof(getobs(subset, 1:nobs(subset))[2]) <: SparseVector
         @test @inferred(nobs(subset)) == nobs(subset[1]) == nobs(subset[2]) == 50
-        @test @inferred(getobs(subset[1][10:20])) == getindex(Xs, :, 110:120)
-        @test @inferred(getobs(subset[2][10:20])) == getindex(ys, 110:120)
+        @test @inferred(getobs(subset[1][10:20], 1:11)) == getindex(Xs, :, 110:120)
+        @test @inferred(getobs(subset[2][10:20], 1:11)) == getindex(ys, 110:120)
         @test @inferred(getobs(subset, 1:nobs(subset))) == (getindex(Xs, :, 101:150), getindex(ys, 101:150))
     end
 end
@@ -168,15 +168,15 @@ println("<HEARTBEAT>")
 
 @testset "datasubset" begin
     @testset "Array and SubArray" begin
-        @test getobs(@inferred(datasubset(X, 1:nobs(X)))) == Xv
-        @test typeof(getobs(datasubset(X, 1:nobs(X)))) <: AbstractArray
+        @test getobs(@inferred(datasubset(X, 1:nobs(X))), 1:nobs(X)) == Xv
+        @test typeof(getobs(datasubset(X, 1:nobs(X)), 1:nobs(X))) <: AbstractArray
         @test typeof(datasubset(X, 1:nobs(X))) <: DataSubset
         @test @inferred(datasubset(Xv)) === Xv
-        @test getobs(@inferred(datasubset(XX, 1:nobs(XX)))) == XX
-        @test getobs(@inferred(datasubset(XXX, 1:nobs(XXX)))) == XXX
+        @test getobs(@inferred(datasubset(XX, 1:nobs(XX))), 1:nobs(XX)) == XX
+        @test getobs(@inferred(datasubset(XXX, 1:nobs(XXX))), 1:nobs(XXX)) == XXX
         @test typeof(datasubset(XXX, 1:nobs(XXX))) <: DataSubset
-        @test getobs(@inferred(datasubset(y, 1:nobs(y)))) == y
-        @test typeof(getobs(datasubset(y, 1:nobs(y)))) <: AbstractArray
+        @test getobs(@inferred(datasubset(y, 1:nobs(y))), 1:nobs(y)) == y
+        @test typeof(getobs(datasubset(y, 1:nobs(y)), 1:nobs(y))) <: AbstractArray
         @test @inferred(datasubset(yv)) === yv
         # todo: figure out why it's not views
         # for i in (2, 1:150, 2:10, [2,5,7], [2,1])
@@ -235,9 +235,9 @@ println("<HEARTBEAT>")
 
     @testset "Tuple of SparseArray" begin
         @test @inferred(datasubset((Xv,ys))) === (Xv,DataSubset(ys))
-        @test @inferred(datasubset((X,ys)))  === (datasubset(X),DataSubset(ys))
+        @test @inferred(datasubset((X,ys), 1:nobs(X)))  === (datasubset(X),DataSubset(ys))
         @test @inferred(datasubset((Xs,y)))  === (DataSubset(Xs),datasubset(y))
-        @test @inferred(datasubset((Xs,ys))) === (DataSubset(Xs),DataSubset(ys))
+        @test @inferred(datasubset((Xs,ys), 1:nobs(Xs))) === (DataSubset(Xs),DataSubset(ys))
         @test @inferred(datasubset((Xs,Xs))) === (DataSubset(Xs),DataSubset(Xs))
         @test @inferred(datasubset((ys,Xs))) === (DataSubset(ys),DataSubset(Xs))
         @test @inferred(datasubset((XX,Xs,yv))) === (datasubset(XX),DataSubset(Xs),yv)
@@ -258,7 +258,7 @@ println("<HEARTBEAT>")
     end
 
     @testset "custom types" begin
-        @test_throws MethodError datasubset(EmptyType())
+        @test_throws MethodError datasubset(EmptyType(), 1:nobs(EmptyType()))
         @test_throws MethodError getobs(datasubset(EmptyType(), 1:10), 1)
         @test_throws MethodError datasubset(EmptyType(), 1:10; obsdim = 1)
         # @test_throws MethodError datasubset(CustomType(); obsdim=1)
@@ -266,12 +266,12 @@ println("<HEARTBEAT>")
         @test_throws MethodError datasubset(CustomType(), 2:10, obsdim=1)
         @test_throws MethodError datasubset(CustomType(), 2:10, obsdim=:last)
         @test_throws BoundsError getobs(datasubset(CustomType(), 11:20), 11)
-        @test typeof(@inferred(datasubset(CustomType()))) <: DataSubset
-        @test datasubset(CustomType()) == DataSubset(CustomType())
+        @test typeof(@inferred(datasubset(CustomType(), 1:nobs(CustomType())))) <: DataSubset
+        @test datasubset(CustomType(), 1:nobs(CustomType())) == DataSubset(CustomType())
         @test datasubset(CustomType(), 11:20) == DataSubset(CustomType(), 11:20)
-        @test nobs(datasubset(CustomType())) === 100
+        @test nobs(datasubset(CustomType(), 1:nobs(CustomType()))) === 100
         @test nobs(datasubset(CustomType(), 11:20)) === 10
-        @test getobs(datasubset(CustomType())) == collect(1:100)
+        @test getobs(datasubset(CustomType(), 1:nobs(CustomType())), 1:nobs(CustomType())) == collect(1:100)
         @test getobs(datasubset(CustomType(), 11:20), 10) == 20
         @test getobs(datasubset(CustomType(), 11:20), [3,5]) == [13,15]
     end
@@ -280,44 +280,44 @@ end
 @testset "getobs!" begin
     # @test getobs!(nothing, datasubset(y, 1)) == "setosa"
 
-    # @testset "DataSubset" begin
-    #     xbuf1 = zeros(4,8)
-    #     s1 = DataSubset(X, 2:9)
-    #     @test @inferred(getobs!(xbuf1,s1,1:nobs(s1))) === xbuf1
-    #     @test xbuf1 == getobs(s1)
-    #     xbuf1 = zeros(4,5)
-    #     s1 = DataSubset(X, 10:17)
-    #     @test @inferred(getobs!(xbuf1,s1,2:6)) === xbuf1
-    #     @test xbuf1 == getobs(s1,2:6) == getobs(X,11:15)
+    @testset "DataSubset" begin
+        xbuf1 = zeros(4,8)
+        s1 = DataSubset(X, 2:9)
+        @test @inferred(getobs!(xbuf1,s1,1:nobs(s1))) === xbuf1
+        @test xbuf1 == getobs(s1, 1:nobs(s1))
+        xbuf1 = zeros(4,5)
+        s1 = DataSubset(X, 10:17)
+        @test @inferred(getobs!(xbuf1,s1,2:6)) === xbuf1
+        @test xbuf1 == getobs(s1,2:6) == getobs(X,11:15)
 
-    #     xbuf2 = zeros(8,4)
-    #     s2 = DataSubset(X', 2:9)
-    #     @test @inferred(getobs!(xbuf2,s2,1:nobs(s2))) === xbuf2
-    #     @test xbuf2 == getobs(s2)
-    #     xbuf2 = zeros(5,4)
-    #     s2 = DataSubset(X', 10:17, obsdim=1)
-    #     @test @inferred(getobs!(xbuf2,s2,2:6)) === xbuf2
-    #     @test xbuf2 == getobs(s2,2:6) == getobs(X',11:15,obsdim=1)
+        xbuf2 = zeros(8,4)
+        s2 = DataSubset(X', 2:9)
+        @test @inferred(getobs!(xbuf2,s2,1:nobs(s2); obsdim=1)) === xbuf2
+        @test xbuf2 == getobs(s2,1:nobs(s2); obsdim=1)
+        xbuf2 = zeros(5,4)
+        s2 = DataSubset(X', 10:17)
+        @test @inferred(getobs!(xbuf2,s2,2:6; obsdim=1)) === xbuf2
+        @test xbuf2 == getobs(s2,2:6; obsdim=1) == getobs(X',11:15,obsdim=1)
 
-    #     s3 = DataSubset(Xs, 11:15)
-    #     @test @inferred(getobs!(nothing,s3)) == getobs(Xs,11:15)
+        s3 = DataSubset(Xs, 11:15)
+        @test @inferred(getobs!(nothing,s3,1:nobs(s3))) == getobs(Xs,11:15)
 
-    #     s4 = DataSubset(CustomType(), 6:10)
-    #     @test @inferred(getobs!(nothing,s4)) == getobs(s4)
-    #     s5 = DataSubset(CustomType(), 9:20)
-    #     @test @inferred(getobs!(nothing,s5,2:6)) == getobs(s5,2:6)
-    # end
+        s4 = DataSubset(CustomType(), 6:10)
+        @test @inferred(getobs!(nothing,s4,1:nobs(s4))) == getobs(s4, 1:nobs(s4))
+        s5 = DataSubset(CustomType(), 9:20)
+        @test @inferred(getobs!(nothing,s5,2:6)) == getobs(s5,2:6)
+    end
 
-    # @testset "Tuple with DataSubset" begin
-    #     xbuf = zeros(4,2)
-    #     ybuf = ["foo", "bar"]
-    #     s1 = DataSubset(Xs, 5:9)
-    #     s2 = DataSubset(X, 5:9)
-    #     @test_throws AssertionError getobs!((nothing,xbuf),(s1,s2),2:3,ObsDim.First())
-    #     @test_throws AssertionError getobs!((nothing,xbuf),(s1,s2),2:3,(ObsDim.First(),ObsDim.Last()))
-    #     @test getobs!((nothing,xbuf),(s1,s2), 2:3) == (getobs(Xs,6:7),xbuf)
-    #     @test xbuf == getobs(X,6:7)
-    #     @test getobs!((nothing,xbuf),(s1,s2), 2:3, ObsDim.Last()) == (getobs(Xs,6:7),xbuf)
-    #     @test getobs!((nothing,xbuf),(s1,s2), 2:3, (ObsDim.Last(),ObsDim.Last())) == (getobs(Xs,6:7),xbuf)
-    # end
+    @testset "Tuple with DataSubset" begin
+        xbuf = zeros(4,2)
+        ybuf = ["foo", "bar"]
+        s1 = DataSubset(Xs, 5:9)
+        s2 = DataSubset(X, 5:9)
+        @test_throws BoundsError getobs!((nothing,xbuf),(s1,s2),2:3; obsdim=1)
+        @test getobs!((nothing,xbuf),(s1,s2),2:3; obsdim=(1,2)) == (getobs(Xs,6:7; obsdim=1),xbuf)
+        @test getobs!((nothing,xbuf),(s1,s2), 2:3) == (getobs(Xs,6:7),xbuf)
+        @test xbuf == getobs(X,6:7)
+        @test getobs!((nothing,xbuf),(s1,s2), 2:3; obsdim=2) == (getobs(Xs,6:7),xbuf)
+        @test getobs!((nothing,xbuf),(s1,s2), 2:3; obsdim=(2,2)) == (getobs(Xs,6:7),xbuf)
+    end
 end
