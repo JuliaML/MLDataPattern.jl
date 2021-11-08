@@ -1,3 +1,4 @@
+using LearnBase: AbstractDataContainer
 # --------------------------------------------------------------------
 
 """
@@ -92,7 +93,7 @@ see also
 [`eachobs`](@ref), [`BatchView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
-struct ObsView{TData,O}
+struct ObsView{TData,O} <: AbstractDataContainer
     data::TData
     obsdim::O
 end
@@ -317,7 +318,7 @@ see also
 [`eachbatch`](@ref), [`ObsView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
-struct BatchView{TData,O}
+struct BatchView{TData,O} <: AbstractDataContainer
     data::TData
     size::Int
     count::Int

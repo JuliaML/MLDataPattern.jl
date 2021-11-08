@@ -335,7 +335,7 @@ targets(f, data::ObsView) =
 
 # custom "_" function to not recurse on tuples
 # Here we decide if "getobs" will be triggered based on "f"
-@inline targets(f::typeof(identity), data; obsdim = default_obsdim(data)) =
+@inline targets(::typeof(identity), data; obsdim = default_obsdim(data)) =
     gettargets(data, 1:nobs(data; obsdim = obsdim); obsdim = obsdim)
 
 targets(f, data; obsdim = default_obsdim(data)) =

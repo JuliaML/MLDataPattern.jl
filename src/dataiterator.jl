@@ -1,3 +1,5 @@
+using LearnBase: AbstractDataIterator
+
 _length(iter) = _length(iter, Base.IteratorSize(iter))
 _length(iter, ::Base.HasLength) = length(iter)
 _length(iter, ::Base.HasShape)  = length(iter)
@@ -107,7 +109,7 @@ see also
 [`ObsView`](@ref), [`BatchView`](@ref), [`shuffleobs`](@ref),
 [`DataSubset`](@ref), [`BufferGetObs`](@ref)
 """
-struct RandomObs{T,O,I}
+struct RandomObs{T,O,I} <: AbstractDataIterator
     data::T
     count::Int
     obsdim::O

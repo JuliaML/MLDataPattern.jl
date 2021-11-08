@@ -189,7 +189,6 @@ _view(indices, i) = view(indices, i)
 # can be used to prevent specific data container to be used
 # in (specific) functions. For example passing a BatchView to
 # oversample or undersample should throw an error
-# todo: discuss if we want to have it here
 allowcontainer(fun, data) = true
 
 function Base.show(io::IO, subset::DataSubset)
@@ -220,7 +219,6 @@ Base.length(subset::DataSubset) = length(subset.indices)
 
 Base.lastindex(subset::DataSubset) = length(subset)
 
-# todo: check this, because it does not seem to make much sense
 Base.getindex(subset::DataSubset, idx) =
     DataSubset(subset.data, _view(subset.indices, idx))
 

@@ -95,7 +95,7 @@ tests = [
     # "tst_resample.jl"
     # "tst_folds.jl"
     # "tst_dataiterator.jl"
-    # "tst_dataframes.jl"
+    "tst_dataframes.jl"
 ]
 
 for t in tests

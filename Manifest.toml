@@ -60,9 +60,9 @@ uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[InverseFunctions]]
 deps = ["Test"]
-git-tree-sha1 = "f0c6489b12d28fb4c2103073ec7452f3423bd308"
+git-tree-sha1 = "a7254c0acd8e62f1ac75ad24d5db43f5f19f3c65"
 uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
-version = "0.1.1"
+version = "0.1.2"
 
 [[IrrationalConstants]]
 git-tree-sha1 = "7fd44fd4ff43fc60815f8e764c0f352b83c49151"
@@ -71,7 +71,7 @@ version = "0.1.1"
 
 [[LearnBase]]
 deps = ["StatsBase"]
-git-tree-sha1 = "cf0a6441a65eade5d1786764bc74c77528836e98"
+git-tree-sha1 = "225f826f6acdb21bea2289a33545b39c1ac1f1dc"
 repo-rev = "darsnack/rm-obsdim"
 repo-url = "https://github.com/darsnack/LearnBase.jl.git"
 uuid = "7f8f8fb0-2700-5f03-b4bd-41f8cfc144b6"
