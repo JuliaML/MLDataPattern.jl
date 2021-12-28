@@ -1,26 +1,4 @@
-Base.IndexStyle(::Type{T}) where {T<:DataView} = IndexLinear()
-Base.size(A::DataView) = (length(A),)
-Base.lastindex(A::DataView) = length(A)
-getobs(A::DataView) = map(getobs, A)
-getobs(A::DataView, i) = getobs(A[i])
-getobs(A::DataView{T}) where {T<:Tuple} = map(i->getobs(A,i), 1:length(A))
-getobs(A::DataView{T}, i::Integer) where {T<:Tuple} = map(getobs, A[i])
-
-allowcontainer(fun, ::AbstractObsView) = true
-allowcontainer(fun, ::DataView) = false
-
-# for proper dispatch to trump the abstract arrays one
-for T in (ObsDim.Constant, ObsDim.Last, Tuple)
-    @eval function nobs(A::DataView, obsdim::$T)
-        @assert obsdim === default_obsdim(A)
-        nobs(A)
-    end
-    @eval function getobs(A::DataView, idx, obsdim::$T)
-        @assert obsdim === default_obsdim(A)
-        getobs(A, idx)
-    end
-end
-
+using LearnBase: AbstractDataContainer
 # --------------------------------------------------------------------
 
 """
@@ -115,20 +93,9 @@ see also
 [`eachobs`](@ref), [`BatchView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
-struct ObsView{TElem,TData,O} <: AbstractObsView{TElem,TData}
+struct ObsView{TData,O} <: AbstractDataContainer
     data::TData
     obsdim::O
-end
-
-function ObsView(data::T, obsdim::O) where {T,O}
-    E = typeof(datasubset(data, 1, obsdim))
-    ObsView{E,T,O}(data,obsdim)
-end
-
-function ObsView(A::T, obsdim) where T<:DataView
-    @assert obsdim == A.obsdim
-    @warn string("Trying to nest a ", T.name, " into an ObsView, which is not supported. Returning ObsView(parent(_)) instead")
-    ObsView(parent(A), obsdim)
 end
 
 function ObsView(A::ObsView, obsdim)
@@ -136,18 +103,20 @@ function ObsView(A::ObsView, obsdim)
     A
 end
 
-ObsView(data; obsdim = default_obsdim(data)) =
-    ObsView(data, convert(LearnBase.ObsDimension,obsdim))
+ObsView(data; obsdim = default_obsdim(data)) = ObsView(data, obsdim)
 
-nobs(A::ObsView) = nobs(A.data, A.obsdim)
+function StatsBase.nobs(A::ObsView; obsdim = default_obsdim(A))
+    @assert obsdim == A.obsdim
+    return nobs(A.data; obsdim = A.obsdim)
+end
 Base.parent(A::ObsView) = A.data
 Base.length(A::ObsView) = nobs(A)
-Base.getindex(A::ObsView, i::Int) = datasubset(A.data, i, A.obsdim)
+Base.getindex(A::ObsView, i::Int) = datasubset(A.data, i)
 Base.getindex(A::ObsView, i::AbstractVector) =
-    ObsView(datasubset(A.data, i, A.obsdim), A.obsdim)
+    ObsView(datasubset(A.data, i); obsdim = A.obsdim)
 
 # compatibility with nested functions
-default_obsdim(A::ObsView) = A.obsdim
+LearnBase.default_obsdim(A::ObsView) = A.obsdim
 
 @doc (@doc ObsView)
 const obsview = ObsView
@@ -163,7 +132,7 @@ end
 
 # --------------------------------------------------------------------
 
-default_batch_size(source, obsdim) = clamp(div(nobs(source,obsdim), 5), 2, 100)
+default_batch_size(source, obsdim) = clamp(div(nobs(source; obsdim = obsdim), 5), 2, 100)
 
 """
 Helper function to compute sensible and compatible values for the
@@ -349,20 +318,14 @@ see also
 [`eachbatch`](@ref), [`ObsView`](@ref), [`shuffleobs`](@ref),
 [`getobs`](@ref), [`nobs`](@ref), [`DataSubset`](@ref)
 """
-struct BatchView{TElem,TData,O} <: AbstractBatchView{TElem,TData}
+struct BatchView{TData,O} <: AbstractDataContainer
     data::TData
     size::Int
     count::Int
     obsdim::O
 end
 
-function BatchView(data::T, size::Int, count::Int, obsdim::O = default_obsdim(data), upto::Bool = false) where {T,O}
-    nsize, ncount = _compute_batch_settings(data, size, count, obsdim, upto)
-    E = typeof(datasubset(data, 1:nsize, obsdim))
-    BatchView{E,T,O}(data, nsize, ncount, obsdim)
-end
-
-function BatchView(data::T, size::Int, obsdim::O = default_obsdim(data), upto::Bool = false) where {T,O<:Union{Tuple,ObsDimension}}
+function BatchView(data::T, size::Int, obsdim::O = default_obsdim(data), upto::Bool = false) where {T,O}
     BatchView(data, size, -1, obsdim, upto)
 end
 
@@ -371,17 +334,17 @@ function BatchView(A::BatchView, size::Int, count::Int, obsdim, upto::Bool = fal
     BatchView(parent(A), size, count, obsdim, upto)
 end
 
-BatchView(data, obsdim::Union{Tuple,ObsDimension}) =
+BatchView(data, obsdim) =
     BatchView(data, -1, -1, obsdim)
 
 function BatchView(data; size = -1, maxsize = -1, count = -1, obsdim = default_obsdim(data))
     maxsize != -1 && size != -1 && throw(ArgumentError("Providing both \"size\" and \"maxsize\" is not supported"))
     if maxsize != -1
         # set upto to true in order to allow a flexible batch size
-        BatchView(data, maxsize, count, convert(LearnBase.ObsDimension,obsdim), true)
+        BatchView(data, maxsize, count, obsdim, true)
     else
         # force given batch size
-        BatchView(data, size, count, convert(LearnBase.ObsDimension,obsdim))
+        BatchView(data, size, count, obsdim)
     end
 end
 
@@ -394,7 +357,7 @@ allowcontainer(::typeof(splitobs), ::BatchView) = true
 Return the fixed size of each batch in `data`.
 """
 batchsize(A::BatchView) = A.size
-nobs(A::BatchView) = A.count * A.size
+StatsBase.nobs(A::BatchView) = A.count * A.size
 Base.parent(A::BatchView) = A.data
 Base.length(A::BatchView) = A.count
 Base.getindex(A::BatchView, batchindex::Int) =
@@ -406,7 +369,7 @@ function Base.getindex(A::BatchView, batchindices::AbstractVector)
 end
 
 # compatibility with nested functions
-default_obsdim(A::BatchView) = A.obsdim
+LearnBase.default_obsdim(A::BatchView) = A.obsdim
 
 @doc (@doc BatchView)
 const batchview = BatchView
@@ -425,16 +388,16 @@ end
 # --------------------------------------------------------------------
 
 # if subsetting a DataView, then DataView the subset instead.
-for fun in (:DataSubset, :datasubset), O in (ObsDimension, Tuple)
-    @eval @generated function ($fun)(A::T, i, obsdim::$O) where T<:AbstractObsView
+for fun in (:DataSubset, :datasubset)
+    @eval @generated function ($fun)(A::T, i, obsdim) where T
         quote
             @assert obsdim == A.obsdim
-            ($(T.name.name))(($($fun))(parent(A), i, obsdim), obsdim)
+            ($(T.name.name))(($($fun))(parent(A), i), obsdim)
         end
     end
-    @eval function ($fun)(A::BatchView, i, obsdim::$O)
+    @eval function ($fun)(A::BatchView, i, obsdim)
         @assert obsdim == A.obsdim
         length(i) < A.size && throw(ArgumentError("The chosen batch-size ($(A.size)) is greater than the number of observations ($(length(i)))"))
-        BatchView(($fun)(parent(A), i, obsdim), A.size, -1, obsdim)
+        BatchView(($fun)(parent(A), i), A.size, -1, obsdim)
     end
 end

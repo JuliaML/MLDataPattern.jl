@@ -1,6 +1,6 @@
 @testset "DataFrame integration" begin
-    LearnBase.getobs(df::DataFrame, idx) = df[idx,:]
-    StatsBase.nobs(df::DataFrame) = nrow(df)
+    LearnBase.getobs(df::DataFrame, idx; obsdim = 2) = df[idx,:]
+    StatsBase.nobs(df::DataFrame; obsdim = 2) = nrow(df)
 
     @testset "targets" begin
         y = [:a,:a,:b,:a,:b]

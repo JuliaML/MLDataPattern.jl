@@ -87,7 +87,7 @@ see [`DataSubset`](@ref) for more information on data subsets.
 see also [`undersample`](@ref) and [`stratifiedobs`](@ref).
 """
 oversample(data; fraction=1, shuffle=true, obsdim=default_obsdim(data)) =
-    oversample(identity, data, fraction, shuffle, convert(LearnBase.ObsDimension,obsdim))
+    oversample(identity, data, fraction, shuffle, obsdim)
 
 oversample(data, shuffle::Bool, obsdim=default_obsdim(data)) =
     oversample(identity, data, shuffle, obsdim)
@@ -98,21 +98,22 @@ oversample(data, fraction::Real, obsdim=default_obsdim(data)) =
 oversample(data, fraction::Real, shuffle::Bool, obsdim=default_obsdim(data)) =
     oversample(identity, data, fraction, shuffle, obsdim)
 
-oversample(f, data; fraction=1, shuffle=true, obsdim=default_obsdim(data)) =
-    oversample(f, data, fraction, shuffle, convert(LearnBase.ObsDimension,obsdim))
+# in order to disambiguate methods
+oversample(f::Function, data; fraction=1, shuffle=true, obsdim=default_obsdim(data)) =
+    oversample(f, data, fraction, shuffle, obsdim)
 
-oversample(f, data, shuffle::Bool, obsdim=default_obsdim(data)) =
-    oversample(identity, data, 1, shuffle, obsdim)
+oversample(f::Function, data, shuffle::Bool, obsdim=default_obsdim(data)) =
+    oversample(f, data, 1, shuffle, obsdim)
 
-function oversample(f, data, fraction::Real, shuffle::Bool=true, obsdim=default_obsdim(data))
+function oversample(f::Function, data, fraction::Real, shuffle::Bool=true, obsdim=default_obsdim(data))
     allowcontainer(oversample, data) || throw(MethodError(oversample, (f,data,shuffle,obsdim)))
-    lm = labelmap(eachtarget(f, data, obsdim))
+    lm = labelmap(eachtarget(f, data; obsdim = obsdim))
 
     maxcount = maximum(length, values(lm))
     fraccount = round(Int, fraction * maxcount)
 
     # firstly we will start by keeping everything
-    inds = collect(1:nobs(data, obsdim))
+    inds = collect(1:nobs(data; obsdim = obsdim))
     sizehint!(inds, nlabel(lm)*maxcount)
 
     for (lbl, inds_for_lbl) in lm
@@ -127,7 +128,7 @@ function oversample(f, data, fraction::Real, shuffle::Bool=true, obsdim=default_
     end
 
     shuffle && shuffle!(inds)
-    datasubset(data, inds, obsdim)
+    datasubset(data, inds)
 end
 
 """
@@ -209,13 +210,13 @@ see [`DataSubset`](@ref) for more information on data subsets.
 see also [`oversample`](@ref) and [`stratifiedobs`](@ref).
 """
 undersample(data; shuffle=false, obsdim=default_obsdim(data)) =
-    undersample(identity, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
+    undersample(identity, data, shuffle, obsdim)
 
 undersample(data, shuffle::Bool, obsdim=default_obsdim(data)) =
     undersample(identity, data, shuffle, obsdim)
 
 undersample(f, data; shuffle=false, obsdim=default_obsdim(data)) =
-    undersample(f, data, shuffle, convert(LearnBase.ObsDimension,obsdim))
+    undersample(f, data, shuffle, obsdim)
 
 function undersample(f, data, shuffle::Bool, obsdim=default_obsdim(data))
     allowcontainer(undersample, data) || throw(MethodError(undersample, (f,data,shuffle,obsdim)))
@@ -230,7 +231,7 @@ function undersample(f, data, shuffle::Bool, obsdim=default_obsdim(data))
     end
 
     shuffle ? shuffle!(inds) : sort!(inds)
-    datasubset(data, inds, obsdim)
+    datasubset(data, inds)
 end
 
 # Make sure the R people find the functionality

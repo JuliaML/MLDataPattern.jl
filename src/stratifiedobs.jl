@@ -1,7 +1,7 @@
 splitobs(lm::Dict{T,Vector{I}}; at = 0.7) where {T,I<:Integer} =
-    splitobs(lm, at)
+    _splitobs(lm, at)
 
-function splitobs(lm::Dict{T,Vector{I}}, at::AbstractFloat) where {T,I<:Integer}
+function _splitobs(lm::Dict{T,Vector{I}}, at::AbstractFloat) where {T,I<:Integer}
     0 < at < 1 || throw(ArgumentError("the parameter \"at\" must be in interval (0, 1)"))
     n = mapreduce(length, +, values(lm))
     k = nlabel(lm)
@@ -16,14 +16,14 @@ function splitobs(lm::Dict{T,Vector{I}}, at::AbstractFloat) where {T,I<:Integer}
     sizehint!(idx2, ceil(Int, n * (1-at) + k))
     # loop through all label indices
     for indices in values(lm)
-        i1, i2 = splitobs(indices, at)
+        i1, i2 = splitobs(indices; at = at)
         append!(idx1, i1)
         append!(idx2, i2)
     end
     idx1, idx2
 end
 
-@generated function splitobs(lm::Dict{T,Vector{I}}, at::NTuple{N,AbstractFloat}) where {T,I<:Integer,N}
+@generated function _splitobs(lm::Dict{T,Vector{I}}, at::NTuple{N,AbstractFloat}) where {T,I<:Integer,N}
     quote
         (all(map(_ispos, at)) && sum(at) < 1) || throw(ArgumentError("all elements in \"at\" must be positive and their sum must be smaller than 1"))
         n = mapreduce(length, +, values(lm))
@@ -38,7 +38,7 @@ end
         sizehint!($(Symbol(:idx_, Symbol(N+1))), ceil(Int, n*(1-sum(at)) + k))
         # loop through all label indices
         for indices in values(lm)
-            tup = splitobs(indices, at)
+            tup = splitobs(indices; at = at)
             @nexprs $(N+1) i -> append!(idx_i, tup[i])
         end
         # return a tuple of all indices vectors
@@ -204,31 +204,31 @@ see [`DataSubset`](@ref) for more information on data subsets.
 see also [`undersample`](@ref), [`oversample`](@ref), [`splitobs`](@ref).
 """
 function stratifiedobs(data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.GLOBAL_RNG)
-    stratifiedobs(identity, data, p, shuffle, convert(ObsDimension, obsdim), rng)
+    _stratifiedobs(identity, data, p, shuffle, obsdim, rng)
 end
 
 function stratifiedobs(f, data; p = 0.7, shuffle = true, obsdim = default_obsdim(data), rng = Random.GLOBAL_RNG)
-    stratifiedobs(f, data, p, shuffle, convert(ObsDimension, obsdim), rng)
+    _stratifiedobs(f, data, p, shuffle, obsdim, rng)
 end
 
-function stratifiedobs(data, p::AbstractFloat, args...)
-    stratifiedobs(identity, data, p, args...)
-end
+# function _stratifiedobs(data, p::AbstractFloat, args...)
+#     _stratifiedobs(identity, data, p, args...)
+# end
 
-function stratifiedobs(data, p::NTuple{N,AbstractFloat}, args...) where N
-    stratifiedobs(identity, data, p, args...)
-end
+# function _stratifiedobs(data, p::NTuple{N,AbstractFloat}, args...) where N
+#     _stratifiedobs(identity, data, p, args...)
+# end
 
-function stratifiedobs(f, data, p::Union{NTuple,AbstractFloat}, shuffle::Bool = true, obsdim = default_obsdim(data), rng::AbstractRNG = Random.GLOBAL_RNG)
+function _stratifiedobs(f, data, p::Union{NTuple,AbstractFloat}, shuffle::Bool, obsdim, rng::AbstractRNG)
     # The given data is always shuffled to qualify as performing
     # stratified sampling without replacement.
-    data_shuf = shuffleobs(data, obsdim, rng)
+    data_shuf = shuffleobs(data; obsdim = obsdim, rng = rng)
     # FIXME: if i put the following line before `data_shuf` is
     #        defined, it breaks type inference for `data_shuf`.
-    allowcontainer(stratifiedobs, data) || throw(MethodError(stratifiedobs, (f,data,shuffle,obsdim)))
-    idx_tup = splitobs(labelmap(eachtarget(f, data_shuf, obsdim)), p)
+    allowcontainer(stratifiedobs, data) || throw(MethodError(stratifiedobs, (f, data, shuffle, obsdim)))
+    idx_tup = splitobs(labelmap(eachtarget(f, data_shuf, obsdim)); at = p)
     # Setting the parameter "shuffle = false" specifies that the
     # classes are ordered in the resulting subsets respectively.
-    shuffle && foreach(x->isempty(x) || shuffle!(rng, x), idx_tup)
-    map(idx -> datasubset(data_shuf, idx, obsdim), idx_tup)
+    shuffle && foreach(x -> isempty(x) || shuffle!(rng, x), idx_tup)
+    map(idx -> datasubset(data_shuf, idx), idx_tup)
 end

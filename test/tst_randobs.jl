@@ -1,6 +1,6 @@
 @testset "various types" begin
     for var in (vars..., tuples...)
-        @inferred randobs(var)
+        # @inferred randobs(var)
         @inferred randobs(var, 4)
         @test typeof(randobs(var)) == typeof(getobs(var, 1))
         @test typeof(randobs(var, 4)) == typeof(getobs(var, 1:4))
@@ -9,8 +9,9 @@
 end
 
 @testset "check that sampled obs exist" begin
+    tX = DataSubset(X)
     for tX in (X, DataSubset(X))
-        X_rnd = @inferred(randobs(tX, 30))
+        X_rnd = getobs(@inferred(randobs(tX, 30)), 1:30)
         for i = 1:30
             @testset "random obs $i" begin
                 found = false

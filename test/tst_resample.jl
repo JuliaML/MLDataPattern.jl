@@ -20,8 +20,8 @@ lett = ["a","b","b","c","c","c","d","d","d","d","d"]
         @test_throws DimensionMismatch oversample((1:4,1:3))
         @test_throws DimensionMismatch oversample((X,Yt))
         @test_throws DimensionMismatch oversample((y,Yt))
-        @test_throws DimensionMismatch oversample((X,y), true, (ObsDim.First(),))
-        @test_throws DimensionMismatch oversample(identity, (X,y), true, (ObsDim.First(),))
+        @test_throws DimensionMismatch oversample((X,y), true, (1,))
+        @test_throws DimensionMismatch oversample(identity, (X,y), true, (1,))
     end
 
     for vals in (nums, lett)
@@ -29,17 +29,18 @@ lett = ["a","b","b","c","c","c","d","d","d","d","d"]
             for res in (
                     @inferred(oversample(vals)),
                     @inferred(oversample(vals, 1)),
-                    @inferred(oversample(vals, 1, ObsDim.First())),
+                    @inferred(oversample(vals, fraction=1, obsdim=1)),
+                    @inferred(oversample(vals, 1, 1)),
                     @inferred(oversample(vals, 1, true)),
-                    @inferred(oversample(vals, 1, true, ObsDim.First())),
+                    @inferred(oversample(vals, 1, true, 1)),
                     @inferred(oversample(vals, true)),
-                    @inferred(oversample(vals, true, ObsDim.First())),
+                    @inferred(oversample(vals, true, 1)),
                     @inferred(oversample(identity, vals)),
                     @inferred(oversample(identity, vals, true)),
                     @inferred(oversample(identity, vals, 1)),
                     @inferred(oversample(identity, vals, 1, true)),
-                    @inferred(oversample(identity, vals, true, ObsDim.First())),
-                    @inferred(oversample(identity, vals, 1, true, ObsDim.First())),
+                    @inferred(oversample(identity, vals, true, 1)),
+                    @inferred(oversample(identity, vals, 1, true, 1)),
                     oversample(vals, fraction=1, shuffle=true, obsdim=1),
                     oversample(identity, vals, fraction=1, shuffle=true, obsdim=1)
                 )

@@ -12,20 +12,21 @@ julia> splitobs(100, at = 0.7)
 # (1:70,71:100)
 ```
 """
-splitobs(n::Int; at = 0.7) = splitobs(n, at)
+splitobs(n::Int; at = 0.7) = _splitobs(n, at)
 
 # partition into 2 sets
-function splitobs(n::Int, at::AbstractFloat)
+function _splitobs(n::Int, at::AbstractFloat)
     0 < at < 1 || throw(ArgumentError("the parameter \"at\" must be in interval (0, 1)"))
     n1 = clamp(round(Int, at*n), 1, n)
-    (1:n1, n1+1:n)
+    
+    return (1:n1, n1+1:n)
 end
 
 # has to be outside the generated function
 _ispos(x) = x > 0
 # partition into length(at)+1 sets
 # we use @generated because we compute "N+1"
-@generated function splitobs(n::Int, at::NTuple{N,AbstractFloat}) where N
+@generated function _splitobs(n::Int, at::NTuple{N,AbstractFloat}) where N
     quote
         (all(map(_ispos, at)) && sum(at) < 1) || throw(ArgumentError("all elements in \"at\" must be positive and their sum must be smaller than 1"))
         nleft = n
@@ -110,20 +111,21 @@ see [`DataSubset`](@ref) for more information on data subsets.
 see [`stratifiedobs`](@ref) for a related function that preserves
 the target distribution.
 """
-splitobs(data; at = 0.7, obsdim = default_obsdim(data)) =
-    splitobs(data, at, convert(LearnBase.ObsDimension,obsdim))
+splitobs(data, at = 0.7) = splitobs(data, at, default_obsdim(data))
 
 # partition into 2 sets
-function splitobs(data, at::AbstractFloat, obsdim=default_obsdim(data))
-    allowcontainer(splitobs, data) || throw(MethodError(splitobs, (data,at,obsdim)))
+function splitobs(data, at::AbstractFloat, obsdim)
+    allowcontainer(splitobs, data) || throw(MethodError(splitobs, (data, at, obsdim)))
     n = nobs(data, obsdim)
-    idx1, idx2 = splitobs(n, at)
-    datasubset(data, idx1, obsdim), datasubset(data, idx2, obsdim)
+    idx1, idx2 = splitobs(n; at = at)
+
+    return datasubset(data, idx1), datasubset(data, idx2)
 end
 
 # partition into length(at)+1 sets
-function splitobs(data, at::NTuple{N,AbstractFloat}, obsdim=default_obsdim(data)) where N
-    allowcontainer(splitobs, data) || throw(MethodError(splitobs, (data,at,obsdim)))
+function splitobs(data, at::NTuple{N,AbstractFloat}, obsdim) where N
+    allowcontainer(splitobs, data) || throw(MethodError(splitobs, (data, at, obsdim)))
     n = nobs(data, obsdim)
-    map(idx->datasubset(data, idx, obsdim), splitobs(n, at))
+
+    return map(idx -> datasubset(data, idx), splitobs(n; at = at))
 end

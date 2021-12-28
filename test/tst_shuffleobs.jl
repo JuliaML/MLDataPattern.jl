@@ -1,18 +1,18 @@
 @test_throws DimensionMismatch shuffleobs((X, rand(149)))
-@test_throws DimensionMismatch shuffleobs((X, rand(149)), obsdim=:last)
+@test_throws DimensionMismatch shuffleobs((X, rand(149)), obsdim=(2,1))
 
 @testset "typestability" begin
     for var in vars
-        @test_throws MethodError shuffleobs(var, ObsDim.Undefined())
+        @test_throws MethodError shuffleobs(var, nothing)
         @test typeof(@inferred(shuffleobs(var))) <: SubArray
-        @test typeof(@inferred(shuffleobs(var, ObsDim.Last()))) <: SubArray
-        @test typeof(@inferred(shuffleobs(var, ObsDim.First()))) <: SubArray
-        #@test_throws ErrorException @inferred(shuffleobs(var, obsdim=:last))
+        @test typeof(@inferred(shuffleobs(var, obsdim=ndims(var)))) <: SubArray
+        @test typeof(@inferred(shuffleobs(var, obsdim=1))) <: SubArray
+        @test_throws ErrorException @inferred(shuffleobs(var, obsdim=:last))
         @test_throws ErrorException @inferred(shuffleobs(var, obsdim=1))
     end
     for tup in tuples
         @test typeof(@inferred(shuffleobs(tup))) <: Tuple
-        @test typeof(@inferred(shuffleobs(tup, ObsDim.Last()))) <: Tuple
+        @test typeof(@inferred(shuffleobs(tup, ndims(tup)))) <: Tuple
         @test_throws ErrorException @inferred(shuffleobs(tup, obsdim=:last))
     end
 end
