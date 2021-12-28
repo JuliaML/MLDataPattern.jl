@@ -34,7 +34,6 @@ end
         @test_throws MethodError getobs!(nothing, EmptyType(), obsdim=1)
         @test_throws MethodError getobs!(nothing, EmptyType(), obsdim=LearnBase.default_obsdim(EmptyType()))
         @test_throws MethodError getobs!(nothing, CustomType(), obsdim=1)
-        @test_throws MethodError getobs!(nothing, CustomType(), LearnBase.default_obsdim(CustomType()))
     end
 
     @testset "custom type with getobs support" begin

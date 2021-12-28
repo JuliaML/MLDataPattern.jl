@@ -164,7 +164,7 @@ see also
 [`splitobs`](@ref), [`shuffleobs`](@ref),
 [`KFolds`](@ref), [`BatchView`](@ref), [`ObsView`](@ref),
 """
-struct DataSubset{T, I<:Union{Int,AbstractVector}}
+struct DataSubset{T, I} <: LearnBase.AbstractDataContainer
     data::T
     indices::I
 
@@ -177,12 +177,19 @@ struct DataSubset{T, I<:Union{Int,AbstractVector}}
     end
 end
 DataSubset(data::T, indices::I) where {T, I} = DataSubset{T, I}(data, indices)
+DataSubset(data::Tuple, indices) = map(x -> DataSubset(x, indices), data)
+DataSubset(data::Tuple, indices::Tuple) = map(DataSubset, data, indices)
 # don't nest subsets
 DataSubset(subset::DataSubset, indices) = DataSubset(subset.data, _view(subset.indices, indices))
 
 # to accumulate indices as views instead of copies
+_view(indices::Number, i::Number) = (i == 1) ? indices :
+    ArgumentError("Cannot select multiple indices for subset with indices = $indices.")
+_view(indices::Number, i::AbstractVector) = ((length(i) == 1) && (i[1] == 1)) ? indices :
+    ArgumentError("Cannot select multiple indices for subset with indices = $indices.")
 _view(indices::AbstractRange, i::Int) = indices[i]
 _view(indices::AbstractRange, i::AbstractRange) = indices[i]
+_view(::Colon, i) = i
 _view(indices, i::Int) = indices[i] # to throw error in case
 _view(indices, i) = view(indices, i)
 
@@ -215,16 +222,13 @@ end
 Base.:(==)(s1::DataSubset, s2::DataSubset) =
     (s1.data == s2.data) && all(i1==i2 for (i1, i2) in zip(s1.indices, s2.indices))
 
-Base.length(subset::DataSubset) = length(subset.indices)
-
-Base.lastindex(subset::DataSubset) = length(subset)
-
+# override default getindex to return a DataSubset
 Base.getindex(subset::DataSubset, idx) =
     DataSubset(subset.data, _view(subset.indices, idx))
 
 LearnBase.default_obsdim(subset::DataSubset) = default_obsdim(subset.data)
 
-LearnBase.nobs(subset::DataSubset; obsdim = default_obsdim(subset)) = length(subset)
+LearnBase.nobs(subset::DataSubset; obsdim = default_obsdim(subset)) = length(subset.indices)
 
 LearnBase.getobs(subset::DataSubset, idx; obsdim = default_obsdim(subset)) =
     getobs(subset.data, _view(subset.indices, idx); obsdim = obsdim)
@@ -258,28 +262,9 @@ keyword argument.
 see `DataSubset` for more information.
 """
 datasubset(data, indices) = DataSubset(data, indices)
-
-# --------------------------------------------------------------------
-
-for fun in (:DataSubset, :(datasubset))
-    @eval begin
-        # No-op
-        ($fun)(subset::DataSubset) = subset
-
-        # map DataSubset over the tuple
-        function ($fun)(tup::Tuple)
-            _check_nobs(tup)
-            return map(data -> ($fun)(data), tup)
-        end
-
-        function ($fun)(tup::Tuple, indices)
-            _check_nobs(tup)
-            return map(data -> ($fun)(data, indices), tup)
-        end
-    end
-end
-
-# --------------------------------------------------------------------
-# Arrays
-
-datasubset(A::SubArray; kw...) = A
+datasubset(data::Array, indices) = selectdim(data, default_obsdim(data), indices)
+datasubset(data::Array, index::Integer) = datasubset(data, index:index)
+datasubset(data::SubArray, indices) = selectdim(data, default_obsdim(data), indices)
+datasubset(data::SubArray, index::Integer) = datasubset(data, index:index)
+datasubset(data::Tuple, indices) = map(x -> datasubset(x, indices), data)
+datasubset(data::Tuple, indices::Tuple) = map(datasubset, data, indices)

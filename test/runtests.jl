@@ -33,7 +33,7 @@ Y1 = collect(1:150)
 
 struct EmptyType end
 
-struct CustomType end
+struct CustomType <: LearnBase.AbstractDataContainer end
 StatsBase.nobs(x::CustomType; obsdim = LearnBase.default_obsdim(x)) = 100
 LearnBase.getobs(x::CustomType, i::Int; obsdim = LearnBase.default_obsdim(x)) = i
 LearnBase.getobs(x::CustomType, i::AbstractVector; obsdim = LearnBase.default_obsdim(x)) = collect(i)
