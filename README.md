@@ -11,6 +11,9 @@ support of custom user-defined data structures.*
 [![][pkgeval-img]][pkgeval-url]
 [![][coveralls-img]][coveralls-url]
 
+## WARNING
+
+This package has been discontinued. Most functionalities have been moved [MLUtils.jl](https://github.com/JuliaML/MLUtils.jl).
 
 ## Introduction
 
