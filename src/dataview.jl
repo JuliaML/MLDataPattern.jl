@@ -196,7 +196,6 @@ function _compute_batch_settings(source, size::Int = -1, count::Int = -1, obsdim
         # use count just for boundscheck
         max_batchcount = floor(Int, num_observations / size)
         count <= max_batchcount || throw(ArgumentError("Specified number of partitions is too large for the specified size"))
-        count = max_batchcount
     end
 
     # check if the settings will result in all data points being used
